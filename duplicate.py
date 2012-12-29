@@ -3,8 +3,9 @@ from __future__ import print_function
 __author__ = 'lene'
 
 from sys import argv
-import os, hashlib
-import math, operator
+import os
+from hashlib import md5
+from math import sqrt
 from PIL import Image
 
 from memoize import memo
@@ -22,12 +23,24 @@ def filesInDir(dir_name):
 def getSize(file): return os.path.getsize(file)
 
 @memo
-def getHash(file): return hashlib.md5(open(file).read()).hexdigest()
+def getHash(file): return md5(open(file).read()).hexdigest()
 
 def compareExactly(file, other_file):
     if getSize(other_file) != getSize(file): return False
-    if getHash(file) == getHash(other_file): return False
+    if getHash(file) != getHash(other_file): return False
     return True
+
+@memo
+def getHistogram(file): return Image.open(file).histogram()
+
+def compareHistograms(file1, file2):
+    try:
+        rms = sqrt(sum(
+                map(lambda a,b: (a-b)**2, getHistogram(file1), getHistogram(file2))
+            )/len(getHistogram(file1)))
+        return True if rms < 2000 else False
+    except (IOError, TypeError):
+        pass
 
 def compareForEquality(files, compare_images):
     results = []
@@ -37,17 +50,6 @@ def compareForEquality(files, compare_images):
                 results.append((file, other_file))
     return results
 
-@memo
-def getHistogram(file): return Image.open(file).histogram()
-
-def compareHistograms(file1, file2):
-    try:
-        rms = math.sqrt(sum(
-                map(lambda a,b: (a-b)**2, getHistogram(file1), getHistogram(file2))
-            )/len(getHistogram(file1)))
-        return True if rms < 2000 else False
-    except (IOError, TypeError):
-        pass
-
-print(compareForEquality(sorted(filesInDir(argv[1])), compareExactly))
-print(compareForEquality(sorted(filesInDir(argv[1])), compareHistograms))
+if __name__ == '__main__':
+    print(compareForEquality(sorted(filesInDir(argv[1])), compareExactly))
+    print(compareForEquality(sorted(filesInDir(argv[1])), compareHistograms))
