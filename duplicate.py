@@ -29,7 +29,7 @@ def compareExactly(file, other_file):
     return getHash(file) == getHash(other_file)
 
 @memo
-def getImage(file): return Image.open(file)
+def getImage(file): return Image.open(file).convert("RGB")
 
 @memo
 def getHistogram(file): return getImage(file).histogram()

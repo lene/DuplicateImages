@@ -79,8 +79,8 @@ class DuplicateTest(unittest.TestCase):
         copied_file = self.copyImageFile(self.jpeg_file)
         equals = duplicate.compareForEquality(self.getImageFiles(), duplicate.compareHistograms)
         assert (self.jpeg_file, copied_file) in equals
-#        assert (self.jpeg_file, self.png_file) in equals
         assert not elementInListOfTuples(self.subdir_file, equals)
+        assert (self.jpeg_file, self.png_file) in equals
         self.deleteImageFile(copied_file)
 
     def getImageFiles(self): return sorted(duplicate.filesInDir(self.top_directory))
