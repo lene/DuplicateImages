@@ -2,7 +2,6 @@ from __future__ import print_function
 
 __author__ = 'lene'
 
-from sys import argv
 import os
 from hashlib import md5
 from math import sqrt
@@ -27,20 +26,31 @@ def getHash(file): return md5(open(file).read()).hexdigest()
 
 def compareExactly(file, other_file):
     if getSize(other_file) != getSize(file): return False
-    if getHash(file) != getHash(other_file): return False
-    return True
+    return getHash(file) == getHash(other_file)
 
 @memo
-def getHistogram(file): return Image.open(file).histogram()
+def getImage(file): return Image.open(file)
 
-def compareHistograms(file1, file2):
+@memo
+def getHistogram(file): return getImage(file).histogram()
+
+def getImageArea(file):
+    size = getImage(file).size
+    return size[0]*size[1]
+
+def minImageSize(file1, file2): return min(getImageArea(file1), getImageArea(file2))
+
+def getDeviations(list, other_list): return map(lambda a, b: (a - b) ** 2, list, other_list)
+
+def compareHistograms(file, other_file):
     try:
-        rms = sqrt(sum(
-                map(lambda a,b: (a-b)**2, getHistogram(file1), getHistogram(file2))
-            )/len(getHistogram(file1)))
-        return True if rms < 2000 else False
+        rms = sqrt(
+                sum(getDeviations(getHistogram(file), getHistogram(other_file)))/len(getHistogram(file))
+        )/minImageSize(file, other_file)
+        return True if rms < compareHistograms.RMS_ERROR else False
     except (IOError, TypeError):
         pass
+compareHistograms.RMS_ERROR = 0.001
 
 def compareForEquality(files, compare_images):
     results = []
@@ -50,6 +60,11 @@ def compareForEquality(files, compare_images):
                 results.append((file, other_file))
     return results
 
+
 if __name__ == '__main__':
+
+    from sys import argv
+
+    if len(argv) > 2: compareHistograms.RMS_ERROR = float(argv[2])
     print(compareForEquality(sorted(filesInDir(argv[1])), compareExactly))
     print(compareForEquality(sorted(filesInDir(argv[1])), compareHistograms))
