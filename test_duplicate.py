@@ -11,8 +11,8 @@ from math import sqrt
 
 import duplicate
 
-def createImage(filename):
-    geometry = PythonMagick.Geometry(createImage.width, createImage.width*3/4)
+def createImage(filename, width):
+    geometry = PythonMagick.Geometry(width, width*3/4)
     color = PythonMagick.Color("Black")
     image = PythonMagick.Image(geometry, color)
     image.write(filename)
@@ -41,19 +41,23 @@ def elementInListOfTuples(element, list):
 
 class DuplicateTest(unittest.TestCase):
 
+    width = 400
+
     @classmethod
     def setUpClass(cls):
         "create a number of image files in a tree structure under /tmp"
         cls.top_directory = tempfile.mkdtemp(dir="/tmp")
         cls.image_files = []
-        cls.jpeg_file = createImage(tempfile.mkstemp(dir=cls.top_directory, prefix="jpeg_", suffix=".jpg")[1])
+        cls.jpeg_file = createImage(tempfile.mkstemp(dir=cls.top_directory, prefix="jpeg_", suffix=".jpg")[1], cls.width)
         cls.image_files.append(cls.jpeg_file)
-        cls.png_file = createImage(tempfile.mkstemp(dir=cls.top_directory, prefix="png_", suffix=".png")[1])
+        cls.png_file = createImage(tempfile.mkstemp(dir=cls.top_directory, prefix="png_", suffix=".png")[1], cls.width)
         cls.image_files.append(cls.png_file)
         cls.sub_directory = tempfile.mkdtemp(dir=cls.top_directory)
-        cls.subdir_file = createImage(tempfile.mkstemp(dir=cls.sub_directory, prefix="subdir_", suffix=".jpg")[1])
+        cls.subdir_file = createImage(tempfile.mkstemp(dir=cls.sub_directory, prefix="subdir_", suffix=".jpg")[1], cls.width)
         fillImageWithRandomPixels(cls.subdir_file)
         cls.image_files.append(cls.subdir_file)
+        cls.half_file = createImage(tempfile.mkstemp(dir=cls.top_directory, prefix="jpeg_", suffix=".jpg")[1], cls.width/2)
+        cls.image_files.append(cls.half_file)
 
     @classmethod
     def tearDownClass(cls):
@@ -75,13 +79,23 @@ class DuplicateTest(unittest.TestCase):
         self.deleteImageFile(copied_file)
 
 
-    def testHistograms(self):
+    def testHistogramsEqualForCopiedImage(self):
         copied_file = self.copyImageFile(self.jpeg_file)
         equals = duplicate.compareForEquality(self.getImageFiles(), duplicate.compareHistograms)
         assert (self.jpeg_file, copied_file) in equals
-        assert not elementInListOfTuples(self.subdir_file, equals)
-        assert (self.jpeg_file, self.png_file) in equals
         self.deleteImageFile(copied_file)
+
+    def testHistogramsNotEqualForNoisyImage(self):
+        equals = duplicate.compareForEquality(self.getImageFiles(), duplicate.compareHistograms)
+        assert not elementInListOfTuples(self.subdir_file, equals)
+
+    def testHistogramsEqualForDifferentImageFormat(self):
+        equals = duplicate.compareForEquality(self.getImageFiles(), duplicate.compareHistograms)
+        assert (self.jpeg_file, self.png_file) in equals
+
+    def testHistogramsEqualForScaledImage(self):
+        equals = duplicate.compareForEquality(self.getImageFiles(), duplicate.compareHistograms)
+        assert (self.jpeg_file, self.half_file) in equals
 
     def getImageFiles(self): return sorted(duplicate.filesInDir(self.top_directory))
 
@@ -99,11 +113,14 @@ class DuplicateTest(unittest.TestCase):
 if __name__ == '__main__':
     from sys import argv
 
-    createImage.width = int(argv[1]) if len(argv) > 1 else 200
+    DuplicateTest.width = int(argv[1]) if len(argv) > 1 else 200
 
     suite = unittest.TestSuite()
     suite.addTest(DuplicateTest("testGetFiles"))
     suite.addTest(DuplicateTest("testEqualFiles"))
-    suite.addTest(DuplicateTest("testHistograms"))
+    suite.addTest(DuplicateTest("testHistogramsEqualForCopiedImage"))
+    suite.addTest(DuplicateTest("testHistogramsNotEqualForNoisyImage"))
+    suite.addTest(DuplicateTest("testHistogramsEqualForDifferentImageFormat"))
+    suite.addTest(DuplicateTest("testHistogramsEqualForScaledImage"))
 
     unittest.TextTestRunner().run(suite)

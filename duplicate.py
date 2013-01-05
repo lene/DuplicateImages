@@ -27,15 +27,16 @@ def getHash(file): return md5(open(file).read()).hexdigest()
 def compareExactly(file, other_file):
     return getSize(other_file) == getSize(file) and getHash(file) == getHash(other_file)
 
-def getDeviations(list, other_list): return map(lambda a, b: (a - b) ** 2, list, other_list)
-
 def compareImageHistograms(image, other_image):
+
+    def getDeviations(list, other_list): return map(lambda a, b: (a - b) ** 2, list, other_list)
+
     if not aspectsRoughlyEqual(image, other_image): return False
 
     from math import sqrt
     rms = sqrt(
         sum(getDeviations(image.getHistogram(), other_image.getHistogram()))/len(image.getHistogram())
-    )/minImageSize(image, other_image)
+    )
     return True if rms < compareImageHistograms.RMS_ERROR else False
 
 compareImageHistograms.RMS_ERROR = 0.001
@@ -47,18 +48,21 @@ def compareHistograms(file, other_file):
         pass
 
 def compareForEquality(files, compare_images):
-    results = []
-    for file in files:
-        for other_file in files[files.index(file) + 1:]:
-            if compare_images(file, other_file):
-                results.append((file, other_file))
-    return results
-
+    return [
+        (file, other_file)
+        for file in files
+        for other_file in files[files.index(file) + 1:]
+        if compare_images(file, other_file)
+    ]
 
 if __name__ == '__main__':
 
     from sys import argv
 
     if len(argv) > 2: compareImageHistograms.RMS_ERROR = float(argv[2])
-    print(compareForEquality(sorted(filesInDir(argv[1])), compareExactly))
-    print(compareForEquality(sorted(filesInDir(argv[1])), compareHistograms))
+    exact_pairs = compareForEquality(sorted(filesInDir(argv[1])), compareExactly)
+    print(exact_pairs)
+    pairs = compareForEquality(sorted(filesInDir(argv[1])), compareHistograms)
+    print(set(pairs)-set(exact_pairs))
+    for pair in set(pairs) - set(exact_pairs):
+        os.system("xv '"+pair[0]+"' '"+pair[1]+"'")

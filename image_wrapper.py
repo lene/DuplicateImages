@@ -25,6 +25,7 @@ class ImageWrapper:
     def getHistogram(self):
         if self.histogram is None:
             self.histogram = Image.open(self.filename).convert("RGB").histogram()
+            self.histogram = map(lambda v: v/self.getArea(), self.histogram)
         return self.histogram
 
 ImageWrapper.cache = {}
