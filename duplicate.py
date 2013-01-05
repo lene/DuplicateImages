@@ -4,8 +4,10 @@ __author__ = 'lene'
 
 import os
 from hashlib import md5
-from PIL import Imag
+
 from memoize import memo
+from image_wrapper import ImageWrapper, aspectsRoughlyEqual, minImageSize
+
 
 def filesInDir(dir_name):
 
@@ -23,51 +25,26 @@ def getSize(file): return os.path.getsize(file)
 def getHash(file): return md5(open(file).read()).hexdigest()
 
 def compareExactly(file, other_file):
-    if getSize(other_file) != getSize(file): return False
-    return getHash(file) == getHash(other_file)
-
-def getImage(file): return Image.open(file)
-
-@memo
-def getHistogram(file): return getImage(file).convert("RGB").histogram()
-
-@memo
-def getImageSize(file): return getImage(file).size
-
-def getImageArea(file): return getImageSize(file)[0]*getImageSize(file)[1]
-
-def getImageAspect(file): return getImageSize(file)[0]/getImageSize(file)[1]
-
-def getAspectRatio(file, other_file): return getImageAspect(file)/getImageAspect(other_file)
-
-def minImageSize(file1, file2): return min(getImageArea(file1), getImageArea(file2))
+    return getSize(other_file) == getSize(file) and getHash(file) == getHash(other_file)
 
 def getDeviations(list, other_list): return map(lambda a, b: (a - b) ** 2, list, other_list)
 
-def aspectsRoughlyEqual(file, other_file):
-    from math import fabs
-    if fabs(getAspectRatio(file, other_file) - 1) < aspectsRoughlyEqual.FUZZINESS: return True
-    return False
+def compareImageHistograms(image, other_image):
+    if not aspectsRoughlyEqual(image, other_image): return False
 
-aspectsRoughlyEqual.FUZZINESS = 0.05
+    from math import sqrt
+    rms = sqrt(
+        sum(getDeviations(image.getHistogram(), other_image.getHistogram()))/len(image.getHistogram())
+    )/minImageSize(image, other_image)
+    return True if rms < compareImageHistograms.RMS_ERROR else False
+
+compareImageHistograms.RMS_ERROR = 0.001
 
 def compareHistograms(file, other_file):
-    from math import sqrt
     try:
-
-        if not aspectsRoughlyEqual(file, other_file): return False
-
-        if getImageSize(file)[0]-getImageSize(other_file)[0]:
-            pass
-
-        rms = sqrt(
-                sum(getDeviations(getHistogram(file), getHistogram(other_file)))/len(getHistogram(file))
-        )/minImageSize(file, other_file)
-        return True if rms < compareHistograms.RMS_ERROR else False
+        return compareImageHistograms(ImageWrapper.create(file), ImageWrapper.create(other_file))
     except (IOError, TypeError):
         pass
-
-compareHistograms.RMS_ERROR = 0.001
 
 def compareForEquality(files, compare_images):
     results = []
@@ -82,6 +59,6 @@ if __name__ == '__main__':
 
     from sys import argv
 
-    if len(argv) > 2: compareHistograms.RMS_ERROR = float(argv[2])
+    if len(argv) > 2: compareImageHistograms.RMS_ERROR = float(argv[2])
     print(compareForEquality(sorted(filesInDir(argv[1])), compareExactly))
     print(compareForEquality(sorted(filesInDir(argv[1])), compareHistograms))
