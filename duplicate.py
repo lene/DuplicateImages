@@ -1,12 +1,10 @@
-from __future__ import print_function
+from __future__ import print_function, division
 
 __author__ = 'lene'
 
 import os
 from hashlib import md5
-from math import sqrt
-from PIL import Image
-
+from PIL import Imag
 from memoize import memo
 
 def filesInDir(dir_name):
@@ -28,28 +26,47 @@ def compareExactly(file, other_file):
     if getSize(other_file) != getSize(file): return False
     return getHash(file) == getHash(other_file)
 
-@memo
-def getImage(file): return Image.open(file).convert("RGB")
+def getImage(file): return Image.open(file)
 
 @memo
-def getHistogram(file): return getImage(file).histogram()
+def getHistogram(file): return getImage(file).convert("RGB").histogram()
 
-def getImageArea(file):
-    size = getImage(file).size
-    return size[0]*size[1]
+@memo
+def getImageSize(file): return getImage(file).size
+
+def getImageArea(file): return getImageSize(file)[0]*getImageSize(file)[1]
+
+def getImageAspect(file): return getImageSize(file)[0]/getImageSize(file)[1]
+
+def getAspectRatio(file, other_file): return getImageAspect(file)/getImageAspect(other_file)
 
 def minImageSize(file1, file2): return min(getImageArea(file1), getImageArea(file2))
 
 def getDeviations(list, other_list): return map(lambda a, b: (a - b) ** 2, list, other_list)
 
+def aspectsRoughlyEqual(file, other_file):
+    from math import fabs
+    if fabs(getAspectRatio(file, other_file) - 1) < aspectsRoughlyEqual.FUZZINESS: return True
+    return False
+
+aspectsRoughlyEqual.FUZZINESS = 0.05
+
 def compareHistograms(file, other_file):
+    from math import sqrt
     try:
+
+        if not aspectsRoughlyEqual(file, other_file): return False
+
+        if getImageSize(file)[0]-getImageSize(other_file)[0]:
+            pass
+
         rms = sqrt(
                 sum(getDeviations(getHistogram(file), getHistogram(other_file)))/len(getHistogram(file))
         )/minImageSize(file, other_file)
         return True if rms < compareHistograms.RMS_ERROR else False
     except (IOError, TypeError):
         pass
+
 compareHistograms.RMS_ERROR = 0.001
 
 def compareForEquality(files, compare_images):
