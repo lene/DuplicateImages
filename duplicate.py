@@ -6,13 +6,13 @@ import os
 from hashlib import md5
 
 from memoize import memo
-from image_wrapper import ImageWrapper, aspectsRoughlyEqual, minImageSize
+from image_wrapper import ImageWrapper, aspectsRoughlyEqual
 
-
-def filesInDir(dir_name):
-
+def filesInDir(dir_name, is_file=os.path.isfile):
+    """Returns a list of all files in directory dir_name, recursively
+       scanning subdirectories"""
     def filesInPath(path):
-        return filesInDir(path) if os.path.isdir(path) else [path] if os.path.isfile(path) else []
+        return filesInDir(path) if os.path.isdir(path) else [path] if is_file(path) else []
     def convolutedFilesInDir(dir_name):
         return [ filesInPath(dir_name+"/"+path) for path in os.listdir(dir_name) ]
 
@@ -25,6 +25,7 @@ def getSize(file): return os.path.getsize(file)
 def getHash(file): return md5(open(file).read()).hexdigest()
 
 def compareExactly(file, other_file):
+    """Returns True if file and other_file are exactly equal"""
     return getSize(other_file) == getSize(file) and getHash(file) == getHash(other_file)
 
 def compareImageHistograms(image, other_image):
@@ -42,12 +43,16 @@ def compareImageHistograms(image, other_image):
 compareImageHistograms.RMS_ERROR = 0.001
 
 def compareHistograms(file, other_file):
+    """Returns True if the histograms of file and other_file differ by
+       less than compareImageHistograms.RMS_ERROR"""
     try:
         return compareImageHistograms(ImageWrapper.create(file), ImageWrapper.create(other_file))
     except (IOError, TypeError):
-        pass
+        return False
 
 def compareForEquality(files, compare_images):
+    """Returns all pairs of image files in the list files that are equal
+       according to comparison function compare_images"""
     return [
         (file, other_file)
         for file in files
@@ -55,14 +60,48 @@ def compareForEquality(files, compare_images):
         if compare_images(file, other_file)
     ]
 
+def parseComparisonMethod(method):
+    if method == 'compareExactly': return compareExactly
+    if method == 'compareHistograms': return compareHistograms
+    raise RuntimeError("Comparison method not implemented: "+method)
+
 if __name__ == '__main__':
 
-    from sys import argv
+    from argparse import ArgumentParser
 
-    if len(argv) > 2: compareImageHistograms.RMS_ERROR = float(argv[2])
-    exact_pairs = compareForEquality(sorted(filesInDir(argv[1])), compareExactly)
-    print(exact_pairs)
-    pairs = compareForEquality(sorted(filesInDir(argv[1])), compareHistograms)
-    print(set(pairs)-set(exact_pairs))
-    for pair in set(pairs) - set(exact_pairs):
-        os.system("xv '"+pair[0]+"' '"+pair[1]+"'")
+    parser = ArgumentParser(description="Find pairs of equal or similar images.")
+    parser.add_argument(
+        'root_directory', default='.',
+        help="The root of the directory tree under which images are compared"
+    )
+    parser.add_argument(
+        '--fuzziness', '-f', default=0.001, type=float,
+        help="Maximum deviation (RMS) of the histograms of two images still considered equal"
+    )
+    parser.add_argument(
+        '--aspect_fuzziness', default=0.05, type=float,
+        help="Maximum difference in aspect ratios of two images to compare more closely (not yet implemented)"
+    )
+    parser.add_argument(
+        '--action_equal',
+        help="command to be run on each pair of images found to be equal"
+    )
+    parser.add_argument(
+        '--comparison_method', choices=[compareExactly, compareHistograms], default=compareExactly,
+        type=parseComparisonMethod,
+        help="Method used to determine if two images are considered equal"
+    )
+
+    args = parser.parse_args()
+    print(args)
+
+    compareImageHistograms.RMS_ERROR = args.fuzziness
+    image_files = sorted(filesInDir(args.root_directory, ImageWrapper.isImageFile))
+    print(str(len(image_files))+" total files")
+
+    matches = compareForEquality(image_files, args.comparison_method)
+    print(matches)
+    print(str(len(matches))+" matches")
+
+
+#    for pair in sorted(similar): os.system("xv '"+pair[0]+"' '"+pair[1]+"'")

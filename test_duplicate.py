@@ -70,8 +70,11 @@ class DuplicateTest(unittest.TestCase):
         files = duplicate.filesInDir(self.top_directory)
         assert set(files) == set(self.image_files)
 
+    def testEqualFilesFindsNothingThatIsNotThere(self):
+        equals = duplicate.compareForEquality(self.getImageFiles(), duplicate.compareExactly)
+        assert len(equals) == 0
 
-    def testEqualFiles(self):
+    def testEqualFilesFindsCopiedFile(self):
         copied_file = self.copyImageFile(self.jpeg_file)
         equals = duplicate.compareForEquality(self.getImageFiles(), duplicate.compareExactly)
         assert len(equals) == 1
@@ -113,11 +116,12 @@ class DuplicateTest(unittest.TestCase):
 if __name__ == '__main__':
     from sys import argv
 
-    DuplicateTest.width = int(argv[1]) if len(argv) > 1 else 200
+    if len(argv) > 1: DuplicateTest.width = int(argv[1])
 
     suite = unittest.TestSuite()
     suite.addTest(DuplicateTest("testGetFiles"))
-    suite.addTest(DuplicateTest("testEqualFiles"))
+    suite.addTest(DuplicateTest("testEqualFilesFindsNothingThatIsNotThere"))
+    suite.addTest(DuplicateTest("testEqualFilesFindsCopiedFile"))
     suite.addTest(DuplicateTest("testHistogramsEqualForCopiedImage"))
     suite.addTest(DuplicateTest("testHistogramsNotEqualForNoisyImage"))
     suite.addTest(DuplicateTest("testHistogramsEqualForDifferentImageFormat"))

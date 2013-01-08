@@ -5,9 +5,12 @@ __author__ = 'lene'
 from PIL import Image
 
 class ImageWrapper:
+    """Utility functions for image files, with optimizations for certain
+       expensive functions"""
 
     @classmethod
     def create(cls, filename):
+        """Create an ImageWrapper; if it was already created, return existing object"""
         if not filename in cls.cache:
             cls.cache[filename] = ImageWrapper(filename)
 
@@ -23,10 +26,23 @@ class ImageWrapper:
     def getAspect(self): return self.size[0]/self.size[1]
 
     def getHistogram(self):
+        """Returns the histogram of the image file, every value normalized to [0..1]"""
         if self.histogram is None:
-            self.histogram = Image.open(self.filename).convert("RGB").histogram()
-            self.histogram = map(lambda v: v/self.getArea(), self.histogram)
+            self.histogram = map(
+                lambda v: v/self.getArea(),
+                Image.open(self.filename).convert("RGB").histogram()
+            )
         return self.histogram
+
+    @classmethod
+    def isImageFile(cls, filename):
+        """Returns True if filename is an image file"""
+        from os.path import isfile, islink
+        try:
+            if isfile(filename) and not islink(filename):
+                Image.open(filename)
+                return True
+        finally: return False
 
 ImageWrapper.cache = {}
 
