@@ -60,42 +60,12 @@ def compareForEquality(files, compare_images):
         if compare_images(file, other_file)
     ]
 
-def parseComparisonMethod(method):
-    if method == 'compareExactly': return compareExactly
-    if method == 'compareHistograms': return compareHistograms
-    raise RuntimeError("Comparison method not implemented: "+method)
-
 if __name__ == '__main__':
 
-    from argparse import ArgumentParser
+    from parse_commandline import parseCommandLine
 
-    parser = ArgumentParser(description="Find pairs of equal or similar images.")
-    parser.add_argument(
-        'root_directory', default='.',
-        help="The root of the directory tree under which images are compared"
-    )
-    parser.add_argument(
-        '--fuzziness', '-f', default=0.001, type=float,
-        help="Maximum deviation (RMS) of the histograms of two images still considered equal"
-    )
-    parser.add_argument(
-        '--aspect_fuzziness', default=0.05, type=float,
-        help="Maximum difference in aspect ratios of two images to compare more closely (not yet implemented)"
-    )
-    parser.add_argument(
-        '--action_equal',
-        help="command to be run on each pair of images found to be equal"
-    )
-    parser.add_argument(
-        '--comparison_method', choices=[compareExactly, compareHistograms], default=compareExactly,
-        type=parseComparisonMethod,
-        help="Method used to determine if two images are considered equal"
-    )
+    args = parseCommandLine()
 
-    args = parser.parse_args()
-    print(args)
-
-    compareImageHistograms.RMS_ERROR = args.fuzziness
     image_files = sorted(filesInDir(args.root_directory, ImageWrapper.isImageFile))
     print(str(len(image_files))+" total files")
 
@@ -104,4 +74,5 @@ if __name__ == '__main__':
     print(str(len(matches))+" matches")
 
 
-#    for pair in sorted(similar): os.system("xv '"+pair[0]+"' '"+pair[1]+"'")
+    if args.action_equal:
+        for pair in sorted(matches): args.action_equal(pair)
