@@ -73,6 +73,10 @@ if __name__ == '__main__':
     print(matches)
     print(str(len(matches))+" matches")
 
-
     if args.action_equal:
-        for pair in sorted(matches): args.action_equal(pair)
+        for pair in sorted(matches):
+            try:
+                args.action_equal(pair)
+            except OSError:
+                pass
+
