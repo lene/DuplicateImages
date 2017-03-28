@@ -1,8 +1,9 @@
 from __future__ import division
 
+from PIL import Image
+
 __author__ = 'lene'
 
-from PIL import Image
 
 class ImageWrapper:
     """Utility functions for image files, with optimizations for certain
@@ -11,7 +12,7 @@ class ImageWrapper:
     @classmethod
     def create(cls, filename):
         """Create an ImageWrapper; if it was already created, return existing object"""
-        if not filename in cls.cache:
+        if filename not in cls.cache:
             cls.cache[filename] = ImageWrapper(filename)
 
         return cls.cache[filename]
@@ -21,21 +22,23 @@ class ImageWrapper:
         self.size = Image.open(self.filename).size
         self.histogram = None
 
-    def getArea(self): return self.size[0]*self.size[1]
+    def get_area(self):
+        return self.size[0] * self.size[1]
 
-    def getAspect(self): return self.size[0]/self.size[1]
+    def get_aspect(self):
+        return self.size[0] / self.size[1]
 
-    def getHistogram(self):
+    def get_histogram(self):
         """Returns the histogram of the image file, every value normalized to [0..1]"""
         if self.histogram is None:
             self.histogram = map(
-                lambda v: v/self.getArea(),
+                lambda v: v/self.get_area(),
                 Image.open(self.filename).convert("RGB").histogram()
             )
         return self.histogram
 
     @classmethod
-    def isImageFile(cls, filename):
+    def is_image_file(cls, filename):
         """Returns True if filename is an image file"""
         from os.path import isfile, islink
         try:
@@ -46,12 +49,17 @@ class ImageWrapper:
 
 ImageWrapper.cache = {}
 
-def getAspectRatio(image, other_image): return image.getAspect()/other_image.getAspect()
 
-def aspectsRoughlyEqual(image, other_image):
+def get_aspect_ratio(image, other_image):
+    return image.get_aspect() / other_image.get_aspect()
+
+
+def aspects_roughly_equal(image, other_image):
     from math import fabs
-    if fabs(getAspectRatio(image, other_image) - 1) < aspectsRoughlyEqual.FUZZINESS: return True
+    if fabs(get_aspect_ratio(image, other_image) - 1) < aspects_roughly_equal.FUZZINESS: return True
     return False
-aspectsRoughlyEqual.FUZZINESS = 0.05
+aspects_roughly_equal.FUZZINESS = 0.05
 
-def minImageSize(image, other_image): return min(image.getArea(), other_image.getArea())
+
+def min_image_size(image, other_image):
+    return min(image.get_area(), other_image.get_area())

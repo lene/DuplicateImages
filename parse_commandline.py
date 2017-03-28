@@ -2,14 +2,16 @@ __author__ = 'lene'
 
 from argparse import ArgumentParser, ArgumentTypeError
 from os import remove
-from duplicate import compareImageHistograms, compareExactly, compareHistograms
-from image_wrapper import aspectsRoughlyEqual
+from duplicate import compare_image_histograms, compare_exactly, compare_histograms
+from image_wrapper import aspects_roughly_equal
 
 
-def parseComparisonMethod(method):
-    if method == 'compareExactly': return compareExactly
-    if method == 'compareHistograms': return compareHistograms
-    raise ArgumentTypeError("Comparison method not implemented: "+method)
+def parse_comparison_method(method):
+    if method == 'compareExactly':
+        return compare_exactly
+    if method == 'compareHistograms':
+        return compare_histograms
+    raise NotImplementedError("Comparison method not implemented: "+method)
 
 
 def delete_first(pair):
@@ -27,7 +29,8 @@ def parse_action_equal(method):
         return delete_second
     raise NotImplementedError('ActionEqual not implemented: '+method)
 
-def parseCommandLine():
+
+def parse_command_line():
 
     global args
 
@@ -45,8 +48,8 @@ def parseCommandLine():
         help="Maximum difference in aspect ratios of two images to compare more closely"
     )
     parser.add_argument(
-        '--comparison_method', choices=[compareExactly, compareHistograms], default=compareExactly,
-        type=parseComparisonMethod,
+        '--comparison_method', choices=[compare_exactly, compare_histograms], default=compare_exactly,
+        type=parse_comparison_method,
         help="Method used to determine if two images are considered equal"
     )
     parser.add_argument(
@@ -57,7 +60,7 @@ def parseCommandLine():
 
     args = parser.parse_args()
 
-    compareImageHistograms.RMS_ERROR = args.fuzziness
-    aspectsRoughlyEqual.FUZZINESS = args.aspect_fuzziness
+    compare_image_histograms.RMS_ERROR = args.fuzziness
+    aspects_roughly_equal.FUZZINESS = args.aspect_fuzziness
 
     return args

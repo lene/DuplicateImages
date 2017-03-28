@@ -67,16 +67,16 @@ class DuplicateTest(unittest.TestCase):
         os.rmdir(cls.top_directory)
 
     def testGetFiles(self):
-        files = duplicate.filesInDir(self.top_directory)
+        files = duplicate.files_in_dir(self.top_directory)
         assert set(files) == set(self.image_files)
 
     def testEqualFilesFindsNothingThatIsNotThere(self):
-        equals = duplicate.compareForEquality(self.getImageFiles(), duplicate.compareExactly)
+        equals = duplicate.compare_for_equality(self.getImageFiles(), duplicate.compare_exactly)
         assert len(equals) == 0
 
     def testEqualFilesFindsCopiedFile(self):
         copied_file = self.copyImageFile(self.jpeg_file)
-        equals = duplicate.compareForEquality(self.getImageFiles(), duplicate.compareExactly)
+        equals = duplicate.compare_for_equality(self.getImageFiles(), duplicate.compare_exactly)
         assert len(equals) == 1
         assert equals.count((self.jpeg_file, copied_file)) == 1
         self.deleteImageFile(copied_file)
@@ -84,23 +84,23 @@ class DuplicateTest(unittest.TestCase):
 
     def testHistogramsEqualForCopiedImage(self):
         copied_file = self.copyImageFile(self.jpeg_file)
-        equals = duplicate.compareForEquality(self.getImageFiles(), duplicate.compareHistograms)
+        equals = duplicate.compare_for_equality(self.getImageFiles(), duplicate.compare_histograms)
         assert (self.jpeg_file, copied_file) in equals
         self.deleteImageFile(copied_file)
 
     def testHistogramsNotEqualForNoisyImage(self):
-        equals = duplicate.compareForEquality(self.getImageFiles(), duplicate.compareHistograms)
+        equals = duplicate.compare_for_equality(self.getImageFiles(), duplicate.compare_histograms)
         assert not elementInListOfTuples(self.subdir_file, equals)
 
     def testHistogramsEqualForDifferentImageFormat(self):
-        equals = duplicate.compareForEquality(self.getImageFiles(), duplicate.compareHistograms)
+        equals = duplicate.compare_for_equality(self.getImageFiles(), duplicate.compare_histograms)
         assert (self.jpeg_file, self.png_file) in equals
 
     def testHistogramsEqualForScaledImage(self):
-        equals = duplicate.compareForEquality(self.getImageFiles(), duplicate.compareHistograms)
+        equals = duplicate.compare_for_equality(self.getImageFiles(), duplicate.compare_histograms)
         assert (self.jpeg_file, self.half_file) in equals
 
-    def getImageFiles(self): return sorted(duplicate.filesInDir(self.top_directory))
+    def getImageFiles(self): return sorted(duplicate.files_in_dir(self.top_directory))
 
     def copyImageFile(self, filename):
         copied_file = filename + ".bak"
