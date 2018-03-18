@@ -4,6 +4,7 @@ from math import fabs
 from os.path import isfile, islink
 from typing import Dict, List, Optional, Tuple
 from PIL import Image
+from imghdr import what
 
 
 class ImageWrapper:
@@ -46,8 +47,7 @@ class ImageWrapper:
         """Returns True if filename is an image file"""
         try:
             if isfile(filename) and not islink(filename):
-                Image.open(filename)
-                return True
+                return what(filename) is not None
         finally:
             return False
 

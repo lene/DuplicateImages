@@ -22,5 +22,8 @@ def parse_command_line() -> Namespace:
         default='compare_exactly',
         help="Method used to determine if two images are considered equal"
     )
-
+    parser.add_argument(
+        '--action_equal', choices=('delete_first', 'delete_second', 'view'),
+        default='view', help="command to be run on each pair of images found to be equal"
+    )
     return parser.parse_args()

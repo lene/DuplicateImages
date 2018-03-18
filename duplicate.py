@@ -87,18 +87,23 @@ if __name__ == '__main__':
         'compare_exactly': compare_exactly,
         'compare_histograms': compare_histograms
     }[args.comparison_method]
+    action_equal = {
+        'delete_first': lambda pair: os.remove(pair[0]),
+        'delete_second': lambda pair: os.remove(pair[1]),
+        'view': lambda pair: call(["xv", "-nolim"] + [pic for pic in pair])
+
+    }.get(args.action_equal)
 
     image_files = sorted(files_in_dir(args.root_directory, ImageWrapper.is_image_file))
     print("{} total files".format(len(image_files)))
 
     matches = similar_images(
         image_files, comparison_method,
-        aspect_fuzziness=args.aspect_fuzziness, rms_error=0.001
+        aspect_fuzziness=args.aspect_fuzziness, rms_error=args.fuzziness
     )
 
     print("{} matches".format(len(matches)))
-    call(["xv", "-nolim"] + [pic for match in matches for pic in match])
 
-    # if args.action_equal:
-    #     for pair in sorted(matches):
-    #         args.action_equal(pair)
+    if action_equal:
+        for pair in sorted(matches):
+            action_equal(pair)
