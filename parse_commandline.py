@@ -1,9 +1,9 @@
 __author__ = 'lene'
 
-from argparse import ArgumentParser
+from argparse import ArgumentParser, Namespace
 
 
-def parse_command_line():
+def parse_command_line() -> Namespace:
     parser = ArgumentParser(description="Find pairs of equal or similar images.")
     parser.add_argument(
         'root_directory', default='.',
