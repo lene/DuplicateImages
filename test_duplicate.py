@@ -142,6 +142,15 @@ class DuplicateTest(unittest.TestCase):
         )
         assert (self.jpeg_file, self.half_file) in equals
 
+    def testParallelFilteringGivesSameResults(self) -> None:
+        equals = duplicate.similar_images(
+            self.get_image_files(), duplicate.compare_histograms, self.ASPECT_FUZZINESS,
+            self.RMS_ERROR, parallel=True
+        )
+        assert not element_in_list_of_tuples(self.subdir_file, equals)
+        assert (self.jpeg_file, self.png_file) in equals
+        assert (self.jpeg_file, self.half_file) in equals
+
     def get_image_files(self) -> List[str]:
         return sorted(duplicate.files_in_dir(self.top_directory))
 
@@ -170,5 +179,6 @@ if __name__ == '__main__':
     suite.addTest(DuplicateTest("testHistogramsNotEqualForNoisyImage"))
     suite.addTest(DuplicateTest("testHistogramsEqualForDifferentImageFormat"))
     suite.addTest(DuplicateTest("testHistogramsEqualForScaledImage"))
+    suite.addTest(DuplicateTest("testParallelFilteringGivesSameResults"))
 
     unittest.TextTestRunner().run(suite)

@@ -1,14 +1,17 @@
 #!/usr/bin/env /usr/bin/python3
 
 import os
-from functools import lru_cache
+from functools import lru_cache, partial
 from hashlib import md5
 from math import sqrt
+from multiprocessing.dummy import Pool
 from subprocess import call
-from typing import List, Callable, Iterator, Tuple
+from typing import Any, Callable, Dict, Iterator, List, Tuple
 
 from image_wrapper import ImageWrapper, aspects_roughly_equal
 from parse_commandline import parse_command_line
+
+CHUNK_SIZE = 25
 
 
 def files_in_dir(dir_name: str, is_file: Callable=os.path.isfile) -> List[str]:
@@ -65,45 +68,77 @@ def compare_histograms(
         return False
 
 
+def pool_filter(
+        candidates: List[Tuple[str, str]], compare_images: Callable[[str, str, float, float], bool],
+        aspect_fuzziness: float, rms_error: float, chunk_size: float
+) -> List[Tuple[str, str]]:
+    pool = Pool(None)
+    return [
+        c
+        for c, keep in zip(
+            candidates,
+            pool.starmap(
+                partial(compare_images, aspect_fuzziness=aspect_fuzziness, rms_error=rms_error),
+                candidates, chunksize=chunk_size
+            )
+        )
+        if keep
+    ]
+
+
 def similar_images(
         files: List[str], compare_images: Callable[[str, str, float, float], bool],
-        aspect_fuzziness: float, rms_error: float
+        aspect_fuzziness: float, rms_error: float, parallel: bool=False, chunk_size=CHUNK_SIZE
 ) -> List[Tuple[str, str]]:
     """Returns all pairs of image files in the list files that are equal
        according to comparison function compare_images"""
-    return [
-        (file, other_file)
-        for file in files
-        for other_file in files[files.index(file) + 1:]
-        if compare_images(file, other_file, aspect_fuzziness, rms_error)
-    ]
+
+    if parallel:
+        candidates = [
+            (file, other_file)
+            for file in files
+            for other_file in files[files.index(file) + 1:]
+        ]
+        return pool_filter(candidates, compare_images, aspect_fuzziness, rms_error, chunk_size)
+    else:
+        return [
+            (file, other_file)
+            for file in files
+            for other_file in files[files.index(file) + 1:]
+            if compare_images(file, other_file, aspect_fuzziness, rms_error)
+        ]
+
+
+COMPARISON_METHODS = {
+    'compare_exactly': compare_exactly,
+    'compare_histograms': compare_histograms
+}
+
+ACTIONS_ON_EQUALITY = {
+    'delete_first': lambda pair: os.remove(pair[0]),
+    'delete_second': lambda pair: os.remove(pair[1]),
+    'view': lambda pair: call(["xv", "-nolim"] + [pic for pic in pair]),
+    'none': lambda pair: None
+}  # type: Dict[str, Callable[[Tuple], Any]]
 
 
 if __name__ == '__main__':
 
     args = parse_command_line()
 
-    comparison_method = {
-        'compare_exactly': compare_exactly,
-        'compare_histograms': compare_histograms
-    }[args.comparison_method]
-    action_equal = {
-        'delete_first': lambda pair: os.remove(pair[0]),
-        'delete_second': lambda pair: os.remove(pair[1]),
-        'view': lambda pair: call(["xv", "-nolim"] + [pic for pic in pair])
-
-    }.get(args.action_equal)
+    comparison_method = COMPARISON_METHODS[args.comparison_method]
+    action_equal = ACTIONS_ON_EQUALITY[args.action_equal]
 
     image_files = sorted(files_in_dir(args.root_directory, ImageWrapper.is_image_file))
     print("{} total files".format(len(image_files)))
 
     matches = similar_images(
         image_files, comparison_method,
-        aspect_fuzziness=args.aspect_fuzziness, rms_error=args.fuzziness
+        aspect_fuzziness=args.aspect_fuzziness, rms_error=args.fuzziness,
+        parallel=args.parallel, chunk_size=args.chunk_size if args.chunk_size else CHUNK_SIZE
     )
 
     print("{} matches".format(len(matches)))
 
-    if action_equal:
-        for pair in sorted(matches):
-            action_equal(pair)
+    for pair in sorted(matches):
+        action_equal(pair)
