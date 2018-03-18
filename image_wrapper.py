@@ -26,7 +26,7 @@ class ImageWrapper:
         self.histogram = None
 
     def get_area(self):
-        return self.size[0]*self.size[1]
+        return self.size[0] * self.size[1]
 
     def get_aspect(self):
         return self.size[0] / self.size[1]

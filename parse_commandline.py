@@ -22,9 +22,5 @@ def parse_command_line():
         default='compare_exactly',
         help="Method used to determine if two images are considered equal"
     )
-    parser.add_argument(
-        '--action_equal',
-        help="command to be run on each pair of images found to be equal (not yet implemented)"
-    )
 
     return parser.parse_args()

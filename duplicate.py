@@ -1,7 +1,5 @@
 #!/usr/bin/env /usr/bin/python3
 
-__author__ = 'lene'
-
 import os
 from functools import lru_cache
 from hashlib import md5
