@@ -1,56 +1,71 @@
-from __future__ import print_function, division
+#!/usr/bin/env /usr/bin/python3
 
 __author__ = 'lene'
 
 import os
+from functools import lru_cache
 from hashlib import md5
+from math import sqrt
+from subprocess import call
 
-from memoize import memo
-from image_wrapper import ImageWrapper, aspectsRoughlyEqual
+from image_wrapper import ImageWrapper, aspects_roughly_equal
+from parse_commandline import parse_command_line
 
-def filesInDir(dir_name, is_file=os.path.isfile):
-    """Returns a list of all files in directory dir_name, recursively
-       scanning subdirectories"""
-    def filesInPath(path):
-        return filesInDir(path) if os.path.isdir(path) else [path] if is_file(path) else []
-    def convolutedFilesInDir(dir_name):
-        return [ filesInPath(dir_name+"/"+path) for path in os.listdir(dir_name) ]
 
-    return sum(convolutedFilesInDir(dir_name.rstrip('/')), [])
+def files_in_dir(dir_name, is_file=os.path.isfile):
+    """Returns a list of all files in directory dir_name, recursively scanning subdirectories"""
+    def files_in_path(path):
+        return files_in_dir(path) if os.path.isdir(path) else [path] if is_file(path) else []
 
-@memo
-def getSize(file): return os.path.getsize(file)
+    def convoluted_files_in_dir(dir_name):
+        return [files_in_path(os.path.join(dir_name, path)) for path in os.listdir(dir_name)]
 
-@memo
-def getHash(file): return md5(open(file).read()).hexdigest()
+    return sum(convoluted_files_in_dir(dir_name.rstrip('/')), [])
 
-def compareExactly(file, other_file):
+
+@lru_cache(maxsize=None)
+def get_size(file):
+    return os.path.getsize(file)
+
+
+@lru_cache(maxsize=None)
+def get_hash(file):
+    return md5(open(file, 'rb').read()).hexdigest()
+
+
+def compare_exactly(file, other_file):
     """Returns True if file and other_file are exactly equal"""
-    return getSize(other_file) == getSize(file) and getHash(file) == getHash(other_file)
+    return get_size(other_file) == get_size(file) and get_hash(file) == get_hash(other_file)
 
-def compareImageHistograms(image, other_image):
 
-    def getDeviations(list, other_list): return map(lambda a, b: (a - b) ** 2, list, other_list)
+def compare_image_histograms(image, other_image):
 
-    if not aspectsRoughlyEqual(image, other_image): return False
+    def get_deviations(hist, other_hist):
+        return map(lambda a, b: (a - b) ** 2, hist, other_hist)
 
-    from math import sqrt
-    rms = sqrt(
-        sum(getDeviations(image.getHistogram(), other_image.getHistogram()))/len(image.getHistogram())
-    )
-    return True if rms < compareImageHistograms.RMS_ERROR else False
+    if not aspects_roughly_equal(image, other_image):
+        return False
 
-compareImageHistograms.RMS_ERROR = 0.001
+    deviations = get_deviations(image.get_histogram(), other_image.get_histogram())
+    rms = sqrt(sum(deviations) / len(image.get_histogram()))
+    return rms < compare_image_histograms.RMS_ERROR
 
-def compareHistograms(file, other_file):
+
+compare_image_histograms.RMS_ERROR = 0.001
+
+
+def compare_histograms(file, other_file):
     """Returns True if the histograms of file and other_file differ by
        less than compareImageHistograms.RMS_ERROR"""
     try:
-        return compareImageHistograms(ImageWrapper.create(file), ImageWrapper.create(other_file))
+        return compare_image_histograms(
+            ImageWrapper.create(file), ImageWrapper.create(other_file)
+        )
     except (IOError, TypeError):
         return False
 
-def compareForEquality(files, compare_images):
+
+def similar_images(files, compare_images):
     """Returns all pairs of image files in the list files that are equal
        according to comparison function compare_images"""
     return [
@@ -60,19 +75,27 @@ def compareForEquality(files, compare_images):
         if compare_images(file, other_file)
     ]
 
+
 if __name__ == '__main__':
 
-    from parse_commandline import parseCommandLine
+    args = parse_command_line()
 
-    args = parseCommandLine()
+    comparison_method = {
+        'compare_exactly': compare_exactly,
+        'compare_histograms': compare_histograms
+    }[args.comparison_method]
 
-    image_files = sorted(filesInDir(args.root_directory, ImageWrapper.isImageFile))
-    print(str(len(image_files))+" total files")
+    compare_image_histograms.RMS_ERROR = args.fuzziness
+    aspects_roughly_equal.FUZZINESS = args.aspect_fuzziness
 
-    matches = compareForEquality(image_files, args.comparison_method)
-    print(matches)
-    print(str(len(matches))+" matches")
+    image_files = sorted(files_in_dir(args.root_directory, ImageWrapper.is_image_file))
+    print("{} total files".format(len(image_files)))
 
+    matches = similar_images(image_files, comparison_method)
+
+    print("{} matches".format(len(matches)))
+    call(["xv", "-nolim"] + [pic for match in matches for pic in match])
 
     if args.action_equal:
-        for pair in sorted(matches): args.action_equal(pair)
+        for pair in sorted(matches):
+            args.action_equal(pair)

@@ -1,18 +1,9 @@
 __author__ = 'lene'
 
-from argparse import ArgumentParser, ArgumentTypeError
-from duplicate import compareImageHistograms, compareExactly, compareHistograms
-from image_wrapper import aspectsRoughlyEqual
+from argparse import ArgumentParser
 
-def parseComparisonMethod(method):
-    if method == 'compareExactly': return compareExactly
-    if method == 'compareHistograms': return compareHistograms
-    raise ArgumentTypeError("Comparison method not implemented: "+method)
 
-def parseCommandLine():
-
-    global args
-
+def parse_command_line():
     parser = ArgumentParser(description="Find pairs of equal or similar images.")
     parser.add_argument(
         'root_directory', default='.',
@@ -27,8 +18,8 @@ def parseCommandLine():
         help="Maximum difference in aspect ratios of two images to compare more closely"
     )
     parser.add_argument(
-        '--comparison_method', choices=[compareExactly, compareHistograms], default=compareExactly,
-        type=parseComparisonMethod,
+        '--comparison_method', choices=['compare_exactly', 'compare_histograms'],
+        default='compare_exactly',
         help="Method used to determine if two images are considered equal"
     )
     parser.add_argument(
@@ -36,9 +27,4 @@ def parseCommandLine():
         help="command to be run on each pair of images found to be equal (not yet implemented)"
     )
 
-    args = parser.parse_args()
-
-    compareImageHistograms.RMS_ERROR = args.fuzziness
-    aspectsRoughlyEqual.FUZZINESS = args.aspect_fuzziness
-
-    return args
+    return parser.parse_args()
