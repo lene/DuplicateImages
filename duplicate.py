@@ -14,15 +14,17 @@ from parse_commandline import parse_command_line
 CHUNK_SIZE = 25
 
 
-def files_in_dir(dir_name: str, is_file: Callable=os.path.isfile) -> List[str]:
+def files_in_dirs(dir_names: List[str], is_file: Callable = os.path.isfile) -> List[str]:
     """Returns a list of all files in directory dir_name, recursively scanning subdirectories"""
-    def files_in_path(path: str) -> List[str]:
-        return files_in_dir(path) if os.path.isdir(path) else [path] if is_file(path) else []
+    files = [
+        os.path.join(root, filename)
+        for dir_name in dir_names
+        for root, _, filenames in os.walk(dir_name)
+        for filename in filenames
+        if is_file(os.path.join(root, filename))
+    ]
 
-    def convoluted_files_in_dir(dir_name: str) -> List[List[str]]:
-        return [files_in_path(os.path.join(dir_name, path)) for path in os.listdir(dir_name)]
-
-    return sum(convoluted_files_in_dir(dir_name.rstrip('/')), [])
+    return files
 
 
 @lru_cache(maxsize=None)
@@ -73,17 +75,11 @@ def pool_filter(
         aspect_fuzziness: float, rms_error: float, chunk_size: float
 ) -> List[Tuple[str, str]]:
     pool = Pool(None)
-    return [
-        c
-        for c, keep in zip(
-            candidates,
-            pool.starmap(
-                partial(compare_images, aspect_fuzziness=aspect_fuzziness, rms_error=rms_error),
-                candidates, chunksize=chunk_size
-            )
-        )
-        if keep
-    ]
+    to_keep = pool.starmap(
+        partial(compare_images, aspect_fuzziness=aspect_fuzziness, rms_error=rms_error),
+        candidates, chunksize=chunk_size
+    )
+    return [c for c, keep in zip(candidates, to_keep) if keep]
 
 
 def similar_images(
@@ -129,7 +125,7 @@ if __name__ == '__main__':
     comparison_method = COMPARISON_METHODS[args.comparison_method]
     action_equal = ACTIONS_ON_EQUALITY[args.action_equal]
 
-    image_files = sorted(files_in_dir(args.root_directory, ImageWrapper.is_image_file))
+    image_files = sorted(files_in_dirs(args.root_directory, ImageWrapper.is_image_file))
     print("{} total files".format(len(image_files)))
 
     matches = similar_images(
@@ -140,5 +136,5 @@ if __name__ == '__main__':
 
     print("{} matches".format(len(matches)))
 
-    for pair in sorted(matches):
-        action_equal(pair)
+    for match in sorted(matches):
+        action_equal(match)

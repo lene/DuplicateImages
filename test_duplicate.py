@@ -94,7 +94,7 @@ class DuplicateTest(unittest.TestCase):
         os.rmdir(cls.top_directory)
 
     def testGetFiles(self) -> None:
-        files = duplicate.files_in_dir(self.top_directory)
+        files = duplicate.files_in_dirs(self.top_directory)
         assert set(files) == set(self.image_files)
 
     def testEqualFilesFindsNothingThatIsNotThere(self) -> None:
@@ -152,7 +152,7 @@ class DuplicateTest(unittest.TestCase):
         assert (self.jpeg_file, self.half_file) in equals
 
     def get_image_files(self) -> List[str]:
-        return sorted(duplicate.files_in_dir(self.top_directory))
+        return sorted(duplicate.files_in_dirs(self.top_directory))
 
     def copy_image_file(self, filename: str) -> str:
         copied_file = filename + ".bak"

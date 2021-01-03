@@ -7,7 +7,7 @@ def parse_command_line() -> Namespace:
     parser = ArgumentParser(description="Find pairs of equal or similar images.")
 
     parser.add_argument(
-        'root_directory', default='.',
+        'root_directory', default='.', nargs='+',
         help="The root of the directory tree under which images are compared"
     )
     parser.add_argument(

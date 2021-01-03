@@ -45,11 +45,9 @@ class ImageWrapper:
     @classmethod
     def is_image_file(cls, filename: str) -> bool:
         """Returns True if filename is an image file"""
-        try:
-            if isfile(filename) and not islink(filename):
-                return what(filename) is not None
-        finally:
-            return False
+        if isfile(filename) and not islink(filename):
+            return what(filename) is not None
+        return False
 
 
 def get_aspect_ratio(image: ImageWrapper, other_image: ImageWrapper) -> float:
