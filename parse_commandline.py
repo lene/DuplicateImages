@@ -2,6 +2,8 @@ __author__ = 'lene'
 
 from argparse import ArgumentParser, Namespace
 
+from methods import COMPARISON_METHODS, ACTIONS_ON_EQUALITY
+
 
 def parse_command_line() -> Namespace:
     parser = ArgumentParser(description="Find pairs of equal or similar images.")
@@ -19,12 +21,12 @@ def parse_command_line() -> Namespace:
         help="Maximum difference in aspect ratios of two images to compare more closely"
     )
     parser.add_argument(
-        '--comparison-method', choices=['compare_exactly', 'compare_histograms'],
+        '--comparison-method', choices=COMPARISON_METHODS.keys(),
         default='compare_exactly',
         help="Method used to determine if two images are considered equal"
     )
     parser.add_argument(
-        '--action-equal', choices=('delete_first', 'delete_second', 'view', 'none'),
+        '--action-equal', choices=ACTIONS_ON_EQUALITY.keys(),
         default='view', help="command to be run on each pair of images found to be equal"
     )
     parser.add_argument(
