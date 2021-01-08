@@ -3,3 +3,4 @@
 .mypy_cache
 .code-quality.json
 *.egg-info
+dist
