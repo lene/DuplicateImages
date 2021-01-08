@@ -29,7 +29,7 @@ def compare_image_histograms(
         image: ImageWrapper, other_image: ImageWrapper, aspect_fuzziness: float, rms_error: float
 ) -> bool:
 
-    def get_deviations(hist: List[float], other_hist: List[float]) -> Iterator:
+    def get_deviations(hist: List[float], other_hist: List[float]) -> Iterator[float]:
         return map(lambda a, b: (a - b) ** 2, hist, other_hist)
 
     if not aspects_roughly_equal(image, other_image, aspect_fuzziness):
@@ -64,4 +64,4 @@ ACTIONS_ON_EQUALITY = {
     'view': lambda pair: call(["xv", "-nolim"] + [pic for pic in pair]),
     'print': lambda pair: print(pair[0], pair[1]),
     'none': lambda pair: None
-}  # type: Dict[str, Callable[[Tuple], Any]]
+}  # type: Dict[str, Callable[[Tuple[str, str]], Any]]

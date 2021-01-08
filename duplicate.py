@@ -12,7 +12,9 @@ from parse_commandline import parse_command_line
 CHUNK_SIZE = 25
 
 
-def files_in_dirs(dir_names: List[str], is_file: Callable = os.path.isfile) -> List[str]:
+def files_in_dirs(
+        dir_names: List[str], is_file: Callable[[str], bool] = os.path.isfile
+) -> List[str]:
     """Returns a list of all files in directory dir_name, recursively scanning subdirectories"""
     files = [
         os.path.join(root, filename)
@@ -26,7 +28,8 @@ def files_in_dirs(dir_names: List[str], is_file: Callable = os.path.isfile) -> L
 
 
 def pool_filter(
-        candidates: List[Tuple[str, str]], compare_images: Callable[[str, str, float, float], bool],
+        candidates: List[Tuple[str, str]],
+        compare_images: Callable[[str, str, float, float], bool],
         aspect_fuzziness: float, rms_error: float, chunk_size: float
 ) -> List[Tuple[str, str]]:
     pool = Pool(None)
@@ -39,7 +42,8 @@ def pool_filter(
 
 def similar_images(
         files: List[str], compare_images: Callable[[str, str, float, float], bool],
-        aspect_fuzziness: float, rms_error: float, parallel: bool=False, chunk_size=CHUNK_SIZE
+        aspect_fuzziness: float, rms_error: float, parallel: bool = False,
+        chunk_size: int = CHUNK_SIZE
 ) -> List[Tuple[str, str]]:
     """Returns all pairs of image files in the list files that are equal
        according to comparison function compare_images"""
@@ -63,23 +67,25 @@ def similar_images(
 if __name__ == '__main__':
 
     args = parse_command_line()
+    try:
+        comparison_method = COMPARISON_METHODS[args.comparison_method]
+        action_equal = ACTIONS_ON_EQUALITY[args.action_equal]
 
-    comparison_method = COMPARISON_METHODS[args.comparison_method]
-    action_equal = ACTIONS_ON_EQUALITY[args.action_equal]
+        image_files = sorted(files_in_dirs(args.root_directory, ImageWrapper.is_image_file))
+        print("{} total files".format(len(image_files)))
 
-    image_files = sorted(files_in_dirs(args.root_directory, ImageWrapper.is_image_file))
-    print("{} total files".format(len(image_files)))
+        matches = similar_images(
+            image_files, comparison_method,
+            aspect_fuzziness=args.aspect_fuzziness, rms_error=args.fuzziness,
+            parallel=args.parallel, chunk_size=args.chunk_size if args.chunk_size else CHUNK_SIZE
+        )
 
-    matches = similar_images(
-        image_files, comparison_method,
-        aspect_fuzziness=args.aspect_fuzziness, rms_error=args.fuzziness,
-        parallel=args.parallel, chunk_size=args.chunk_size if args.chunk_size else CHUNK_SIZE
-    )
+        print("{} matches".format(len(matches)))
 
-    print("{} matches".format(len(matches)))
-
-    for match in sorted(matches):
-        try:
-            action_equal(match)
-        except FileNotFoundError:
-            continue
+        for match in sorted(matches):
+            try:
+                action_equal(match)
+            except FileNotFoundError:
+                continue
+    except KeyboardInterrupt:
+        pass

@@ -6,8 +6,14 @@ authors = ["Lene Preuss <lene.preuss@gmail.com>"]
 
 [tool.poetry.dependencies]
 python = "^3.8.5"
+Wand = "^0.6.5"
+pillow = "^8.1.0"
 
 [tool.poetry.dev-dependencies]
+lz4 = "^3.1.1"
+mypy = "^0.790"
+flake8 = "^3.8.4"
+Wand = "^0.6.5"
 
 [build-system]
 requires = ["poetry-core>=1.0.0a5"]

@@ -7,16 +7,29 @@ import shutil
 import random
 from typing import Any, List, Tuple
 
-import PythonMagick
+from wand.color import Color
+from wand.display import display
+from wand.drawing import Drawing
+from wand.image import Image
 
 import duplicate
+from methods import compare_histograms, compare_exactly
+
+
+def save(image: Image, filename: str) -> None:
+    """
+    Save imqge without letting the wand module create a backup file (which would
+    confuse tearDownClass()
+    """
+    with open(filename, 'wb') as f:
+        image.save(file=f)
 
 
 def create_image(filename: str, width: int) -> str:
-    geometry = PythonMagick.Geometry(int(width), int(width * 3 / 4))
-    color = PythonMagick.Color("Black")
-    image = PythonMagick.Image(geometry, color)
-    image.write(filename)
+    height = int(width * 3 / 4)
+    color = Color("Black")
+    image = Image(width=width, height=height, background=color)
+    image.save(filename=filename)
     return filename
 
 
@@ -26,17 +39,20 @@ def random_short() -> int:
 
 def fill_image_with_random_pixels(filename: str) -> None:
     random.seed(0)
-    image = PythonMagick.Image(filename)
-    for x in range(0, image.size().width()):
-        for y in range(0, image.size().height()):
-            color = PythonMagick.Color(random_short(), random_short(), random_short())
-            image.pixelColor(x, y, color)
-    image.write(filename)
+    image = Image(filename=filename)
+    with Drawing() as draw:
+        for x in range(0, image.size[0]):
+            for y in range(0, image.size[1]):
+                color = Color(f'rgb({random_short()},{random_short()},{random_short()}')
+                draw.fill_color = color
+                draw.point(x, y)
+            draw(image)
+    image.save(filename=filename)
 
 
 def display_image(filename: str) -> None:
-    image = PythonMagick.Image(filename)
-    image.display(image)
+    image = Image(filename=filename)
+    display(image)
 
 
 def element_in_list_of_tuples(element: Any, tuples: List[Tuple[Any, Any]]) -> bool:
@@ -45,7 +61,7 @@ def element_in_list_of_tuples(element: Any, tuples: List[Tuple[Any, Any]]) -> bo
 
 class DuplicateTest(unittest.TestCase):
 
-    width = 400
+    width = 100
     ASPECT_FUZZINESS = 0.05
     RMS_ERROR = 0.05
 
@@ -80,9 +96,9 @@ class DuplicateTest(unittest.TestCase):
             tempfile.mkstemp(dir=cls.top_directory, prefix="test_half_", suffix=".jpg")[1],
             cls.width
         )
-        image = PythonMagick.Image(cls.half_file)
+        image = Image(filename=cls.half_file)
         image.transform('{}x{}'.format(int(cls.width / 2), int(cls.width * 3 / 8)))
-        image.write(cls.half_file)
+        save(image, cls.half_file)
         cls.image_files.append(cls.half_file)
 
     @classmethod
@@ -94,57 +110,61 @@ class DuplicateTest(unittest.TestCase):
         os.rmdir(cls.top_directory)
 
     def testGetFiles(self) -> None:
-        files = duplicate.files_in_dirs(self.top_directory)
+        files = duplicate.files_in_dirs([self.top_directory])
         assert set(files) == set(self.image_files)
 
     def testEqualFilesFindsNothingThatIsNotThere(self) -> None:
         equals = duplicate.similar_images(
-            self.get_image_files(), duplicate.compare_exactly, self.ASPECT_FUZZINESS, self.RMS_ERROR
+            self.get_image_files(), compare_exactly, self.ASPECT_FUZZINESS, self.RMS_ERROR
         )
         assert len(equals) == 0
 
     def testEqualFilesFindsCopiedFile(self) -> None:
         copied_file = self.copy_image_file(self.jpeg_file)
         equals = duplicate.similar_images(
-            self.get_image_files(), duplicate.compare_exactly, self.ASPECT_FUZZINESS, self.RMS_ERROR
+            self.get_image_files(), compare_exactly, self.ASPECT_FUZZINESS, self.RMS_ERROR
         )
-        assert len(equals) == 1
-        assert equals.count((self.jpeg_file, copied_file)) == 1
-        self.delete_image_file(copied_file)
+        try:
+            assert len(equals) == 1
+            assert equals.count((self.jpeg_file, copied_file)) == 1
+        finally:
+            self.delete_image_file(copied_file)
 
     def testHistogramsEqualForCopiedImage(self) -> None:
         copied_file = self.copy_image_file(self.jpeg_file)
         equals = duplicate.similar_images(
-            self.get_image_files(), duplicate.compare_histograms, self.ASPECT_FUZZINESS,
+            self.get_image_files(), compare_histograms, self.ASPECT_FUZZINESS,
             self.RMS_ERROR
         )
-        assert (self.jpeg_file, copied_file) in equals
-        self.delete_image_file(copied_file)
+        try:
+            assert (self.jpeg_file, copied_file) in equals
+        finally:
+            self.delete_image_file(copied_file)
 
     def testHistogramsNotEqualForNoisyImage(self) -> None:
         equals = duplicate.similar_images(
-            self.get_image_files(), duplicate.compare_histograms, self.ASPECT_FUZZINESS,
+            self.get_image_files(), compare_histograms, self.ASPECT_FUZZINESS,
             self.RMS_ERROR
         )
         assert not element_in_list_of_tuples(self.subdir_file, equals)
 
     def testHistogramsEqualForDifferentImageFormat(self) -> None:
         equals = duplicate.similar_images(
-            self.get_image_files(), duplicate.compare_histograms, self.ASPECT_FUZZINESS,
+            self.get_image_files(), compare_histograms, self.ASPECT_FUZZINESS,
             self.RMS_ERROR
         )
         assert (self.jpeg_file, self.png_file) in equals
 
     def testHistogramsEqualForScaledImage(self) -> None:
         equals = duplicate.similar_images(
-            self.get_image_files(), duplicate.compare_histograms, self.ASPECT_FUZZINESS,
+            self.get_image_files(), compare_histograms, self.ASPECT_FUZZINESS,
             self.RMS_ERROR
         )
         assert (self.jpeg_file, self.half_file) in equals
 
     def testParallelFilteringGivesSameResults(self) -> None:
         equals = duplicate.similar_images(
-            self.get_image_files(), duplicate.compare_histograms, self.ASPECT_FUZZINESS,
+            self.get_image_files(), compare_histograms, self.ASPECT_FUZZINESS,
             self.RMS_ERROR, parallel=True
         )
         assert not element_in_list_of_tuples(self.subdir_file, equals)
@@ -152,7 +172,7 @@ class DuplicateTest(unittest.TestCase):
         assert (self.jpeg_file, self.half_file) in equals
 
     def get_image_files(self) -> List[str]:
-        return sorted(duplicate.files_in_dirs(self.top_directory))
+        return sorted(duplicate.files_in_dirs([self.top_directory]))
 
     def copy_image_file(self, filename: str) -> str:
         copied_file = filename + ".bak"

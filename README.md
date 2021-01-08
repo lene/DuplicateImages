@@ -3,7 +3,7 @@ DuplicateImages
 
 Finds equal or similar images in a directory containing (many) image files.
 
-Needs Python3 and Pillow imaging library to run, additionally PythonMagick for test suite.
+Needs Python3 and Pillow imaging library to run, additionally Wand for the test suite.
 
 Running
 -------
