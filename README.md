@@ -7,20 +7,24 @@ Needs Python3 and Pillow imaging library to run, additionally Wand for the test 
 
 Running
 -------
-```bash
+```shell
 $ python3 duplicate.py $PICTURE_DIR
 ```
 or
-```bash
+```shell
 $ python3 duplicate.py -h
 ```
 for a list of all possible options.
 
 Testing
 -------
-```bash
-$ mypy --strict --no-warn-return-any --ignore-missing-imports .
+Prerequisites:
+```shell
+$ pip install mypy flake8 pytest wand 
+```
+Running:
+```shell
+$ mypy .
 $ flake8 .
-$ python3 test_duplicate.py 
-
+$ pytest
 ```

@@ -183,22 +183,3 @@ class DuplicateTest(unittest.TestCase):
     def delete_image_file(self, filename: str) -> None:
         os.remove(filename)
         self.image_files.remove(filename)
-
-
-if __name__ == '__main__':
-    from sys import argv
-
-    if len(argv) > 1:
-        DuplicateTest.width = int(argv[1])
-
-    suite = unittest.TestSuite()
-    suite.addTest(DuplicateTest("testGetFiles"))
-    suite.addTest(DuplicateTest("testEqualFilesFindsNothingThatIsNotThere"))
-    suite.addTest(DuplicateTest("testEqualFilesFindsCopiedFile"))
-    suite.addTest(DuplicateTest("testHistogramsEqualForCopiedImage"))
-    suite.addTest(DuplicateTest("testHistogramsNotEqualForNoisyImage"))
-    suite.addTest(DuplicateTest("testHistogramsEqualForDifferentImageFormat"))
-    suite.addTest(DuplicateTest("testHistogramsEqualForScaledImage"))
-    suite.addTest(DuplicateTest("testParallelFilteringGivesSameResults"))
-
-    unittest.TextTestRunner().run(suite)
