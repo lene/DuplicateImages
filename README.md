@@ -1,4 +1,4 @@
-# DuplicateImages
+# Finding Duplicate Images
 
 Finds equal or similar images in a directory containing (many) image files.
 
