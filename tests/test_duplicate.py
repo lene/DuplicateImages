@@ -12,8 +12,8 @@ from wand.display import display
 from wand.drawing import Drawing
 from wand.image import Image
 
-import duplicate
-from methods import compare_histograms, compare_exactly
+from duplicate_images import duplicate
+from duplicate_images.methods import compare_histograms, compare_exactly
 
 
 def save(image: Image, filename: str) -> None:

@@ -5,26 +5,34 @@ Finds equal or similar images in a directory containing (many) image files.
 
 Needs Python3 and Pillow imaging library to run, additionally Wand for the test suite.
 
+Uses Poetry for dependency management.
+
+Install
+-------
+From source:
+```shell
+$ git clone https://gitlab.com/lilacashes/DuplicateImages.git
+$ cd DuplicateImages
+$ pip3 install poetry
+$ poetry install
+```
+
 Running
 -------
 ```shell
-$ python3 duplicate.py $PICTURE_DIR
+$ poetry run find-dups $PICTURE_DIR
 ```
 or
 ```shell
-$ python3 duplicate.py -h
+$ poetry run find-dups -h
 ```
 for a list of all possible options.
 
 Testing
 -------
-Prerequisites:
-```shell
-$ pip install mypy flake8 pytest wand 
-```
 Running:
 ```shell
-$ mypy .
-$ flake8 .
-$ pytest
+$ poetry run mypy duplicate_images tests
+$ poetry run flake8
+$ poetry run pytest
 ```

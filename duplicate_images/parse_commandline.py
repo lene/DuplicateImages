@@ -2,7 +2,7 @@ __author__ = 'lene'
 
 from argparse import ArgumentParser, Namespace
 
-from methods import COMPARISON_METHODS, ACTIONS_ON_EQUALITY
+from duplicate_images.methods import COMPARISON_METHODS, ACTIONS_ON_EQUALITY
 
 
 def parse_command_line() -> Namespace:

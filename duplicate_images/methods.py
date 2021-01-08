@@ -7,7 +7,7 @@ from math import sqrt
 from subprocess import call
 from typing import Any, Callable, Dict, Iterator, List, Tuple
 
-from image_wrapper import ImageWrapper, aspects_roughly_equal
+from duplicate_images.image_wrapper import ImageWrapper, aspects_roughly_equal
 
 
 @lru_cache(maxsize=None)

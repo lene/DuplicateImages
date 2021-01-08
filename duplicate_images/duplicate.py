@@ -5,9 +5,9 @@ from functools import partial
 from multiprocessing.dummy import Pool
 from typing import Callable, List, Tuple
 
-from image_wrapper import ImageWrapper
-from methods import COMPARISON_METHODS, ACTIONS_ON_EQUALITY
-from parse_commandline import parse_command_line
+from duplicate_images.image_wrapper import ImageWrapper
+from duplicate_images.methods import COMPARISON_METHODS, ACTIONS_ON_EQUALITY
+from duplicate_images.parse_commandline import parse_command_line
 
 CHUNK_SIZE = 25
 
@@ -64,8 +64,7 @@ def similar_images(
         ]
 
 
-if __name__ == '__main__':
-
+def main() -> None:
     args = parse_command_line()
     try:
         comparison_method = COMPARISON_METHODS[args.comparison_method]
@@ -89,3 +88,7 @@ if __name__ == '__main__':
                 continue
     except KeyboardInterrupt:
         pass
+
+
+if __name__ == '__main__':
+    main()
