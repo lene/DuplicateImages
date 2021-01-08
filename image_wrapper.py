@@ -12,7 +12,7 @@ class ImageWrapper:
     Utility functions for image files, with optimizations for certain expensive functions
     """
 
-    cache = {}  # type: Dict[str, 'ImageWrapper']
+    cache: Dict[str, 'ImageWrapper'] = {}
 
     @classmethod
     def create(cls, filename: str) -> 'ImageWrapper':
@@ -24,8 +24,8 @@ class ImageWrapper:
 
     def __init__(self, filename: str) -> None:
         self.filename = filename
-        self.size = Image.open(self.filename).size  # type: Tuple[int, int]
-        self.histogram = None  # type: Optional[List[float]]
+        self.size: Tuple[int, int] = Image.open(self.filename).size
+        self.histogram: Optional[List[float]] = None
 
     def get_area(self) -> int:
         return self.size[0] * self.size[1]
@@ -35,9 +35,12 @@ class ImageWrapper:
 
     def get_histogram(self) -> List[float]:
         """Returns the histogram of the image file, every value normalized to [0..1]"""
+        def normalized_value(val: float) -> float:
+            return val / self.get_area()
+
         if self.histogram is None:
             self.histogram = list(map(
-                lambda v: v / self.get_area(),
+                normalized_value,
                 Image.open(self.filename).convert("RGB").histogram()
             ))
         return self.histogram
