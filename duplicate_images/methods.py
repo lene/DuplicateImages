@@ -8,6 +8,7 @@ from subprocess import call
 from typing import Any, Callable, Dict, Iterator, List, Tuple
 
 from duplicate_images.image_wrapper import ImageWrapper, aspects_roughly_equal
+from duplicate_images.image_hash import resize, is_similar
 
 
 @lru_cache(maxsize=None)
@@ -53,9 +54,18 @@ def compare_histograms(
         return False
 
 
+def compare_image_hash(
+        file: str, other_file: str, aspect_fuzziness: float, rms_error: float
+) -> bool:
+    img1 = resize(ImageWrapper.create(file))
+    img2 = resize(ImageWrapper.create(other_file))
+    return is_similar(img1, img2)
+
+
 COMPARISON_METHODS = {
     'compare_exactly': compare_exactly,
-    'compare_histograms': compare_histograms
+    'compare_histograms': compare_histograms,
+    'image_hash': compare_image_hash
 }
 
 ACTIONS_ON_EQUALITY = {

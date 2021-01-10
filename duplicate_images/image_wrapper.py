@@ -24,7 +24,9 @@ class ImageWrapper:
 
     def __init__(self, filename: str) -> None:
         self.filename = filename
-        self.size: Tuple[int, int] = Image.open(self.filename).size
+        self.image = Image.open(self.filename)
+        self.size: Tuple[int, int] = self.image.size
+        self.resize = self.image.resize
         self.histogram: Optional[List[float]] = None
 
     def get_area(self) -> int:

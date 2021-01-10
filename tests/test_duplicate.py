@@ -13,7 +13,9 @@ from wand.drawing import Drawing
 from wand.image import Image
 
 from duplicate_images import duplicate
-from duplicate_images.methods import compare_histograms, compare_exactly
+from duplicate_images.image_hash import resize
+from duplicate_images.image_wrapper import ImageWrapper
+from duplicate_images.methods import compare_histograms, compare_exactly, compare_image_hash
 
 
 def save(image: Image, filename: str) -> None:
@@ -161,6 +163,19 @@ class DuplicateTest(unittest.TestCase):
             self.RMS_ERROR
         )
         assert (self.jpeg_file, self.half_file) in equals
+
+    def test_resize(self):
+        for image_file in duplicate.files_in_dirs([self.top_directory]):
+            resized = resize(ImageWrapper.create(image_file))
+            assert resized.image.width == 200
+
+    def test_image_hashes(self) -> None:
+        equals = duplicate.similar_images(
+            self.get_image_files(), compare_image_hash, self.ASPECT_FUZZINESS,
+            self.RMS_ERROR
+        )
+        assert (self.jpeg_file, self.half_file) in equals
+        assert (self.jpeg_file, self.png_file) in equals
 
     def testParallelFilteringGivesSameResults(self) -> None:
         equals = duplicate.similar_images(

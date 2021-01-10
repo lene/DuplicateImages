@@ -8,6 +8,7 @@ authors = ["Lene Preuss <lene.preuss@gmail.com>"]
 python = "^3.8.5"
 Wand = "^0.6.5"
 pillow = "^8.1.0"
+imagehash = "^4.2.0"
 
 [tool.poetry.dev-dependencies]
 lz4 = "^3.1.1"
@@ -16,9 +17,9 @@ flake8 = "^3.8.4"
 Wand = "^0.6.5"
 pytest = "^6.2.1"
 
+[tool.poetry.scripts]
+find-dups = "duplicate_images.duplicate:main"
 [build-system]
 requires = ["poetry-core>=1.0.0a5"]
 build-backend = "poetry.core.masonry.api"
 
-[tool.poetry.scripts]
-find-dups = "duplicate_images.duplicate:main"
