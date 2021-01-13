@@ -45,8 +45,9 @@ def similar_images(
         aspect_fuzziness: float, rms_error: float, parallel: bool = False,
         chunk_size: int = CHUNK_SIZE
 ) -> List[Tuple[str, str]]:
-    """Returns all pairs of image files in the list files that are equal
+    """Returns all pairs of image files in the list files that are exactly_equal
        according to comparison function compare_images"""
+    print('similar_images', files, compare_images, aspect_fuzziness, rms_error, parallel, chunk_size)
 
     if parallel:
         candidates = [
@@ -56,27 +57,42 @@ def similar_images(
         ]
         return pool_filter(candidates, compare_images, aspect_fuzziness, rms_error, chunk_size)
     else:
-        return [
+        matches = [
             (file, other_file)
             for file in files
             for other_file in files[files.index(file) + 1:]
             if compare_images(file, other_file, aspect_fuzziness, rms_error)
         ]
+        print('matches:', matches)
+        return matches
+
+
+def get_matches(
+        root_directories: List[str], comparison_method: str,
+        aspect_fuzziness: float = 0.05, fuzziness: float = 0.001, parallel: bool = False,
+        chunk_size: int = CHUNK_SIZE
+) -> List[Tuple[str, str]]:
+    comparison_method = COMPARISON_METHODS[comparison_method]
+    image_files = sorted(files_in_dirs(root_directories, ImageWrapper.is_image_file))
+    print("{} total files".format(len(image_files)))
+
+    matches = similar_images(
+        image_files, comparison_method,
+        aspect_fuzziness=aspect_fuzziness, rms_error=fuzziness,
+        parallel=parallel, chunk_size=chunk_size
+    )
+    return matches
 
 
 def main() -> None:
     args = parse_command_line()
     try:
-        comparison_method = COMPARISON_METHODS[args.comparison_method]
         action_equal = ACTIONS_ON_EQUALITY[args.action_equal]
 
-        image_files = sorted(files_in_dirs(args.root_directory, ImageWrapper.is_image_file))
-        print("{} total files".format(len(image_files)))
-
-        matches = similar_images(
-            image_files, comparison_method,
-            aspect_fuzziness=args.aspect_fuzziness, rms_error=args.fuzziness,
-            parallel=args.parallel, chunk_size=args.chunk_size if args.chunk_size else CHUNK_SIZE
+        matches = get_matches(
+            args.root_directory, args.comparison_method,
+            args.aspect_fuzziness, args.fuzziness, args.parallel,
+            args.chunk_size if args.chunk_size else CHUNK_SIZE
         )
 
         print("{} matches".format(len(matches)))

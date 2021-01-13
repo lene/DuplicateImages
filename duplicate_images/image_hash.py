@@ -2,6 +2,8 @@ __author__ = 'Lene Preuss <lene.preuss@gmail.com>'
 
 from typing import Tuple
 
+import imagehash
+
 from duplicate_images.image_wrapper import ImageWrapper
 
 MAX_DIMENSION = 200
@@ -16,4 +18,6 @@ def resize(image: ImageWrapper) -> ImageWrapper:
 
 
 def is_similar(image1: ImageWrapper, image2: ImageWrapper) -> bool:
-    return False
+    hash_distance = imagehash.average_hash(image1.image) - imagehash.average_hash(image2.image)
+    print('hash_distance', hash_distance)
+    return hash_distance == 0
