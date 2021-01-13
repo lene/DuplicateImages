@@ -29,17 +29,13 @@ def compare_exactly(file: str, other_file: str, aspect_fuzziness: float, rms_err
 def compare_image_histograms(
         image: ImageWrapper, other_image: ImageWrapper, aspect_fuzziness: float, rms_error: float
 ) -> bool:
-
     def get_deviations(hist: List[float], other_hist: List[float]) -> Iterator[float]:
         return map(lambda a, b: (a - b) ** 2, hist, other_hist)
 
-    print('compare_image_histograms', aspect_fuzziness, rms_error)
     if not aspects_roughly_equal(image, other_image, aspect_fuzziness):
         return False
-    deviations = list(get_deviations(image.get_histogram(), other_image.get_histogram()))
-    print(deviations)
+    deviations = get_deviations(image.get_histogram(), other_image.get_histogram())
     rms = sqrt(sum(deviations) / len(image.get_histogram()))
-    print(rms)
     return rms < rms_error
 
 
@@ -48,7 +44,6 @@ def compare_histograms(
 ) -> bool:
     """Returns True if the histograms of file and other_file differ by
        less than rms_error"""
-    print('compare_histograms', file, other_file)
     try:
         return compare_image_histograms(
             ImageWrapper.create(file), ImageWrapper.create(other_file), aspect_fuzziness, rms_error

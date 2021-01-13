@@ -21,4 +21,3 @@ class TestImageHash(SetupImages):
         )
         assert (self.jpeg_file, self.half_file) in equals
         assert (self.jpeg_file, self.png_file) in equals
-

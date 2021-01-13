@@ -47,8 +47,6 @@ def similar_images(
 ) -> List[Tuple[str, str]]:
     """Returns all pairs of image files in the list files that are exactly_equal
        according to comparison function compare_images"""
-    print('similar_images', files, compare_images, aspect_fuzziness, rms_error, parallel, chunk_size)
-
     if parallel:
         candidates = [
             (file, other_file)
@@ -57,14 +55,12 @@ def similar_images(
         ]
         return pool_filter(candidates, compare_images, aspect_fuzziness, rms_error, chunk_size)
     else:
-        matches = [
+        return [
             (file, other_file)
             for file in files
             for other_file in files[files.index(file) + 1:]
             if compare_images(file, other_file, aspect_fuzziness, rms_error)
         ]
-        print('matches:', matches)
-        return matches
 
 
 def get_matches(
@@ -72,12 +68,12 @@ def get_matches(
         aspect_fuzziness: float = 0.05, fuzziness: float = 0.001, parallel: bool = False,
         chunk_size: int = CHUNK_SIZE
 ) -> List[Tuple[str, str]]:
-    comparison_method = COMPARISON_METHODS[comparison_method]
+    comparison_function = COMPARISON_METHODS[comparison_method]
     image_files = sorted(files_in_dirs(root_directories, ImageWrapper.is_image_file))
     print("{} total files".format(len(image_files)))
 
     matches = similar_images(
-        image_files, comparison_method,
+        image_files, comparison_function,
         aspect_fuzziness=aspect_fuzziness, rms_error=fuzziness,
         parallel=parallel, chunk_size=chunk_size
     )

@@ -22,15 +22,14 @@ class ImageWrapper:
 
         return cls.cache[filename]
 
-    def __init__(self, filename: str) -> None:
+    def __init__(self, filename: str, image: Image = None) -> None:
         self.filename = filename
-        self.image = Image.open(self.filename)
+        self.image = Image.open(self.filename) if image is None else image
         self.size: Tuple[int, int] = self.image.size
         self.histogram: Optional[List[float]] = None
 
-    def resize(self, new_size: Tuple[int, int]) -> None:
-        self.image = self.image.resize(new_size)
-        self.size = self.image.size
+    def resize(self, new_size: Tuple[int, int]) -> 'ImageWrapper':
+        return ImageWrapper(self.filename, self.image.resize(new_size))
 
     def get_area(self) -> int:
         return self.size[0] * self.size[1]
