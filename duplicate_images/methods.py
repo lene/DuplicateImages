@@ -4,6 +4,7 @@ import os
 from functools import lru_cache
 from hashlib import md5
 from math import sqrt
+from pathlib import Path
 from subprocess import call
 from typing import Any, Callable, Dict, Iterator, List, Tuple
 
@@ -12,16 +13,16 @@ from duplicate_images.image_hash import resize, is_similar
 
 
 @lru_cache(maxsize=None)
-def get_size(file: str) -> int:
-    return os.path.getsize(file)
+def get_size(file: Path) -> int:
+    return file.stat().st_size
 
 
 @lru_cache(maxsize=None)
-def get_hash(file: str) -> str:
-    return md5(open(file, 'rb').read()).hexdigest()
+def get_hash(file: Path) -> str:
+    return md5(file.open('rb').read()).hexdigest()
 
 
-def compare_exactly(file: str, other_file: str, aspect_fuzziness: float, rms_error: float) -> bool:
+def compare_exactly(file: Path, other_file: Path, aspect_fuzziness: float, rms_error: float) -> bool:
     """Returns True if file and other_file are exactly exactly_equal"""
     return get_size(other_file) == get_size(file) and get_hash(file) == get_hash(other_file)
 
@@ -40,7 +41,7 @@ def compare_image_histograms(
 
 
 def compare_histograms(
-        file: str, other_file: str, aspect_fuzziness: float, rms_error: float
+        file: Path, other_file: Path, aspect_fuzziness: float, rms_error: float
 ) -> bool:
     """Returns True if the histograms of file and other_file differ by
        less than rms_error"""
@@ -53,7 +54,7 @@ def compare_histograms(
 
 
 def compare_image_hash(
-        file: str, other_file: str, aspect_fuzziness: float, rms_error: float
+        file: Path, other_file: Path, aspect_fuzziness: float, rms_error: float
 ) -> bool:
     img1 = resize(ImageWrapper.create(file))
     img2 = resize(ImageWrapper.create(other_file))
@@ -69,7 +70,7 @@ COMPARISON_METHODS = {
 ACTIONS_ON_EQUALITY = {
     'delete_first': lambda pair: os.remove(pair[0]),
     'delete_second': lambda pair: os.remove(pair[1]),
-    'view': lambda pair: call(["xv", "-nolim"] + [pic for pic in pair]),
+    'view': lambda pair: call(["xv", "-nolim"] + [str(pic) for pic in pair]),
     'print': lambda pair: print(pair[0], pair[1]),
     'none': lambda pair: None
-}  # type: Dict[str, Callable[[Tuple[str, str]], Any]]
+}  # type: Dict[str, Callable[[Tuple[Path, Path]], Any]]

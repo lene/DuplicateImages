@@ -2,6 +2,7 @@ import unittest
 import tempfile
 import random
 import os
+from pathlib import Path
 from typing import List
 
 from wand.color import Color
@@ -11,21 +12,21 @@ from wand.image import Image
 from duplicate_images import duplicate
 
 
-def create_image(filename: str, width: int) -> str:
+def create_image(file: Path, width: int) -> Path:
     height = int(width * 3 / 4)
     color = Color("Black")
     image = Image(width=width, height=height, background=color)
-    image.save(filename=filename)
-    return filename
+    image.save(filename=file)
+    return file
 
 
 def random_short() -> int:
     return random.randrange(65535)
 
 
-def fill_image_with_random_pixels(filename: str) -> None:
+def fill_image_with_random_pixels(file: Path) -> None:
     random.seed(0)
-    image = Image(filename=filename)
+    image = Image(filename=file)
     with Drawing() as draw:
         for x in range(0, image.size[0]):
             for y in range(0, image.size[1]):
@@ -33,15 +34,15 @@ def fill_image_with_random_pixels(filename: str) -> None:
                 draw.fill_color = color
                 draw.point(x, y)
             draw(image)
-    image.save(filename=filename)
+    image.save(filename=file)
 
 
-def save(image: Image, filename: str) -> None:
+def save(image: Image, file: Path) -> None:
     """
     Save imqge without letting the wand module create a backup file (which would
     confuse tearDownClass()
     """
-    with open(filename, 'wb') as f:
+    with file.open('wb') as f:
         image.save(file=f)
 
 
@@ -95,5 +96,5 @@ class SetupImages(unittest.TestCase):
         os.rmdir(cls.sub_directory)
         os.rmdir(cls.top_directory)
 
-    def get_image_files(self) -> List[str]:
+    def get_image_files(self) -> List[Path]:
         return sorted(duplicate.files_in_dirs([self.top_directory]))
