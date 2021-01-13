@@ -10,8 +10,8 @@ MAX_DIMENSION = 200
 def resize(image: ImageWrapper) -> ImageWrapper:
     reference_size = max(image.size)
     scale_factor = MAX_DIMENSION / reference_size
-    print(scale_factor)
-    image.image.resize(int(size / scale_factor) for size in image.size)
+    new_size: Tuple[int, int] = tuple(int(size * scale_factor) for size in image.size)
+    image.resize(new_size)
     return image
 
 
