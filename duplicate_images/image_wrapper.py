@@ -1,5 +1,6 @@
 __author__ = 'lene'
 
+from functools import lru_cache
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 from PIL import Image
@@ -22,17 +23,20 @@ class ImageWrapper:
         return cls.cache[file]
 
     def __init__(self, file: Path, image: Image = None) -> None:
-        self.filename = file
-        self.image = Image.open(self.filename) if image is None else image
+        self.file = file
+        self.image = Image.open(self.file) if image is None else image
         self.size: Tuple[int, int] = self.image.size
         self.histogram: Optional[List[float]] = None
 
+    @lru_cache(maxsize=None)
     def resize(self, new_size: Tuple[int, int]) -> 'ImageWrapper':
-        return ImageWrapper(self.filename, self.image.resize(new_size))
+        return ImageWrapper(self.file, self.image.resize(new_size))
 
+    @lru_cache(maxsize=None)
     def get_area(self) -> int:
         return self.size[0] * self.size[1]
 
+    @lru_cache(maxsize=None)
     def get_aspect(self) -> float:
         return self.size[0] / self.size[1]
 
@@ -44,7 +48,7 @@ class ImageWrapper:
         if self.histogram is None:
             self.histogram = list(map(
                 normalized_value,
-                Image.open(self.filename).convert("RGB").histogram()
+                Image.open(self.file).convert("RGB").histogram()
             ))
         return self.histogram
 

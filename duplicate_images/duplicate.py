@@ -24,7 +24,6 @@ def files_in_dirs(
         for filename in filenames
         if is_file(Path(root) / filename)
     ]
-
     return files
 
 

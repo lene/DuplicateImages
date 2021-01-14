@@ -16,5 +16,5 @@ def resize(image: ImageWrapper) -> ImageWrapper:
 
 def is_similar(image1: ImageWrapper, image2: ImageWrapper) -> bool:
     hash_distance = imagehash.average_hash(image1.image) - imagehash.average_hash(image2.image)
-    # print('hash_distance', hash_distance)
+    # print(f'hash_distance {image1.file.stem}, {image2.file.stem} -> {hash_distance}')
     return hash_distance == 0
