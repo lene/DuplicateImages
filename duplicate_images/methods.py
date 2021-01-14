@@ -1,6 +1,5 @@
 __author__ = 'Lene Preuss <lene.preuss@gmail.com>'
 
-import os
 from functools import lru_cache
 from hashlib import md5
 from math import sqrt
@@ -68,8 +67,8 @@ COMPARISON_METHODS = {
 }
 
 ACTIONS_ON_EQUALITY = {
-    'delete_first': lambda pair: os.remove(pair[0]),
-    'delete_second': lambda pair: os.remove(pair[1]),
+    'delete_first': lambda pair: pair[0].unlink(),
+    'delete_second': lambda pair: pair[1].unlink(),
     'view': lambda pair: call(["xv", "-nolim"] + [str(pic) for pic in pair]),
     'print': lambda pair: print(pair[0], pair[1]),
     'none': lambda pair: None

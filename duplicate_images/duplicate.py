@@ -1,8 +1,8 @@
 #!/usr/bin/env /usr/bin/python3
 
-import os
 from functools import partial
 from multiprocessing.dummy import Pool
+from os import walk
 from pathlib import Path
 from typing import Callable, List, Tuple
 
@@ -20,7 +20,7 @@ def files_in_dirs(
     files = [
         Path(root) / filename
         for dir_name in dir_names
-        for root, _, filenames in os.walk(dir_name)
+        for root, _, filenames in walk(dir_name)
         for filename in filenames
         if is_file(Path(root) / filename)
     ]
