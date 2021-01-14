@@ -11,7 +11,11 @@ stages:
 pytest:
   extends: .test
   script:
-    - poetry run pytest
+    - poetry run pytest --junitxml=pytest.xml
+  artifacts:
+    reports:
+      junit:
+        - pytest.xml
 
 mypy:
   extends: .test
