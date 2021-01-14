@@ -2,12 +2,12 @@ __author__ = 'Lene Preuss <lene.preuss@gmail.com>'
 
 from functools import lru_cache
 from hashlib import sha256
-from math import sqrt
 from pathlib import Path
 from subprocess import call  # noqa: S404
-from typing import Any, Callable, Dict, Iterator, List, Tuple
+from typing import Any, Callable, Dict, Tuple
 
-from duplicate_images.image_wrapper import ImageWrapper, aspects_roughly_equal
+from duplicate_images.histogram import compare_image_histograms
+from duplicate_images.image_wrapper import ImageWrapper
 from duplicate_images.image_hash import resize, is_similar
 
 
@@ -28,19 +28,6 @@ def compare_exactly(
     return get_size(other_file) == get_size(file) and get_hash(file) == get_hash(other_file)
 
 
-def compare_image_histograms(
-        image: ImageWrapper, other_image: ImageWrapper, aspect_fuzziness: float, rms_error: float
-) -> bool:
-    def get_deviations(hist: List[float], other_hist: List[float]) -> Iterator[float]:
-        return map(lambda a, b: (a - b) ** 2, hist, other_hist)
-
-    if not aspects_roughly_equal(image, other_image, aspect_fuzziness):
-        return False
-    deviations = get_deviations(image.get_histogram(), other_image.get_histogram())
-    rms = sqrt(sum(deviations) / len(image.get_histogram()))
-    return rms < rms_error
-
-
 def compare_histograms(
         file: Path, other_file: Path, aspect_fuzziness: float, rms_error: float
 ) -> bool:
@@ -57,9 +44,7 @@ def compare_histograms(
 def compare_image_hash(
         file: Path, other_file: Path, aspect_fuzziness: float, rms_error: float
 ) -> bool:
-    img1 = resize(ImageWrapper.create(file))
-    img2 = resize(ImageWrapper.create(other_file))
-    return is_similar(img1, img2)
+    return is_similar(resize(ImageWrapper.create(file)), resize(ImageWrapper.create(other_file)))
 
 
 COMPARISON_METHODS = {
