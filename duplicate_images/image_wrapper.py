@@ -2,9 +2,9 @@ __author__ = 'lene'
 
 from functools import lru_cache
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
-from PIL import Image
+from typing import Dict, List, Tuple
 from imghdr import what
+from PIL import Image
 
 
 class ImageWrapper:
@@ -26,7 +26,6 @@ class ImageWrapper:
         self.file = file
         self.image = Image.open(self.file) if image is None else image
         self.size: Tuple[int, int] = self.image.size
-        self.histogram: Optional[List[float]] = None
 
     @lru_cache(maxsize=None)
     def resize(self, new_size: Tuple[int, int]) -> 'ImageWrapper':
@@ -40,17 +39,13 @@ class ImageWrapper:
     def get_aspect(self) -> float:
         return self.size[0] / self.size[1]
 
+    @lru_cache(maxsize=None)
     def get_histogram(self) -> List[float]:
         """Returns the histogram of the image file, every value normalized to [0..1]"""
         def normalized_value(val: float) -> float:
             return val / self.get_area()
 
-        if self.histogram is None:
-            self.histogram = list(map(
-                normalized_value,
-                Image.open(self.file).convert("RGB").histogram()
-            ))
-        return self.histogram
+        return list(map(normalized_value, Image.open(self.file).convert("RGB").histogram()))
 
     @classmethod
     def is_image_file(cls, filename: Path) -> bool:

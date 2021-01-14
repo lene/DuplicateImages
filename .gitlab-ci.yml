@@ -26,3 +26,8 @@ flake8:
   extends: .test
   script:
     - poetry run flake8 duplicate_images tests
+
+pylint:
+  extends: .test
+  script:
+    - poetry run pylint duplicate_images tests

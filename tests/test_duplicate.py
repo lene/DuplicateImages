@@ -8,6 +8,7 @@ from wand.display import display
 from wand.image import Image
 
 from duplicate_images import duplicate
+from duplicate_images.duplicate import ParallelOptions
 from duplicate_images.methods import compare_histograms, compare_exactly
 from tests.setup_images import SetupImages
 
@@ -79,7 +80,7 @@ class DuplicateTest(SetupImages):
     def test_parallel_filtering_gives_same_results(self) -> None:
         equals = duplicate.similar_images(
             self.get_image_files(), compare_histograms, self.ASPECT_FUZZINESS,
-            self.RMS_ERROR, parallel=True
+            self.RMS_ERROR, ParallelOptions(parallel=True)
         )
         assert not element_in_list_of_tuples(self.subdir_file, equals)
         assert (self.jpeg_file, self.png_file) in equals

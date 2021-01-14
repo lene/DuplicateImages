@@ -4,11 +4,12 @@ from functools import lru_cache
 from hashlib import sha256
 from pathlib import Path
 from subprocess import call  # noqa: S404
-from typing import Any, Callable, Dict, Tuple
+from typing import Dict
 
+from duplicate_images.function_types import ActionFunction, ComparisonFunction
 from duplicate_images.histogram import compare_image_histograms
 from duplicate_images.image_wrapper import ImageWrapper
-from duplicate_images.image_hash import resize, is_similar
+from duplicate_images.image_hash import resize, is_similar, IMAGE_HASH_ALGORITHM
 
 
 @lru_cache(maxsize=None)
@@ -22,7 +23,7 @@ def get_hash(file: Path) -> str:
 
 
 def compare_exactly(
-        file: Path, other_file: Path, aspect_fuzziness: float, rms_error: float
+        file: Path, other_file: Path, _: float, __: float
 ) -> bool:
     """Returns True if file and other_file are exactly exactly_equal"""
     return get_size(other_file) == get_size(file) and get_hash(file) == get_hash(other_file)
@@ -41,16 +42,19 @@ def compare_histograms(
         return False
 
 
-def compare_image_hash(
-        file: Path, other_file: Path, aspect_fuzziness: float, rms_error: float
-) -> bool:
-    return is_similar(resize(ImageWrapper.create(file)), resize(ImageWrapper.create(other_file)))
+def compare_image_hash(algo: str) -> ComparisonFunction:
+    def do_compare(file: Path, other_file: Path, _: float, __: float) -> bool:
+        return is_similar(
+            resize(ImageWrapper.create(file)), resize(ImageWrapper.create(other_file)),
+            IMAGE_HASH_ALGORITHM[algo]
+        )
+    return do_compare
 
 
 COMPARISON_METHODS = {
     'exact': compare_exactly,
     'histogram': compare_histograms,
-    'image_hash': compare_image_hash
+    'image_hash': compare_image_hash('ahash')
 }
 
 ACTIONS_ON_EQUALITY = {
@@ -59,4 +63,4 @@ ACTIONS_ON_EQUALITY = {
     'view': lambda pair: call(["xv", "-nolim"] + [str(pic) for pic in pair]),  # noqa: S603
     'print': lambda pair: print(pair[0], pair[1]),
     'none': lambda pair: None
-}  # type: Dict[str, Callable[[Tuple[Path, Path]], Any]]
+}  # type: Dict[str, ActionFunction]

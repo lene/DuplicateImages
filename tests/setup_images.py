@@ -36,13 +36,13 @@ def fill_image_with_random_pixels(file: Path) -> None:
     image.save(filename=file)
 
 
-def save(image: Image, file: Path) -> None:
+def save(image: Image, path: Path) -> None:
     """
     Save imqge without letting the wand module create a backup file (which would
     confuse tearDownClass()
     """
-    with file.open('wb') as f:
-        image.save(file=f)
+    with path.open('wb') as file:
+        image.save(file=file)
 
 
 class SetupImages(unittest.TestCase):

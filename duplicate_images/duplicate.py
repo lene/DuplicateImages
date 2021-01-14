@@ -1,16 +1,24 @@
 #!/usr/bin/env /usr/bin/python3
 
+from dataclasses import dataclass
 from functools import partial
 from multiprocessing.dummy import Pool
 from os import walk
 from pathlib import Path
 from typing import Callable, List, Tuple
 
+from duplicate_images.function_types import ComparisonFunction
 from duplicate_images.image_wrapper import ImageWrapper
 from duplicate_images.methods import COMPARISON_METHODS, ACTIONS_ON_EQUALITY
 from duplicate_images.parse_commandline import parse_command_line
 
 CHUNK_SIZE = 25
+
+
+@dataclass
+class ParallelOptions:
+    parallel: bool = False
+    chunk_size: int = CHUNK_SIZE
 
 
 def files_in_dirs(
@@ -29,7 +37,7 @@ def files_in_dirs(
 
 def pool_filter(
         candidates: List[Tuple[Path, Path]],
-        compare_images: Callable[[Path, Path, float, float], bool],
+        compare_images: ComparisonFunction,
         aspect_fuzziness: float, rms_error: float, chunk_size: float
 ) -> List[Tuple[Path, Path]]:
     pool = Pool(None)
@@ -41,32 +49,34 @@ def pool_filter(
 
 
 def similar_images(
-        files: List[Path], compare_images: Callable[[Path, Path, float, float], bool],
-        aspect_fuzziness: float, rms_error: float, parallel: bool = False,
-        chunk_size: int = CHUNK_SIZE
+        files: List[Path], compare_images: ComparisonFunction,
+        aspect_fuzziness: float, rms_error: float,
+        parallel_options: ParallelOptions = ParallelOptions()
 ) -> List[Tuple[Path, Path]]:
     """Returns all pairs of image files in the list files that are exactly_equal
        according to comparison function compare_images"""
-    if parallel:
+    if parallel_options.parallel:
         candidates = [
             (file, other_file)
             for file in files
             for other_file in files[files.index(file) + 1:]
         ]
-        return pool_filter(candidates, compare_images, aspect_fuzziness, rms_error, chunk_size)
-    else:
-        return [
-            (file, other_file)
-            for file in files
-            for other_file in files[files.index(file) + 1:]
-            if compare_images(file, other_file, aspect_fuzziness, rms_error)
-        ]
+        return pool_filter(
+            candidates, compare_images, aspect_fuzziness, rms_error, parallel_options.chunk_size
+        )
+
+    return [
+        (file, other_file)
+        for file in files
+        for other_file in files[files.index(file) + 1:]
+        if compare_images(file, other_file, aspect_fuzziness, rms_error)
+    ]
 
 
 def get_matches(
         root_directories: List[Path], comparison_method: str,
-        aspect_fuzziness: float = 0.05, fuzziness: float = 0.001, parallel: bool = False,
-        chunk_size: int = CHUNK_SIZE
+        aspect_fuzziness: float = 0.05, fuzziness: float = 0.001,
+        parallel_options: ParallelOptions = ParallelOptions()
 ) -> List[Tuple[Path, Path]]:
     comparison_function = COMPARISON_METHODS[comparison_method]
     image_files = sorted(files_in_dirs(root_directories, ImageWrapper.is_image_file))
@@ -75,7 +85,7 @@ def get_matches(
     matches = similar_images(
         image_files, comparison_function,
         aspect_fuzziness=aspect_fuzziness, rms_error=fuzziness,
-        parallel=parallel, chunk_size=chunk_size
+        parallel_options=parallel_options
     )
     return matches
 
@@ -87,8 +97,10 @@ def main() -> None:
 
         matches = get_matches(
             [Path(folder) for folder in args.root_directory], args.comparison_method,
-            args.aspect_fuzziness, args.fuzziness, args.parallel,
-            args.chunk_size if args.chunk_size else CHUNK_SIZE
+            args.aspect_fuzziness, args.fuzziness,
+            ParallelOptions(
+                args.parallel, args.chunk_size if args.chunk_size else CHUNK_SIZE
+            )
         )
 
         print("{} matches".format(len(matches)))
