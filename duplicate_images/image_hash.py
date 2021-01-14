@@ -10,7 +10,10 @@ from duplicate_images.image_wrapper import ImageWrapper
 MAX_DIMENSION = 200
 
 IMAGE_HASH_ALGORITHM = {
-    'ahash': imagehash.average_hash
+    'ahash': imagehash.average_hash,
+    'colorhash': imagehash.colorhash,
+    'dhash': imagehash.dhash,
+    'phash': imagehash.phash
 }
 
 

@@ -23,8 +23,8 @@ def random_short() -> int:
     return random.randrange(65535)  # noqa: S311
 
 
-def fill_image_with_random_pixels(file: Path) -> None:
-    random.seed(0)
+def fill_image_with_random_pixels(file: Path, seed: int = 0) -> None:
+    random.seed(seed)
     image = Image(filename=file)
     with Drawing() as draw:
         for x in range(0, image.size[0]):
@@ -57,6 +57,7 @@ class SetupImages(unittest.TestCase):
     jpeg_file = Path()
     png_file = Path()
     half_file = Path()
+    noisy_file = Path()
     subdir_file = Path()
 
     @classmethod
@@ -74,6 +75,12 @@ class SetupImages(unittest.TestCase):
             cls.width
         )
         cls.image_files.append(cls.png_file)
+        # cls.noisy_file = create_image(
+        #     Path(tempfile.mkstemp(dir=cls.top_directory, prefix="noisy_", suffix=".jpg")[1]),
+        #     cls.width
+        # )
+        # fill_image_with_random_pixels(cls.noisy_file)
+        # cls.image_files.append(cls.noisy_file)
         cls.sub_directory = Path(tempfile.mkdtemp(dir=cls.top_directory))
         cls.subdir_file = create_image(
             Path(tempfile.mkstemp(dir=cls.sub_directory, prefix="subdir_", suffix=".jpg")[1]),

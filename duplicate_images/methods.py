@@ -54,7 +54,10 @@ def compare_image_hash(algo: str) -> ComparisonFunction:
 COMPARISON_METHODS = {
     'exact': compare_exactly,
     'histogram': compare_histograms,
-    'image_hash': compare_image_hash('ahash')
+    'ahash': compare_image_hash('ahash'),
+    'colorhash': compare_image_hash('colorhash'),
+    'dhash': compare_image_hash('dhash'),
+    'phash': compare_image_hash('phash')
 }
 
 ACTIONS_ON_EQUALITY = {
