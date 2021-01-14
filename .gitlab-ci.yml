@@ -1,26 +1,24 @@
 stages:
   - test
 
-pytest:
+.test:
   stage: test
   image: python:3.9
-  script:
+  before_script:
     - pip install poetry
     - poetry install
+
+pytest:
+  extends: .test
+  script:
     - poetry run pytest
 
 mypy:
-  stage: test
-  image: python:3.9
+  extends: .test
   script:
-    - pip install poetry
-    - poetry install
     - poetry run mypy duplicate_images tests
 
 flake8:
-  stage: test
-  image: python:3.9
+  extends: .test
   script:
-    - pip install poetry
-    - poetry install
     - poetry run flake8 duplicate_images tests

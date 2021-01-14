@@ -9,7 +9,7 @@ from tests.setup_images import SetupImages
 
 class TestImageHash(SetupImages):
 
-    def test_resize(self):
+    def test_resize(self) -> None:
         for image_file in duplicate.files_in_dirs([self.top_directory]):
             resized = resize(ImageWrapper.create(image_file))
             assert resized.image.width == MAX_DIMENSION

@@ -1,10 +1,10 @@
 __author__ = 'Lene Preuss <lene.preuss@gmail.com>'
 
 from functools import lru_cache
-from hashlib import md5
+from hashlib import sha256
 from math import sqrt
 from pathlib import Path
-from subprocess import call
+from subprocess import call  # noqa: S404
 from typing import Any, Callable, Dict, Iterator, List, Tuple
 
 from duplicate_images.image_wrapper import ImageWrapper, aspects_roughly_equal
@@ -18,10 +18,12 @@ def get_size(file: Path) -> int:
 
 @lru_cache(maxsize=None)
 def get_hash(file: Path) -> str:
-    return md5(file.open('rb').read()).hexdigest()
+    return sha256(file.open('rb').read()).hexdigest()
 
 
-def compare_exactly(file: Path, other_file: Path, aspect_fuzziness: float, rms_error: float) -> bool:
+def compare_exactly(
+        file: Path, other_file: Path, aspect_fuzziness: float, rms_error: float
+) -> bool:
     """Returns True if file and other_file are exactly exactly_equal"""
     return get_size(other_file) == get_size(file) and get_hash(file) == get_hash(other_file)
 
@@ -69,7 +71,7 @@ COMPARISON_METHODS = {
 ACTIONS_ON_EQUALITY = {
     'delete_first': lambda pair: pair[0].unlink(),
     'delete_second': lambda pair: pair[1].unlink(),
-    'view': lambda pair: call(["xv", "-nolim"] + [str(pic) for pic in pair]),
+    'view': lambda pair: call(["xv", "-nolim"] + [str(pic) for pic in pair]),  # noqa: S603
     'print': lambda pair: print(pair[0], pair[1]),
     'none': lambda pair: None
 }  # type: Dict[str, Callable[[Tuple[Path, Path]], Any]]

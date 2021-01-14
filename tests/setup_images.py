@@ -20,7 +20,7 @@ def create_image(file: Path, width: int) -> Path:
 
 
 def random_short() -> int:
-    return random.randrange(65535)
+    return random.randrange(65535)  # noqa: S311
 
 
 def fill_image_with_random_pixels(file: Path) -> None:
@@ -61,8 +61,8 @@ class SetupImages(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls) -> None:
-        """create a number of image files in a tree structure under /tmp"""
-        cls.top_directory = Path(tempfile.mkdtemp(dir="/tmp"))
+        """create a number of temporary image files"""
+        cls.top_directory = Path(tempfile.mkdtemp())
         cls.image_files = []
         cls.jpeg_file = create_image(
             Path(tempfile.mkstemp(dir=cls.top_directory, prefix="jpeg_", suffix=".jpg")[1]),
@@ -102,5 +102,5 @@ class SetupImages(unittest.TestCase):
         return sorted(duplicate.files_in_dirs([self.top_directory]))
 
     @staticmethod
-    def is_pair_found(element1: Path, element2: Path, matches: List[Tuple[Path, Path]]):
+    def is_pair_found(element1: Path, element2: Path, matches: List[Tuple[Path, Path]]) -> bool:
         return (element1, element2) in matches or (element2, element1) in matches
