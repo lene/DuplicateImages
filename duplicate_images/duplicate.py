@@ -1,8 +1,9 @@
 #!/usr/bin/env /usr/bin/python3
 
-import os
 from functools import partial
 from multiprocessing.dummy import Pool
+from os import walk
+from pathlib import Path
 from typing import Callable, List, Tuple
 
 from duplicate_images.image_wrapper import ImageWrapper
@@ -13,25 +14,25 @@ CHUNK_SIZE = 25
 
 
 def files_in_dirs(
-        dir_names: List[str], is_file: Callable[[str], bool] = os.path.isfile
-) -> List[str]:
+        dir_names: List[Path], is_file: Callable[[Path], bool] = lambda f: f.is_file()
+) -> List[Path]:
     """Returns a list of all files in directory dir_name, recursively scanning subdirectories"""
     files = [
-        os.path.join(root, filename)
+        Path(root) / filename
         for dir_name in dir_names
-        for root, _, filenames in os.walk(dir_name)
+        for root, _, filenames in walk(dir_name)
         for filename in filenames
-        if is_file(os.path.join(root, filename))
+        if is_file(Path(root) / filename)
     ]
 
     return files
 
 
 def pool_filter(
-        candidates: List[Tuple[str, str]],
-        compare_images: Callable[[str, str, float, float], bool],
+        candidates: List[Tuple[Path, Path]],
+        compare_images: Callable[[Path, Path, float, float], bool],
         aspect_fuzziness: float, rms_error: float, chunk_size: float
-) -> List[Tuple[str, str]]:
+) -> List[Tuple[Path, Path]]:
     pool = Pool(None)
     to_keep = pool.starmap(
         partial(compare_images, aspect_fuzziness=aspect_fuzziness, rms_error=rms_error),
@@ -41,10 +42,10 @@ def pool_filter(
 
 
 def similar_images(
-        files: List[str], compare_images: Callable[[str, str, float, float], bool],
+        files: List[Path], compare_images: Callable[[Path, Path, float, float], bool],
         aspect_fuzziness: float, rms_error: float, parallel: bool = False,
         chunk_size: int = CHUNK_SIZE
-) -> List[Tuple[str, str]]:
+) -> List[Tuple[Path, Path]]:
     """Returns all pairs of image files in the list files that are exactly_equal
        according to comparison function compare_images"""
     if parallel:
@@ -64,10 +65,10 @@ def similar_images(
 
 
 def get_matches(
-        root_directories: List[str], comparison_method: str,
+        root_directories: List[Path], comparison_method: str,
         aspect_fuzziness: float = 0.05, fuzziness: float = 0.001, parallel: bool = False,
         chunk_size: int = CHUNK_SIZE
-) -> List[Tuple[str, str]]:
+) -> List[Tuple[Path, Path]]:
     comparison_function = COMPARISON_METHODS[comparison_method]
     image_files = sorted(files_in_dirs(root_directories, ImageWrapper.is_image_file))
     print("{} total files".format(len(image_files)))
@@ -86,7 +87,7 @@ def main() -> None:
         action_equal = ACTIONS_ON_EQUALITY[args.action_equal]
 
         matches = get_matches(
-            args.root_directory, args.comparison_method,
+            [Path(folder) for folder in args.root_directory], args.comparison_method,
             args.aspect_fuzziness, args.fuzziness, args.parallel,
             args.chunk_size if args.chunk_size else CHUNK_SIZE
         )

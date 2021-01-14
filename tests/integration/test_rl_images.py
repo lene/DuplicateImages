@@ -13,7 +13,7 @@ from duplicate_images.duplicate import get_matches
 @pytest.mark.parametrize('image_pair', ['pair1'])  # , 'pair2', 'pair3'])
 def test_similar(image_pair, comparison_method, expected_pairs):
     folder = Path(__file__).resolve().parent / 'data' / 'similar' / image_pair
-    assert len(get_matches([str(folder)], comparison_method)) == expected_pairs
+    assert len(get_matches([folder], comparison_method)) == expected_pairs
 
 
 @pytest.mark.parametrize(
@@ -23,7 +23,7 @@ def test_similar(image_pair, comparison_method, expected_pairs):
 @pytest.mark.parametrize('image_pair', ['pair1'])
 def test_equal_but_binary_different(image_pair, comparison_method, expected_pairs):
     folder = Path(__file__).resolve().parent / 'data' / 'equal_but_binary_different' / image_pair
-    assert len(get_matches([str(folder)], comparison_method)) == expected_pairs
+    assert len(get_matches([folder], comparison_method)) == expected_pairs
 
 
 @pytest.mark.parametrize(
@@ -33,4 +33,4 @@ def test_equal_but_binary_different(image_pair, comparison_method, expected_pair
 @pytest.mark.parametrize('image_pair', ['pair1', 'pair2', 'pair3'])
 def test_exactly_equal(image_pair, comparison_method, expected_pairs):
     folder = Path(__file__).resolve().parent / 'data' / 'exactly_equal' / image_pair
-    assert len(get_matches([str(folder)], comparison_method)) == expected_pairs
+    assert len(get_matches([folder], comparison_method)) == expected_pairs

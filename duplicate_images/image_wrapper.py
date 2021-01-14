@@ -1,7 +1,7 @@
 __author__ = 'lene'
 
 from math import fabs
-from os.path import isfile, islink
+from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 from PIL import Image
 from imghdr import what
@@ -12,18 +12,18 @@ class ImageWrapper:
     Utility functions for image files, with optimizations for certain expensive functions
     """
 
-    cache: Dict[str, 'ImageWrapper'] = {}
+    cache: Dict[Path, 'ImageWrapper'] = {}
 
     @classmethod
-    def create(cls, filename: str) -> 'ImageWrapper':
+    def create(cls, file: Path) -> 'ImageWrapper':
         """Create an ImageWrapper; if it was already created, return existing object"""
-        if filename not in cls.cache:
-            cls.cache[filename] = ImageWrapper(filename)
+        if file not in cls.cache:
+            cls.cache[file] = ImageWrapper(file)
 
-        return cls.cache[filename]
+        return cls.cache[file]
 
-    def __init__(self, filename: str, image: Image = None) -> None:
-        self.filename = filename
+    def __init__(self, file: Path, image: Image = None) -> None:
+        self.filename = file
         self.image = Image.open(self.filename) if image is None else image
         self.size: Tuple[int, int] = self.image.size
         self.histogram: Optional[List[float]] = None
@@ -50,9 +50,9 @@ class ImageWrapper:
         return self.histogram
 
     @classmethod
-    def is_image_file(cls, filename: str) -> bool:
+    def is_image_file(cls, filename: Path) -> bool:
         """Returns True if filename is an image file"""
-        if isfile(filename) and not islink(filename):
+        if filename.is_file() and not filename.is_symlink():
             return what(filename) is not None
         return False
 
