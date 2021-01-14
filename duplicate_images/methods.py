@@ -48,8 +48,8 @@ def compare_image_hash(
 
 
 COMPARISON_METHODS = {
-    'compare_exactly': compare_exactly,
-    'compare_histograms': compare_histograms,
+    'exact': compare_exactly,
+    'histogram': compare_histograms,
     'image_hash': compare_image_hash
 }
 

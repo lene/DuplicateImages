@@ -22,7 +22,7 @@ def parse_command_line() -> Namespace:
     )
     parser.add_argument(
         '--comparison-method', choices=COMPARISON_METHODS.keys(),
-        default='compare_exactly',
+        default='exact',
         help="Method used to determine if two images are considered equal"
     )
     parser.add_argument(
