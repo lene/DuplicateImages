@@ -1,0 +1,26 @@
+stages:
+  - test
+
+pytest:
+  stage: test
+  image: python:3.9
+  script:
+    - pip install poetry
+    - poetry install
+    - poetry run pytest
+
+mypy:
+  stage: test
+  image: python:3.9
+  script:
+    - pip install poetry
+    - poetry install
+    - poetry run mypy duplicate_images tests
+
+flake8:
+  stage: test
+  image: python:3.9
+  script:
+    - pip install poetry
+    - poetry install
+    - poetry run flake8 duplicate_images tests
