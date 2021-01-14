@@ -1,6 +1,5 @@
 __author__ = 'lene'
 
-from math import fabs
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 from PIL import Image
@@ -59,12 +58,6 @@ class ImageWrapper:
 
 def get_aspect_ratio(image: ImageWrapper, other_image: ImageWrapper) -> float:
     return image.get_aspect() / other_image.get_aspect()
-
-
-def aspects_roughly_equal(
-        image: ImageWrapper, other_image: ImageWrapper, aspect_fuzziness: float
-) -> float:
-    return fabs(get_aspect_ratio(image, other_image) - 1) < aspect_fuzziness
 
 
 def min_image_size(image: ImageWrapper, other_image: ImageWrapper) -> int:

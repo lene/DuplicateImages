@@ -1,7 +1,13 @@
-from math import sqrt
+from math import sqrt, fabs
 from typing import Iterator, List
 
-from duplicate_images.image_wrapper import ImageWrapper, aspects_roughly_equal
+from duplicate_images.image_wrapper import ImageWrapper, get_aspect_ratio
+
+
+def aspects_roughly_equal(
+        image: ImageWrapper, other_image: ImageWrapper, aspect_fuzziness: float
+) -> float:
+    return fabs(get_aspect_ratio(image, other_image) - 1) < aspect_fuzziness
 
 
 def compare_image_histograms(
