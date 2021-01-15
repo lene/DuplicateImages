@@ -74,11 +74,11 @@ def similar_images(
 
 
 def get_matches(
-        root_directories: List[Path], comparison_method: str,
+        root_directories: List[Path], algorithm: str,
         aspect_fuzziness: float = 0.05, fuzziness: float = 0.001,
         parallel_options: ParallelOptions = ParallelOptions()
 ) -> List[Tuple[Path, Path]]:
-    comparison_function = COMPARISON_METHODS[comparison_method]
+    comparison_function = COMPARISON_METHODS[algorithm]
     image_files = sorted(files_in_dirs(root_directories, ImageWrapper.is_image_file))
     print("{} total files".format(len(image_files)))
 
@@ -96,7 +96,7 @@ def main() -> None:
         action_equal = ACTIONS_ON_EQUALITY[args.action_equal]
 
         matches = get_matches(
-            [Path(folder) for folder in args.root_directory], args.comparison_method,
+            [Path(folder) for folder in args.root_directory], args.algorithm,
             args.aspect_fuzziness, args.fuzziness,
             ParallelOptions(
                 args.parallel, args.chunk_size if args.chunk_size else CHUNK_SIZE
