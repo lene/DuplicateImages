@@ -1,21 +1,11 @@
 __author__ = 'lene'
 
-import shutil
-from pathlib import Path
 from typing import Any, List, Tuple
-
-from wand.display import display
-from wand.image import Image
 
 from duplicate_images import duplicate
 from duplicate_images.duplicate import ParallelOptions
 from duplicate_images.methods import compare_histograms, compare_exactly
 from tests.setup_images import SetupImages
-
-
-def display_image(filename: str) -> None:
-    image = Image(filename=filename)
-    display(image)
 
 
 def element_in_list_of_tuples(element: Any, tuples: List[Tuple[Any, Any]]) -> bool:
@@ -91,13 +81,3 @@ class DuplicateTest(SetupImages):
         assert not element_in_list_of_tuples(self.subdir_file, equals)
         assert (self.jpeg_file, self.png_file) in equals
         assert (self.jpeg_file, self.half_file) in equals
-
-    def copy_image_file(self, file: Path) -> Path:
-        copied_file = file.with_suffix(".bak")
-        shutil.copyfile(file, copied_file)
-        self.image_files.append(copied_file)
-        return copied_file
-
-    def delete_image_file(self, file: Path) -> None:
-        file.unlink()
-        self.image_files.remove(file)

@@ -49,7 +49,7 @@ description = "A memory profiler for data batch processing applications."
 name = "filprofiler"
 optional = false
 python-versions = ">=3.6"
-version = "0.14.0"
+version = "0.14.1"
 
 [package.dependencies]
 threadpoolctl = "*"
@@ -369,14 +369,14 @@ colorama = [
     {file = "colorama-0.4.4.tar.gz", hash = "sha256:5941b2b48a20143d2267e95b1c2a7603ce057ee39fd88e7329b0c292aa16869b"},
 ]
 filprofiler = [
-    {file = "filprofiler-0.14.0-cp36-cp36m-macosx_10_14_x86_64.whl", hash = "sha256:75c68bcdbba2a15124f3571a4f8061e2cfc63505eb215ce130d39075c3dabf4b"},
-    {file = "filprofiler-0.14.0-cp36-cp36m-manylinux2010_x86_64.whl", hash = "sha256:23b59452f772cbc41ef057fe372abca419c81d598da05481e6bfd7216ea0ce67"},
-    {file = "filprofiler-0.14.0-cp37-cp37m-macosx_10_14_x86_64.whl", hash = "sha256:2010a4ca947d929cf616b3e10df6bf0366a976cb520d95721cf815f1b0d8e5eb"},
-    {file = "filprofiler-0.14.0-cp37-cp37m-manylinux2010_x86_64.whl", hash = "sha256:3d70a97925043a02698d86da42d61a1aded720e5604c37d1fc9f2a80236278cd"},
-    {file = "filprofiler-0.14.0-cp38-cp38-macosx_10_14_x86_64.whl", hash = "sha256:804ba965b3e06807562af6304d9e0f16a5ca3891b954dbff90ad207416c0bb34"},
-    {file = "filprofiler-0.14.0-cp38-cp38-manylinux2010_x86_64.whl", hash = "sha256:3d4f0d5e4bb4a7d7139004b4230eef19559405e7c0c21b829bb7ca79ef467ef1"},
-    {file = "filprofiler-0.14.0-cp39-cp39-macosx_10_14_x86_64.whl", hash = "sha256:0dbd5b09791f1090b3fe0c4ff004faf32cb137018007743a18644b8e1b89dd93"},
-    {file = "filprofiler-0.14.0-cp39-cp39-manylinux2010_x86_64.whl", hash = "sha256:d0327889f547beb7ac451a79c6e8dd5d15f8c09d63d86c140a5bb4bb64b9b47e"},
+    {file = "filprofiler-0.14.1-cp36-cp36m-macosx_10_14_x86_64.whl", hash = "sha256:bda9036949775e934a646f9eeae615425eaf72164a36b25039cb00b926ed7231"},
+    {file = "filprofiler-0.14.1-cp36-cp36m-manylinux2010_x86_64.whl", hash = "sha256:8ad561071d2cbfae3a299b47368c98766e31ae9fcf24bf240d1dc45ebb717528"},
+    {file = "filprofiler-0.14.1-cp37-cp37m-macosx_10_14_x86_64.whl", hash = "sha256:44ab4104c850f73d32d1ae9b452e8e20c80ce7c190e4530f8177a12adb5b73f1"},
+    {file = "filprofiler-0.14.1-cp37-cp37m-manylinux2010_x86_64.whl", hash = "sha256:c363e3da13a543f5ee957b2e4329001062e4596e92605c0a22ba1087b3ae9b84"},
+    {file = "filprofiler-0.14.1-cp38-cp38-macosx_10_14_x86_64.whl", hash = "sha256:4900792e26ab9242343667c67bb7fa4aa45f6947c2e52355eada99831119becc"},
+    {file = "filprofiler-0.14.1-cp38-cp38-manylinux2010_x86_64.whl", hash = "sha256:347c99e658e1ea07965ea0120406ee0d579a34ab20373eab48bd6c5fea9740b7"},
+    {file = "filprofiler-0.14.1-cp39-cp39-macosx_10_14_x86_64.whl", hash = "sha256:d64b130ab7885cc67344c07b002d463d4ece6b29d7848e46985670757a716841"},
+    {file = "filprofiler-0.14.1-cp39-cp39-manylinux2010_x86_64.whl", hash = "sha256:89bcd84190ae6431ea607f59003185a370c5f1b080f929453470116be1db61f9"},
 ]
 flake8 = [
     {file = "flake8-3.8.4-py2.py3-none-any.whl", hash = "sha256:749dbbd6bfd0cf1318af27bf97a14e28e5ff548ef8e5b1566ccfb25a11e7c839"},

@@ -80,7 +80,7 @@ def get_matches(
     options = {} if options is None else options
     comparison_function = COMPARISON_METHODS[algorithm]
     image_files = sorted(files_in_dirs(root_directories, ImageWrapper.is_image_file))
-    print("{} total files".format(len(image_files)))
+    print(f"{len(image_files)} total files")
 
     matches = similar_images(
         image_files, comparison_function,
@@ -89,10 +89,18 @@ def get_matches(
     return matches
 
 
+def execute_actions(matches: Results, action_name: str) -> None:
+    action_equal = ACTIONS_ON_EQUALITY[action_name]
+    for match in sorted(matches):
+        try:
+            action_equal(match)
+        except FileNotFoundError:
+            continue
+
+
 def main() -> None:
     args = parse_command_line()
     try:
-        action_equal = ACTIONS_ON_EQUALITY[args.action_equal]
         options = {'aspect_fuzziness': args.aspect_fuzziness, 'rms_error': args.fuzziness}
         matches = get_matches(
             [Path(folder) for folder in args.root_directory], args.algorithm,
@@ -101,13 +109,8 @@ def main() -> None:
                 args.parallel, args.chunk_size if args.chunk_size else CHUNK_SIZE
             )
         )
-        print("{} matches".format(len(matches)))
-
-        for match in sorted(matches):
-            try:
-                action_equal(match)
-            except FileNotFoundError:
-                continue
+        print(f"{len(matches)} matches")
+        execute_actions(matches, args.on_equal)
     except KeyboardInterrupt:
         pass
 

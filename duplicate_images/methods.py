@@ -4,7 +4,7 @@ from functools import lru_cache, partial
 from hashlib import sha256
 from pathlib import Path
 from subprocess import call  # noqa: S404
-from typing import Dict
+from typing import Dict, Tuple, List
 
 from duplicate_images.function_types import ActionFunction, AlgorithmOptions, ComparisonFunction
 from duplicate_images.histogram import compare_image_histograms
@@ -54,6 +54,10 @@ def compare_image_hash(
     )
 
 
+def ascending_by_size(pair: Tuple[Path, Path]) -> List[Path]:
+    return sorted(pair, key=lambda path: path.stat().st_size)
+
+
 COMPARISON_METHODS: Dict[str, ComparisonFunction] = {
     'exact': compare_exactly,
     'histogram': compare_histograms,
@@ -62,9 +66,12 @@ for key in IMAGE_HASH_ALGORITHM:
     COMPARISON_METHODS[key] = partial(compare_image_hash, key)
 
 ACTIONS_ON_EQUALITY: Dict[str, ActionFunction] = {
-    'delete_first': lambda pair: pair[0].unlink(),
-    'delete_second': lambda pair: pair[1].unlink(),
-    'view': lambda pair: call(["xv", "-nolim"] + [str(pic) for pic in pair]),  # noqa: S603
+    'delete-first': lambda pair: pair[0].unlink(),
+    'delete-second': lambda pair: pair[1].unlink(),
+    'delete-bigger': lambda pair: ascending_by_size(pair)[-1].unlink(),
+    'delete-smaller': lambda pair: ascending_by_size(pair)[0].unlink(),
+    'eog': lambda pair: call(["eog"] + [str(pic) for pic in pair]),  # noqa: S603
+    'xv': lambda pair: call(["xv", "-nolim"] + [str(pic) for pic in pair]),  # noqa: S603
     'print': lambda pair: print(pair[0], pair[1]),
     'none': lambda pair: None
 }

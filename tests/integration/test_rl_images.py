@@ -2,7 +2,7 @@ __author__ = 'Lene Preuss <lene.preuss@gmail.com>'
 
 import pytest
 
-from duplicate_images.duplicate import get_matches
+from duplicate_images.duplicate import get_matches, execute_actions
 
 ASPECT_FUZZINESS = 0.05
 RMS_ERROR = 0.05
