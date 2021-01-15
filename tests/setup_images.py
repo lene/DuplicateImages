@@ -50,10 +50,11 @@ class SetupImages(unittest.TestCase):
     width = 100
     ASPECT_FUZZINESS = 0.05
     RMS_ERROR = 0.05
+    OPTIONS = {'aspect_fuzziness': ASPECT_FUZZINESS, 'rms_error': RMS_ERROR}
 
     top_directory = Path()
     sub_directory = Path()
-    image_files = []  # type: List[Path]
+    image_files: List[Path] = []
     jpeg_file = Path()
     png_file = Path()
     half_file = Path()

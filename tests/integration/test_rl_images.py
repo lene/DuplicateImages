@@ -4,6 +4,10 @@ import pytest
 
 from duplicate_images.duplicate import get_matches
 
+ASPECT_FUZZINESS = 0.05
+RMS_ERROR = 0.05
+OPTIONS = {'aspect_fuzziness': ASPECT_FUZZINESS, 'rms_error': RMS_ERROR}
+
 
 @pytest.mark.parametrize(
     'comparison_method,expected_pairs',
@@ -12,7 +16,7 @@ from duplicate_images.duplicate import get_matches
 @pytest.mark.parametrize('image_pair', ['pair1', 'pair2'])
 def test_similar(data_dir, image_pair, comparison_method, expected_pairs):
     folder = data_dir / 'similar' / image_pair
-    assert len(get_matches([folder], comparison_method)) == expected_pairs
+    assert len(get_matches([folder], comparison_method, OPTIONS)) == expected_pairs
 
 
 @pytest.mark.parametrize(
@@ -22,7 +26,7 @@ def test_similar(data_dir, image_pair, comparison_method, expected_pairs):
 @pytest.mark.parametrize('image_pair', ['many'])
 def test_similar_many(data_dir, image_pair, comparison_method, expected_pairs):
     folder = data_dir / 'similar' / image_pair
-    assert len(get_matches([folder], comparison_method)) == expected_pairs
+    assert len(get_matches([folder], comparison_method, OPTIONS)) == expected_pairs
 
 
 @pytest.mark.parametrize(
@@ -32,7 +36,7 @@ def test_similar_many(data_dir, image_pair, comparison_method, expected_pairs):
 @pytest.mark.parametrize('image_pair', ['pair1', 'shrunk10%', 'shrunk50%'])
 def test_equal_but_binary_different(data_dir, image_pair, comparison_method, expected_pairs):
     folder = data_dir / 'equal_but_binary_different' / image_pair
-    assert len(get_matches([folder], comparison_method)) == expected_pairs
+    assert len(get_matches([folder], comparison_method, OPTIONS)) == expected_pairs
 
 
 @pytest.mark.parametrize(
@@ -42,7 +46,7 @@ def test_equal_but_binary_different(data_dir, image_pair, comparison_method, exp
 @pytest.mark.parametrize('image_pair', ['jpeg_75', 'jpeg_50', 'jpeg_25', 'jpeg_10'])
 def test_jpeg_artifacts(data_dir, image_pair, comparison_method, expected_pairs):
     folder = data_dir / 'equal_but_binary_different' / image_pair
-    assert len(get_matches([folder], comparison_method)) == expected_pairs
+    assert len(get_matches([folder], comparison_method, OPTIONS)) == expected_pairs
 
 
 @pytest.mark.parametrize(
@@ -52,7 +56,7 @@ def test_jpeg_artifacts(data_dir, image_pair, comparison_method, expected_pairs)
 @pytest.mark.parametrize('image_pair', ['pair1', 'pair2', 'pair3'])
 def test_exactly_equal(data_dir, image_pair, comparison_method, expected_pairs):
     folder = data_dir / 'exactly_equal' / image_pair
-    assert len(get_matches([folder], comparison_method)) == expected_pairs
+    assert len(get_matches([folder], comparison_method, OPTIONS)) == expected_pairs
 
 
 @pytest.mark.parametrize(
@@ -62,7 +66,7 @@ def test_exactly_equal(data_dir, image_pair, comparison_method, expected_pairs):
 @pytest.mark.parametrize('image_pair', ['pair1'])
 def test_different(data_dir, image_pair, comparison_method, expected_pairs):
     folder = data_dir / 'different' / image_pair
-    assert len(get_matches([folder], comparison_method)) == expected_pairs
+    assert len(get_matches([folder], comparison_method, OPTIONS)) == expected_pairs
 
 
 @pytest.mark.parametrize(
@@ -80,4 +84,4 @@ def test_different(data_dir, image_pair, comparison_method, expected_pairs):
 )
 def test_weird_cases(data_dir, test_case, image_pair, comparison_method, expected_pairs):
     folder = data_dir / test_case / image_pair
-    assert len(get_matches([folder], comparison_method)) == expected_pairs
+    assert len(get_matches([folder], comparison_method, OPTIONS)) == expected_pairs

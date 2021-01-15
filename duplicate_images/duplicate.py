@@ -5,9 +5,9 @@ from functools import partial
 from multiprocessing.dummy import Pool
 from os import walk
 from pathlib import Path
-from typing import Callable, List, Tuple
+from typing import Callable, List, Optional
 
-from duplicate_images.function_types import ComparisonFunction
+from duplicate_images.function_types import ComparisonFunction, AlgorithmOptions, Results
 from duplicate_images.image_wrapper import ImageWrapper
 from duplicate_images.methods import COMPARISON_METHODS, ACTIONS_ON_EQUALITY
 from duplicate_images.parse_commandline import parse_command_line
@@ -36,13 +36,13 @@ def files_in_dirs(
 
 
 def pool_filter(
-        candidates: List[Tuple[Path, Path]],
+        candidates: Results,
         compare_images: ComparisonFunction,
-        aspect_fuzziness: float, rms_error: float, chunk_size: float
-) -> List[Tuple[Path, Path]]:
+        options: AlgorithmOptions, chunk_size: float
+) -> Results:
     pool = Pool(None)
     to_keep = pool.starmap(
-        partial(compare_images, aspect_fuzziness=aspect_fuzziness, rms_error=rms_error),
+        partial(compare_images, options=options),
         candidates, chunksize=chunk_size
     )
     return [c for c, keep in zip(candidates, to_keep) if keep]
@@ -50,9 +50,8 @@ def pool_filter(
 
 def similar_images(
         files: List[Path], compare_images: ComparisonFunction,
-        aspect_fuzziness: float, rms_error: float,
-        parallel_options: ParallelOptions = ParallelOptions()
-) -> List[Tuple[Path, Path]]:
+        options: AlgorithmOptions, parallel_options: ParallelOptions = ParallelOptions()
+) -> Results:
     """Returns all pairs of image files in the list files that are exactly_equal
        according to comparison function compare_images"""
     if parallel_options.parallel:
@@ -62,30 +61,30 @@ def similar_images(
             for other_file in files[files.index(file) + 1:]
         ]
         return pool_filter(
-            candidates, compare_images, aspect_fuzziness, rms_error, parallel_options.chunk_size
+            candidates, compare_images, options, parallel_options.chunk_size
         )
 
     return [
         (file, other_file)
         for file in files
         for other_file in files[files.index(file) + 1:]
-        if compare_images(file, other_file, aspect_fuzziness, rms_error)
+        if compare_images(file, other_file, options)
     ]
 
 
 def get_matches(
         root_directories: List[Path], algorithm: str,
-        aspect_fuzziness: float = 0.05, fuzziness: float = 0.001,
+        options: Optional[AlgorithmOptions] = None,
         parallel_options: ParallelOptions = ParallelOptions()
-) -> List[Tuple[Path, Path]]:
+) -> Results:
+    options = {} if options is None else options
     comparison_function = COMPARISON_METHODS[algorithm]
     image_files = sorted(files_in_dirs(root_directories, ImageWrapper.is_image_file))
     print("{} total files".format(len(image_files)))
 
     matches = similar_images(
         image_files, comparison_function,
-        aspect_fuzziness=aspect_fuzziness, rms_error=fuzziness,
-        parallel_options=parallel_options
+        options, parallel_options
     )
     return matches
 
@@ -94,10 +93,10 @@ def main() -> None:
     args = parse_command_line()
     try:
         action_equal = ACTIONS_ON_EQUALITY[args.action_equal]
-
+        options = {'aspect_fuzziness': args.aspect_fuzziness, 'rms_error': args.fuzziness}
         matches = get_matches(
             [Path(folder) for folder in args.root_directory], args.algorithm,
-            args.aspect_fuzziness, args.fuzziness,
+            options,
             ParallelOptions(
                 args.parallel, args.chunk_size if args.chunk_size else CHUNK_SIZE
             )
