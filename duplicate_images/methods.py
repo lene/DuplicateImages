@@ -1,6 +1,6 @@
 __author__ = 'Lene Preuss <lene.preuss@gmail.com>'
 
-from functools import lru_cache
+from functools import lru_cache, partial
 from hashlib import sha256
 from pathlib import Path
 from subprocess import call  # noqa: S404
@@ -9,7 +9,7 @@ from typing import Dict
 from duplicate_images.function_types import ActionFunction, ComparisonFunction
 from duplicate_images.histogram import compare_image_histograms
 from duplicate_images.image_wrapper import ImageWrapper
-from duplicate_images.image_hash import resize, is_similar, IMAGE_HASH_ALGORITHM
+from duplicate_images.image_hash import is_similar, IMAGE_HASH_ALGORITHM
 
 
 @lru_cache(maxsize=None)
@@ -42,28 +42,26 @@ def compare_histograms(
         return False
 
 
-def compare_image_hash(algo: str) -> ComparisonFunction:
-    def do_compare(file: Path, other_file: Path, _: float, __: float) -> bool:
-        return is_similar(
-            resize(ImageWrapper.create(file)), resize(ImageWrapper.create(other_file)),
-            IMAGE_HASH_ALGORITHM[algo]
-        )
-    return do_compare
+def compare_image_hash(algo: str, file: Path, other_file: Path, _: float, __: float) -> bool:
+    return is_similar(
+        ImageWrapper.create(file), ImageWrapper.create(other_file),
+        IMAGE_HASH_ALGORITHM[algo]
+    )
 
 
-COMPARISON_METHODS = {
+COMPARISON_METHODS: Dict[str, ComparisonFunction] = {
     'exact': compare_exactly,
     'histogram': compare_histograms,
-    'ahash': compare_image_hash('ahash'),
-    'colorhash': compare_image_hash('colorhash'),
-    'dhash': compare_image_hash('dhash'),
-    'phash': compare_image_hash('phash')
+    'ahash': partial(compare_image_hash, 'ahash'),
+    'colorhash': partial(compare_image_hash, 'colorhash'),
+    'dhash': partial(compare_image_hash, 'dhash'),
+    'phash': partial(compare_image_hash, 'phash')
 }
 
-ACTIONS_ON_EQUALITY = {
+ACTIONS_ON_EQUALITY: Dict[str, ActionFunction] = {
     'delete_first': lambda pair: pair[0].unlink(),
     'delete_second': lambda pair: pair[1].unlink(),
     'view': lambda pair: call(["xv", "-nolim"] + [str(pic) for pic in pair]),  # noqa: S603
     'print': lambda pair: print(pair[0], pair[1]),
     'none': lambda pair: None
-}  # type: Dict[str, ActionFunction]
+}

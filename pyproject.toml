@@ -17,9 +17,11 @@ flake8 = "^3.8.4"
 Wand = "^0.6.5"
 pytest = "^6.2.1"
 pylint = "^2.6.0"
+filprofiler = "^0.14.0"
 
 [tool.poetry.scripts]
 find-dups = "duplicate_images.duplicate:main"
+
 [build-system]
 requires = ["poetry-core>=1.0.0a5"]
 build-backend = "poetry.core.masonry.api"

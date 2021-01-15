@@ -102,7 +102,6 @@ def main() -> None:
                 args.parallel, args.chunk_size if args.chunk_size else CHUNK_SIZE
             )
         )
-
         print("{} matches".format(len(matches)))
 
         for match in sorted(matches):

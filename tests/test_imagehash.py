@@ -1,17 +1,10 @@
 from duplicate_images import duplicate
-from duplicate_images.image_hash import resize, MAX_DIMENSION
-from duplicate_images.image_wrapper import ImageWrapper
-from duplicate_images.methods import compare_image_hash
+from duplicate_images.methods import COMPARISON_METHODS
 
 from tests.setup_images import SetupImages
 
 
 class TestImageHash(SetupImages):
-
-    def test_resize(self) -> None:
-        for image_file in duplicate.files_in_dirs([self.top_directory]):
-            resized = resize(ImageWrapper.create(image_file))
-            assert resized.image.width == MAX_DIMENSION
 
     def test_ahash(self) -> None:
         self.execute_for_hash('ahash')
@@ -27,7 +20,7 @@ class TestImageHash(SetupImages):
 
     def execute_for_hash(self, hash_func: str) -> None:
         equals = duplicate.similar_images(
-            self.get_image_files(), compare_image_hash(hash_func), self.ASPECT_FUZZINESS,
+            self.get_image_files(), COMPARISON_METHODS[hash_func], self.ASPECT_FUZZINESS,
             self.RMS_ERROR
         )
         assert (self.jpeg_file, self.half_file) in equals

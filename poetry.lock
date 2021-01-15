@@ -45,6 +45,20 @@ version = "0.4.4"
 
 [[package]]
 category = "dev"
+description = "A memory profiler for data batch processing applications."
+name = "filprofiler"
+optional = false
+python-versions = ">=3.6"
+version = "0.14.0"
+
+[package.dependencies]
+threadpoolctl = "*"
+
+[package.extras]
+dev = ["pytest", "pampy", "numpy", "cython", "black", "towncrier (19.9.0rc1)", "wheel", "auditwheel", "twine", "ipython", "ipykernel", "nbconvert (<6)", "numexpr", "blosc", "psutil"]
+
+[[package]]
+category = "dev"
 description = "the modular source code checker: pep8 pyflakes and co"
 name = "flake8"
 optional = false
@@ -283,6 +297,14 @@ version = "1.15.0"
 
 [[package]]
 category = "dev"
+description = "threadpoolctl"
+name = "threadpoolctl"
+optional = false
+python-versions = ">=3.5"
+version = "2.1.0"
+
+[[package]]
+category = "dev"
 description = "Python Library for Tom's Obvious, Minimal Language"
 name = "toml"
 optional = false
@@ -326,7 +348,7 @@ python-versions = "*"
 version = "1.12.1"
 
 [metadata]
-content-hash = "1b1c9688180472bfd8a6096c1b32bb85474ff7358e061fa89fbcd4817f1b5ae4"
+content-hash = "f00f3c95df8c5c5974f7594f15dc9e5fe644a3f1fe8874ef2228a93e638bed2c"
 python-versions = "^3.8.5"
 
 [metadata.files]
@@ -345,6 +367,16 @@ attrs = [
 colorama = [
     {file = "colorama-0.4.4-py2.py3-none-any.whl", hash = "sha256:9f47eda37229f68eee03b24b9748937c7dc3868f906e8ba69fbcbdd3bc5dc3e2"},
     {file = "colorama-0.4.4.tar.gz", hash = "sha256:5941b2b48a20143d2267e95b1c2a7603ce057ee39fd88e7329b0c292aa16869b"},
+]
+filprofiler = [
+    {file = "filprofiler-0.14.0-cp36-cp36m-macosx_10_14_x86_64.whl", hash = "sha256:75c68bcdbba2a15124f3571a4f8061e2cfc63505eb215ce130d39075c3dabf4b"},
+    {file = "filprofiler-0.14.0-cp36-cp36m-manylinux2010_x86_64.whl", hash = "sha256:23b59452f772cbc41ef057fe372abca419c81d598da05481e6bfd7216ea0ce67"},
+    {file = "filprofiler-0.14.0-cp37-cp37m-macosx_10_14_x86_64.whl", hash = "sha256:2010a4ca947d929cf616b3e10df6bf0366a976cb520d95721cf815f1b0d8e5eb"},
+    {file = "filprofiler-0.14.0-cp37-cp37m-manylinux2010_x86_64.whl", hash = "sha256:3d70a97925043a02698d86da42d61a1aded720e5604c37d1fc9f2a80236278cd"},
+    {file = "filprofiler-0.14.0-cp38-cp38-macosx_10_14_x86_64.whl", hash = "sha256:804ba965b3e06807562af6304d9e0f16a5ca3891b954dbff90ad207416c0bb34"},
+    {file = "filprofiler-0.14.0-cp38-cp38-manylinux2010_x86_64.whl", hash = "sha256:3d4f0d5e4bb4a7d7139004b4230eef19559405e7c0c21b829bb7ca79ef467ef1"},
+    {file = "filprofiler-0.14.0-cp39-cp39-macosx_10_14_x86_64.whl", hash = "sha256:0dbd5b09791f1090b3fe0c4ff004faf32cb137018007743a18644b8e1b89dd93"},
+    {file = "filprofiler-0.14.0-cp39-cp39-manylinux2010_x86_64.whl", hash = "sha256:d0327889f547beb7ac451a79c6e8dd5d15f8c09d63d86c140a5bb4bb64b9b47e"},
 ]
 flake8 = [
     {file = "flake8-3.8.4-py2.py3-none-any.whl", hash = "sha256:749dbbd6bfd0cf1318af27bf97a14e28e5ff548ef8e5b1566ccfb25a11e7c839"},
@@ -595,6 +627,10 @@ scipy = [
 six = [
     {file = "six-1.15.0-py2.py3-none-any.whl", hash = "sha256:8b74bedcbbbaca38ff6d7491d76f2b06b3592611af620f8426e82dddb04a5ced"},
     {file = "six-1.15.0.tar.gz", hash = "sha256:30639c035cdb23534cd4aa2dd52c3bf48f06e5f4a941509c8bafd8ce11080259"},
+]
+threadpoolctl = [
+    {file = "threadpoolctl-2.1.0-py3-none-any.whl", hash = "sha256:38b74ca20ff3bb42caca8b00055111d74159ee95c4370882bbff2b93d24da725"},
+    {file = "threadpoolctl-2.1.0.tar.gz", hash = "sha256:ddc57c96a38beb63db45d6c159b5ab07b6bced12c45a1f07b2b92f272aebfa6b"},
 ]
 toml = [
     {file = "toml-0.10.2-py2.py3-none-any.whl", hash = "sha256:806143ae5bfb6a3c6e736a764057db0e6a0e05e338b5630894a5f779cabb4f9b"},
