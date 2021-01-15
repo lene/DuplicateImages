@@ -15,7 +15,7 @@ $ find-dups $IMAGE_ROOT
 ### Image comparison algorithms
 
 Use the `--algorithm` option to select how equal images are found.
-- `exact`: marks only binary exactly equal files as equal. This is by far the fasted, but most 
+- `exact`: marks only binary exactly equal files as equal. This is by far the fastest, but most 
   restricted algorithm.
 - `histogram`: checks the images' color histograms for equality. Faster than the image hashing 
   algorithms, but tends to give a lot of false positives for images that are similar, but not equal.
