@@ -1,14 +1,15 @@
 __author__ = 'Lene Preuss <lene.preuss@gmail.com>'
 
-from functools import lru_cache
+from functools import lru_cache, partial
 from hashlib import sha256
 from pathlib import Path
 from subprocess import call  # noqa: S404
-from typing import Any, Callable, Dict, Tuple
+from typing import Dict
 
+from duplicate_images.function_types import ActionFunction, AlgorithmOptions, ComparisonFunction
 from duplicate_images.histogram import compare_image_histograms
 from duplicate_images.image_wrapper import ImageWrapper
-from duplicate_images.image_hash import resize, is_similar
+from duplicate_images.image_hash import is_similar, IMAGE_HASH_ALGORITHM
 
 
 @lru_cache(maxsize=None)
@@ -22,17 +23,19 @@ def get_hash(file: Path) -> str:
 
 
 def compare_exactly(
-        file: Path, other_file: Path, aspect_fuzziness: float, rms_error: float
+        file: Path, other_file: Path, options: AlgorithmOptions  # pylint: disable=unused-argument
 ) -> bool:
     """Returns True if file and other_file are exactly exactly_equal"""
     return get_size(other_file) == get_size(file) and get_hash(file) == get_hash(other_file)
 
 
 def compare_histograms(
-        file: Path, other_file: Path, aspect_fuzziness: float, rms_error: float
+        file: Path, other_file: Path, options: AlgorithmOptions
 ) -> bool:
     """Returns True if the histograms of file and other_file differ by
        less than rms_error"""
+    aspect_fuzziness = options['aspect_fuzziness']
+    rms_error = options['rms_error']
     try:
         return compare_image_histograms(
             ImageWrapper.create(file), ImageWrapper.create(other_file), aspect_fuzziness, rms_error
@@ -42,21 +45,26 @@ def compare_histograms(
 
 
 def compare_image_hash(
-        file: Path, other_file: Path, aspect_fuzziness: float, rms_error: float
+        algo: str, file: Path, other_file: Path,
+        options: AlgorithmOptions  # pylint: disable=unused-argument
 ) -> bool:
-    return is_similar(resize(ImageWrapper.create(file)), resize(ImageWrapper.create(other_file)))
+    return is_similar(
+        ImageWrapper.create(file), ImageWrapper.create(other_file),
+        IMAGE_HASH_ALGORITHM[algo]
+    )
 
 
-COMPARISON_METHODS = {
-    'compare_exactly': compare_exactly,
-    'compare_histograms': compare_histograms,
-    'image_hash': compare_image_hash
+COMPARISON_METHODS: Dict[str, ComparisonFunction] = {
+    'exact': compare_exactly,
+    'histogram': compare_histograms,
 }
+for key in IMAGE_HASH_ALGORITHM:
+    COMPARISON_METHODS[key] = partial(compare_image_hash, key)
 
-ACTIONS_ON_EQUALITY = {
+ACTIONS_ON_EQUALITY: Dict[str, ActionFunction] = {
     'delete_first': lambda pair: pair[0].unlink(),
     'delete_second': lambda pair: pair[1].unlink(),
     'view': lambda pair: call(["xv", "-nolim"] + [str(pic) for pic in pair]),  # noqa: S603
     'print': lambda pair: print(pair[0], pair[1]),
     'none': lambda pair: None
-}  # type: Dict[str, Callable[[Tuple[Path, Path]], Any]]
+}

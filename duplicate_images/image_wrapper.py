@@ -1,9 +1,10 @@
 __author__ = 'lene'
 
+from functools import lru_cache
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
-from PIL import Image
+from typing import Dict, List, Tuple
 from imghdr import what
+from PIL import Image
 
 
 class ImageWrapper:
@@ -14,39 +15,48 @@ class ImageWrapper:
     cache: Dict[Path, 'ImageWrapper'] = {}
 
     @classmethod
-    def create(cls, file: Path) -> 'ImageWrapper':
+    def create(cls, file: Path, image: Image = None) -> 'ImageWrapper':
         """Create an ImageWrapper; if it was already created, return existing object"""
         if file not in cls.cache:
-            cls.cache[file] = ImageWrapper(file)
-
+            cls.cache[file] = ImageWrapper(file, image)
         return cls.cache[file]
 
+    @classmethod
+    def max_dimension(cls) -> int:
+        return 200
+
     def __init__(self, file: Path, image: Image = None) -> None:
-        self.filename = file
-        self.image = Image.open(self.filename) if image is None else image
-        self.size: Tuple[int, int] = self.image.size
-        self.histogram: Optional[List[float]] = None
+        self.file = file
+        image = Image.open(self.file) if image is None else image
+        self.original_size: Tuple[int, int] = image.size
+        reference_size = max(self.original_size)
+        scale_factor = self.max_dimension() / reference_size
+        new_size = (int(image.size[0] * scale_factor), int(image.size[1] * scale_factor))
+        self.resized_image = image.resize(new_size)
 
-    def resize(self, new_size: Tuple[int, int]) -> 'ImageWrapper':
-        return ImageWrapper(self.filename, self.image.resize(new_size))
+    @property
+    def original_image(self) -> Image.Image:
+        return Image.open(self.file)
 
+    @property
+    def resized_size(self) -> Tuple[int, int]:
+        return self.resized_image.size
+
+    @lru_cache(maxsize=None)
     def get_area(self) -> int:
-        return self.size[0] * self.size[1]
+        return self.original_size[0] * self.original_size[1]
 
+    @lru_cache(maxsize=None)
     def get_aspect(self) -> float:
-        return self.size[0] / self.size[1]
+        return self.original_size[0] / self.original_size[1]
 
+    @lru_cache(maxsize=None)
     def get_histogram(self) -> List[float]:
         """Returns the histogram of the image file, every value normalized to [0..1]"""
         def normalized_value(val: float) -> float:
             return val / self.get_area()
 
-        if self.histogram is None:
-            self.histogram = list(map(
-                normalized_value,
-                Image.open(self.filename).convert("RGB").histogram()
-            ))
-        return self.histogram
+        return list(map(normalized_value, Image.open(self.file).convert("RGB").histogram()))
 
     @classmethod
     def is_image_file(cls, filename: Path) -> bool:

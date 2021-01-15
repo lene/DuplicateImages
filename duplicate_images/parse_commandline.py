@@ -21,8 +21,8 @@ def parse_command_line() -> Namespace:
         help="Maximum difference in aspect ratios of two images to compare more closely"
     )
     parser.add_argument(
-        '--comparison-method', choices=COMPARISON_METHODS.keys(),
-        default='compare_exactly',
+        '--algorithm', choices=COMPARISON_METHODS.keys(),
+        default='exact',
         help="Method used to determine if two images are considered equal"
     )
     parser.add_argument(
