@@ -57,11 +57,9 @@ def compare_image_hash(
 COMPARISON_METHODS: Dict[str, ComparisonFunction] = {
     'exact': compare_exactly,
     'histogram': compare_histograms,
-    'ahash': partial(compare_image_hash, 'ahash'),
-    'colorhash': partial(compare_image_hash, 'colorhash'),
-    'dhash': partial(compare_image_hash, 'dhash'),
-    'phash': partial(compare_image_hash, 'phash')
 }
+for key in IMAGE_HASH_ALGORITHM:
+    COMPARISON_METHODS[key] = partial(compare_image_hash, key)
 
 ACTIONS_ON_EQUALITY: Dict[str, ActionFunction] = {
     'delete_first': lambda pair: pair[0].unlink(),

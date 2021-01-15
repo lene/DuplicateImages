@@ -19,6 +19,9 @@ class TestImageHash(SetupImages):
     def test_phash(self) -> None:
         self.execute_for_hash('phash')
 
+    def test_whash(self) -> None:
+        self.execute_for_hash('whash')
+
     def test_ahash_parallel(self) -> None:
         self.execute_parallel_for_hash('ahash')
 
@@ -30,6 +33,9 @@ class TestImageHash(SetupImages):
 
     def test_phash_parallel(self) -> None:
         self.execute_parallel_for_hash('phash')
+
+    def test_whash_parallel(self) -> None:
+        self.execute_parallel_for_hash('whash')
 
     def execute_for_hash(self, hash_func: str) -> None:
         equals = duplicate.similar_images(

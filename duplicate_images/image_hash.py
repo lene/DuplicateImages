@@ -13,7 +13,8 @@ IMAGE_HASH_ALGORITHM = {
     'ahash': imagehash.average_hash,
     'colorhash': imagehash.colorhash,
     'dhash': imagehash.dhash,
-    'phash': imagehash.phash
+    'phash': imagehash.phash,
+    'whash': imagehash.whash
 }
 
 
