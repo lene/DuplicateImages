@@ -7,10 +7,11 @@ Finds equal or similar images in a directory containing (many) image files.
 $ pip install duplicate_images
 $ find-dups -h
 ```
-or just
+to print the help screen. Or just
 ```shell
 $ find-dups $IMAGE_ROOT 
 ```
+for a test run.
 
 ### Image comparison algorithms
 
@@ -27,6 +28,19 @@ Use the `--algorithm` option to select how equal images are found.
   and only evaluating the other algorithms if `ahash` does not perform satisfactorily in your use 
   case.
 
+### Actions for matching image pairs
+
+Use the `--on-equal` option to select what to do to pairs of equal images.
+- `delete-first`: deletes the first of the two files
+- `delete-second`: deletes the second of the two files
+- `delete-bigger`: deletes the file with the bigger size
+- `delete-smaller`: deletes the file with the smaller size
+- `eog`: launches the `eog` image viewer to compare the two files
+- `xv`: launches the `xv` image viewer to compare the two files
+- `print`: prints the two files
+- `none`: does nothing.
+The default action is `print`.
+  
 ### Parallel execution
 
 Use the `--parallel` option to utilize all free cores on your system. There is also the 
@@ -82,11 +96,12 @@ $ ln -s ../../.git_hooks/pre-push .
 ### Publishing
 
 ```shell
+$ poetry config repositories.testpypi https://test.pypi.org/legacy/
 $ poetry build
-$ poetry publish --username $PYPI_USER --password $PYPI_PASSWORD --repository testpypi
-$ poetry publish --username $PYPI_USER --password $PYPI_PASSWORD
+$ poetry publish --username $PYPI_USER --password $PYPI_PASSWORD --repository testpypi && \
+  poetry publish --username $PYPI_USER --password $PYPI_PASSWORD
 ```
-
+(obviously assuming that username and password are the same on PyPI and TestPyPI)
 ### Profiling
 
 #### CPU time
