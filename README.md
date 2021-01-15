@@ -2,15 +2,13 @@
 
 Finds equal or similar images in a directory containing (many) image files.
 
-Needs Python3 and Pillow imaging library to run, additionally Wand for the test suite.
-
-Uses Poetry for dependency management.
-
 ## Usage
 ```shell
 $ pip install duplicate_images
 $ find-dups -h
-<OR JUST>
+```
+or just
+```shell
 $ find-dups $IMAGE_ROOT 
 ```
 
@@ -22,12 +20,25 @@ Use the `--algorithm` option to select how equal images are found.
 - `histogram`: checks the images' color histograms for equality. Faster than the image hashing 
   algorithms, but tends to give a lot of false positives for images that are similar, but not equal.
   Use the `--fuzziness` and `--aspect-fuzziness` options to fine-tune its behavior.
-- `ahash`, `colorhash`, `dhash` and `phash`: four different image hashing algorithms. See 
+- `ahash`, `colorhash`, `dhash`, `phash`, `whash`: five different image hashing algorithms. See 
   https://pypi.org/project/ImageHash for an introduction on image hashing and 
   https://tech.okcupid.com/evaluating-perceptual-image-hashes-okcupid for some gory details which
-  image hashing algorithm performs best in which situation. For a start I recommend `ahash`.
+  image hashing algorithm performs best in which situation. For a start I recommend using `ahash`, 
+  and only evaluating the other algorithms if `ahash` does not perform satisfactorily in your use 
+  case.
 
-## Development
+### Parallel execution
+
+Use the `--parallel` option to utilize all free cores on your system. There is also the 
+`--chunk-size` option to tune how many comparisons each thread should make in one go, but that 
+should hardly ever be advantageous to set explicitly. 
+
+## Development notes
+
+Needs Python3 and Pillow imaging library to run, additionally Wand for the test suite.
+
+Uses Poetry for dependency management.
+
 ### Installation
 
 From source:
@@ -49,13 +60,23 @@ $ poetry run find-dups -h
 ```
 for a list of all possible options.
 
-### Testing
+### Test suite
 
-Running:
+Running it all:
 ```shell
+$ poetry run pytest
 $ poetry run mypy duplicate_images tests
 $ poetry run flake8
-$ poetry run pytest
+$ poetry run pylint duplicate_images tests
+```
+or simply 
+```shell
+$ .git_hooks/pre-push
+```
+Setting the test suite to be run before every push:
+```shell
+$ cd .git/hooks
+$ ln -s ../../.git_hooks/pre-push .
 ```
 
 ### Publishing

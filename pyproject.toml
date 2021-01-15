@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "duplicate_images"
-version = "0.2.0"
+version = "0.2.1"
 description = ""
 authors = ["Lene Preuss <lene.preuss@gmail.com>"]
 repository = "https://gitlab.com/lilacashes/DuplicateImages.git"
