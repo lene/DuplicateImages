@@ -1,11 +1,12 @@
 stages:
   - test
+  - publish
 
 .test:
   stage: test
   image: python:3.9
   before_script:
-    - pip install poetry
+    - pip install -q poetry
     - poetry install
 
 pytest:
@@ -31,3 +32,24 @@ pylint:
   extends: .test
   script:
     - poetry run pylint duplicate_images tests
+
+PublishToPyPI:
+  stage: publish
+  image: python:3.9
+  rules:
+    - if: "$CI_COMMIT_TAG"
+      when: on_success
+  script:
+    - VERSION=$(egrep 'version = ".*"' pyproject.toml | cut -d \" -f 2)
+    - test "${CI_COMMIT_TAG}" == "${VERSION}" || exit 1
+    - echo "**** Upgrading to ${VERSION}"
+    - pip install -q poetry
+    - poetry build
+    - poetry config repositories.testpypi https://test.pypi.org/legacy/
+    - poetry publish --username ${PYPI_USERNAME} --password ${PYPI_PASSWORD} --repository testpypi
+    - echo "**** Attempting pip install from test PyPI server"
+    - apt-get -y -qq update
+    - apt-get -y -q install libsndfile1 ffmpeg > /dev/null
+    - pip install -q --index-url https://test.pypi.org/simple --extra-index-url https://pypi.org/simple duplicate_images
+    - echo "**** Publishing on live PyPI server"
+    - poetry publish --username ${PYPI_USERNAME} --password ${PYPI_PASSWORD}
