@@ -2,8 +2,9 @@ __author__ = 'lene'
 
 from typing import Any, List, Tuple
 
-from duplicate_images import duplicate
-from duplicate_images.duplicate import ParallelOptions
+from duplicate_images.duplicate import files_in_dirs
+from duplicate_images.image_pair_finder import ImagePairFinder
+from duplicate_images.parallel_options import ParallelOptions
 from duplicate_images.methods import IMAGE_HASH_ALGORITHM
 from tests.setup_images import SetupImages
 
@@ -17,7 +18,7 @@ def element_in_list_of_tuples(element: Any, tuples: List[Tuple[Any, Any]]) -> bo
 class DuplicateTest(SetupImages):  # pylint: disable=too-many-public-methods
 
     def test_get_files(self) -> None:
-        files = duplicate.files_in_dirs([self.top_directory])
+        files = files_in_dirs([self.top_directory])
         assert set(files) == set(self.image_files)
 
     def test_hashes_equal_for_copied_image_ahash(self) -> None:
@@ -97,7 +98,7 @@ class DuplicateTest(SetupImages):  # pylint: disable=too-many-public-methods
 
     def _check_hashes_equal_for_copied_image(self, algorithm: str) -> None:
         copied_file = self.copy_image_file(self.jpeg_file)
-        equals = duplicate.ImagePairFinder(
+        equals = ImagePairFinder(
             self.get_image_files(), IMAGE_HASH_ALGORITHM[algorithm], self.options
         ).get_pairs()
         try:
@@ -106,25 +107,25 @@ class DuplicateTest(SetupImages):  # pylint: disable=too-many-public-methods
             self.delete_image_file(copied_file)
 
     def _check_hashes_not_equal_for_noisy_image(self, algorithm: str) -> None:
-        equals = duplicate.ImagePairFinder(
+        equals = ImagePairFinder(
             self.get_image_files(), IMAGE_HASH_ALGORITHM[algorithm], self.options
         ).get_pairs()
         assert not element_in_list_of_tuples(self.subdir_file, equals)
 
     def _check_hashes_equal_for_different_image_format(self, algorithm: str) -> None:
-        equals = duplicate.ImagePairFinder(
+        equals = ImagePairFinder(
             self.get_image_files(), IMAGE_HASH_ALGORITHM[algorithm], self.options
         ).get_pairs()
         assert (self.jpeg_file, self.png_file) in equals
 
     def _check_hashes_equal_for_scaled_image(self, algorithm: str) -> None:
-        equals = duplicate.ImagePairFinder(
+        equals = ImagePairFinder(
             self.get_image_files(), IMAGE_HASH_ALGORITHM[algorithm], self.options
         ).get_pairs()
         assert (self.jpeg_file, self.half_file) in equals
 
     def _check_parallel_filtering_gives_same_results(self, algorithm: str) -> None:
-        equals = duplicate.ImagePairFinder(
+        equals = ImagePairFinder(
             self.get_image_files(), IMAGE_HASH_ALGORITHM[algorithm], ParallelOptions(parallel=True)
         ).get_pairs()
         assert len(equals) == 3

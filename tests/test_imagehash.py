@@ -1,6 +1,7 @@
-from duplicate_images import duplicate
 from duplicate_images.function_types import Results
+from duplicate_images.image_pair_finder import ImagePairFinder
 from duplicate_images.methods import IMAGE_HASH_ALGORITHM
+from duplicate_images.parallel_options import ParallelOptions
 
 from tests.setup_images import SetupImages
 
@@ -38,15 +39,15 @@ class TestImageHash(SetupImages):
         self.execute_parallel_for_hash('whash')
 
     def execute_for_hash(self, hash_func: str) -> None:
-        equals = duplicate.ImagePairFinder(
+        equals = ImagePairFinder(
             self.get_image_files(), IMAGE_HASH_ALGORITHM[hash_func], self.options
         ).get_pairs()
         self.check_results(equals)
 
     def execute_parallel_for_hash(self, hash_func: str) -> None:
-        equals = duplicate.ImagePairFinder(
+        equals = ImagePairFinder(
             self.get_image_files(), IMAGE_HASH_ALGORITHM[hash_func],
-            duplicate.ParallelOptions(parallel=True)
+            ParallelOptions(parallel=True)
         ).get_pairs()
         self.check_results(equals)
 

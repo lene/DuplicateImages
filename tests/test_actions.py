@@ -4,6 +4,7 @@ from pathlib import Path
 
 from duplicate_images import duplicate
 from duplicate_images.function_types import Results
+from duplicate_images.image_pair_finder import ImagePairFinder
 from duplicate_images.methods import IMAGE_HASH_ALGORITHM
 from tests.setup_images import SetupImages
 
@@ -15,7 +16,7 @@ class ActionsTest(SetupImages):
     to_create = {'jpeg', 'half'}
 
     def get_equals(self) -> Results:
-        equals = duplicate.ImagePairFinder(
+        equals = ImagePairFinder(
             self.get_image_files(), HASH_ALGORITHM, self.options
         ).get_pairs()
         assert len(equals) == 1
