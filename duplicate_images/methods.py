@@ -1,5 +1,6 @@
 __author__ = 'Lene Preuss <lene.preuss@gmail.com>'
 
+import logging
 from functools import lru_cache, partial
 from hashlib import sha256
 from pathlib import Path
@@ -58,6 +59,11 @@ def ascending_by_size(pair: Tuple[Path, Path]) -> List[Path]:
     return sorted(pair, key=lambda path: path.stat().st_size)
 
 
+def delete_with_log_message(file: Path) -> None:
+    file.unlink()
+    logging.info("Deleted %s/%s", file.parent.name, file.name)
+
+
 COMPARISON_METHODS: Dict[str, ComparisonFunction] = {
     'exact': compare_exactly,
     'histogram': compare_histograms,
@@ -66,10 +72,10 @@ for key in IMAGE_HASH_ALGORITHM:
     COMPARISON_METHODS[key] = partial(compare_image_hash, key)
 
 ACTIONS_ON_EQUALITY: Dict[str, ActionFunction] = {
-    'delete-first': lambda pair: pair[0].unlink(),
-    'delete-second': lambda pair: pair[1].unlink(),
-    'delete-bigger': lambda pair: ascending_by_size(pair)[-1].unlink(),
-    'delete-smaller': lambda pair: ascending_by_size(pair)[0].unlink(),
+    'delete-first': lambda pair: delete_with_log_message(pair[0]),
+    'delete-second': lambda pair: delete_with_log_message(pair[1]),
+    'delete-bigger': lambda pair: delete_with_log_message(ascending_by_size(pair)[-1]),
+    'delete-smaller': lambda pair: delete_with_log_message(ascending_by_size(pair)[0]),
     'eog': lambda pair: call(["eog"] + [str(pic) for pic in pair]),  # noqa: S603
     'xv': lambda pair: call(["xv", "-nolim"] + [str(pic) for pic in pair]),  # noqa: S603
     'print': lambda pair: print(pair[0], pair[1]),

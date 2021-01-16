@@ -37,7 +37,7 @@ class ImageWrapper:
             self.resized_image = image.resize(new_size)
             self.valid = True
         except OSError as err:
-            logging.error("%s/%s: %s", file.parent.name, file.name, err)
+            logging.warning("%s/%s: %s", file.parent.name, file.name, err)
             self.resized_image = None
             self.valid = False
 
