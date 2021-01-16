@@ -103,6 +103,7 @@ def execute_actions(matches: Results, action_name: str) -> None:
 def main() -> None:
     args = parse_command_line()
     setup_logging(args)
+    logging.info('Scanning %s', ' '.join(args.root_directory))
     try:
         options = {'aspect_fuzziness': args.aspect_fuzziness, 'rms_error': args.fuzziness}
         matches = get_matches(

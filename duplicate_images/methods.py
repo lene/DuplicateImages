@@ -64,6 +64,18 @@ def delete_with_log_message(file: Path) -> None:
     logging.info("Deleted %s/%s", file.parent.name, file.name)
 
 
+def quote_print(pair: Tuple[Path, Path]) -> None:
+    quotes = []
+    for path in pair:
+        if '"' in str(path):
+            if "'" in str(path):
+                raise ValueError(f"{path} contains both single and double quotes, giving up")
+            quotes.append("'")
+        else:
+            quotes.append('"')
+    print(f"{quotes[0]}{pair[0]}{quotes[0]} {quotes[1]}{pair[1]}{quotes[1]}")
+
+
 COMPARISON_METHODS: Dict[str, ComparisonFunction] = {
     'exact': compare_exactly,
     'histogram': compare_histograms,
@@ -75,9 +87,12 @@ ACTIONS_ON_EQUALITY: Dict[str, ActionFunction] = {
     'delete-first': lambda pair: delete_with_log_message(pair[0]),
     'delete-second': lambda pair: delete_with_log_message(pair[1]),
     'delete-bigger': lambda pair: delete_with_log_message(ascending_by_size(pair)[-1]),
+    'd>': lambda pair: delete_with_log_message(ascending_by_size(pair)[-1]),
     'delete-smaller': lambda pair: delete_with_log_message(ascending_by_size(pair)[0]),
+    'd<': lambda pair: delete_with_log_message(ascending_by_size(pair)[0]),
     'eog': lambda pair: call(["eog"] + [str(pic) for pic in pair]),  # noqa: S603
     'xv': lambda pair: call(["xv", "-nolim"] + [str(pic) for pic in pair]),  # noqa: S603
     'print': lambda pair: print(pair[0], pair[1]),
+    'quote': quote_print,
     'none': lambda pair: None
 }
