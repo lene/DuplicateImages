@@ -2,7 +2,7 @@ __author__ = 'lene'
 
 from argparse import ArgumentParser, Namespace
 
-from duplicate_images.methods import COMPARISON_METHODS, ACTIONS_ON_EQUALITY
+from duplicate_images.methods import ACTIONS_ON_EQUALITY, IMAGE_HASH_ALGORITHM
 
 
 def parse_command_line() -> Namespace:
@@ -13,7 +13,7 @@ def parse_command_line() -> Namespace:
         help="The root of the directory tree under which images are compared"
     )
     parser.add_argument(
-        '--algorithm', choices=COMPARISON_METHODS.keys(),
+        '--algorithm', choices=IMAGE_HASH_ALGORITHM.keys(),
         default='exact',
         help="Method used to determine if two images are considered equal"
     )
@@ -26,14 +26,6 @@ def parse_command_line() -> Namespace:
     )
     parser.add_argument(
         '--chunk-size', type=int, help="Chunk size for parallelization"
-    )
-    parser.add_argument(
-        '--fuzziness', '-f', default=0.001, type=float,
-        help="Maximum deviation (RMS) of the histograms of two images still considered equal"
-    )
-    parser.add_argument(
-        '--aspect-fuzziness', default=0.05, type=float,
-        help="Maximum difference in aspect ratios of two images to compare more closely"
     )
     parser.add_argument(
         '--debug', action='store_true', help="Print lots of debugging info"
