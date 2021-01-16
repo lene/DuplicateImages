@@ -14,7 +14,7 @@ def parse_command_line() -> Namespace:
     )
     parser.add_argument(
         '--algorithm', choices=IMAGE_HASH_ALGORITHM.keys(),
-        default='exact',
+        default='phash',
         help="Method used to determine if two images are considered equal"
     )
     parser.add_argument(
@@ -23,9 +23,6 @@ def parse_command_line() -> Namespace:
     )
     parser.add_argument(
         '--parallel', action='store_true', help="Filter using all available cores (Experimental)"
-    )
-    parser.add_argument(
-        '--chunk-size', type=int, help="Chunk size for parallelization"
     )
     parser.add_argument(
         '--debug', action='store_true', help="Print lots of debugging info"

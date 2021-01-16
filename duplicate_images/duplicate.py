@@ -6,6 +6,7 @@ from os import walk
 from pathlib import Path
 from typing import Callable, List
 
+from duplicate_images.common import path_with_parent
 from duplicate_images.function_types import Results
 from duplicate_images.image_pair_finder import ImagePairFinder
 from duplicate_images.logging import setup_logging
@@ -43,7 +44,7 @@ def get_matches(
     image_files = sorted(files_in_dirs(root_directories, is_image_file))
     logging.info("%d total files", len(image_files))
 
-    return ImagePairFinder(image_files, hash_algorithm, parallel_options).get_pairs()
+    return ImagePairFinder.create(image_files, hash_algorithm, parallel_options).get_pairs()
 
 
 def execute_actions(matches: Results, action_name: str) -> None:
@@ -55,18 +56,15 @@ def execute_actions(matches: Results, action_name: str) -> None:
             continue
 
 
-def path_names_with_parent(folders: List[Path]) -> str:
-    return ' '.join(['/'.join(str(folder).split('/')[-2:]) for folder in folders])
-
-
 def main() -> None:
     args = parse_command_line()
     setup_logging(args)
-    logging.info('Scanning %s', path_names_with_parent(args.root_directory))
+    for folder in args.root_directory:
+        logging.info('Scanning %s', path_with_parent(folder))
     try:
         matches = get_matches(
             [Path(folder) for folder in args.root_directory], args.algorithm,
-            ParallelOptions(args.parallel, args.chunk_size)
+            ParallelOptions(args.parallel)
         )
         logging.info("%d matches", len(matches))
         execute_actions(matches, args.on_equal)
