@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "duplicate_images"
-version = "0.3.1"
+version = "0.3.2"
 description = ""
 authors = ["Lene Preuss <lene.preuss@gmail.com>"]
 repository = "https://gitlab.com/lilacashes/DuplicateImages.git"
@@ -19,6 +19,7 @@ python = "^3.8.5"
 Wand = "^0.6.5"
 pillow = "^8.1.0"
 imagehash = "^4.2.0"
+coloredlogs = "^15.0"
 
 [tool.poetry.dev-dependencies]
 lz4 = "^3.1.1"

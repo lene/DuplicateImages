@@ -10,6 +10,7 @@ from typing import Callable, List, Optional
 
 from duplicate_images.function_types import ComparisonFunction, AlgorithmOptions, Results
 from duplicate_images.image_wrapper import ImageWrapper
+from duplicate_images.logging import setup_logging
 from duplicate_images.methods import COMPARISON_METHODS, ACTIONS_ON_EQUALITY
 from duplicate_images.parse_commandline import parse_command_line
 
@@ -101,11 +102,7 @@ def execute_actions(matches: Results, action_name: str) -> None:
 
 def main() -> None:
     args = parse_command_line()
-    log_level = logging.DEBUG if args.debug else logging.INFO
-    logging.basicConfig(
-        format='%(asctime)s %(levelname)s: %(message)s', level=log_level,
-        datefmt='%H:%M:%S'
-    )
+    setup_logging(args)
     try:
         options = {'aspect_fuzziness': args.aspect_fuzziness, 'rms_error': args.fuzziness}
         matches = get_matches(
