@@ -1,5 +1,6 @@
 #!/usr/bin/env /usr/bin/python3
 
+import logging
 from dataclasses import dataclass
 from functools import partial
 from multiprocessing.dummy import Pool
@@ -80,7 +81,7 @@ def get_matches(
     options = {} if options is None else options
     comparison_function = COMPARISON_METHODS[algorithm]
     image_files = sorted(files_in_dirs(root_directories, ImageWrapper.is_image_file))
-    print(f"{len(image_files)} total files")
+    logging.info("%d total files", len(image_files))
 
     matches = similar_images(
         image_files, comparison_function,
@@ -100,6 +101,8 @@ def execute_actions(matches: Results, action_name: str) -> None:
 
 def main() -> None:
     args = parse_command_line()
+    log_level = logging.DEBUG if args.debug else logging.INFO
+    logging.basicConfig(format='%(levelname)s: %(message)s', level=log_level)
     try:
         options = {'aspect_fuzziness': args.aspect_fuzziness, 'rms_error': args.fuzziness}
         matches = get_matches(
@@ -109,7 +112,7 @@ def main() -> None:
                 args.parallel, args.chunk_size if args.chunk_size else CHUNK_SIZE
             )
         )
-        print(f"{len(matches)} matches")
+        logging.info("%d matches", len(matches))
         execute_actions(matches, args.on_equal)
     except KeyboardInterrupt:
         pass

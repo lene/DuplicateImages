@@ -1,5 +1,6 @@
 __author__ = 'Lene Preuss <lene.preuss@gmail.com>'
 
+import logging
 from typing import Callable
 
 import imagehash
@@ -24,5 +25,7 @@ def is_similar(
     if not image.valid or not other_image.valid:
         return False
     hash_distance = hash_func(image.resized_image) - hash_func(other_image.resized_image)
-    # print(f'hash_distance {image.file.stem}, {other_image.file.stem} -> {hash_distance}')
+    logging.debug(
+        "hash_distance %s, %s -> %s", image.file.stem, other_image.file.stem, hash_distance
+    )
     return hash_distance == 0

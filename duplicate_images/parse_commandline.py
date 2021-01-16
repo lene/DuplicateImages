@@ -35,5 +35,8 @@ def parse_command_line() -> Namespace:
         '--aspect-fuzziness', default=0.05, type=float,
         help="Maximum difference in aspect ratios of two images to compare more closely"
     )
+    parser.add_argument(
+        '--debug', action='store_true', help="Print lots of debugging info"
+    )
 
     return parser.parse_args()
