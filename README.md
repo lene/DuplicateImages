@@ -24,8 +24,8 @@ Use the `--algorithm` option to select how equal images are found.
 - `ahash`, `colorhash`, `dhash`, `phash`, `whash`: five different image hashing algorithms. See 
   https://pypi.org/project/ImageHash for an introduction on image hashing and 
   https://tech.okcupid.com/evaluating-perceptual-image-hashes-okcupid for some gory details which
-  image hashing algorithm performs best in which situation. For a start I recommend using `ahash`, 
-  and only evaluating the other algorithms if `ahash` does not perform satisfactorily in your use 
+  image hashing algorithm performs best in which situation. For a start I recommend using `phash`, 
+  and only evaluating the other algorithms if `phash` does not perform satisfactorily in your use 
   case.
 
 ### Actions for matching image pairs
@@ -33,11 +33,12 @@ Use the `--algorithm` option to select how equal images are found.
 Use the `--on-equal` option to select what to do to pairs of equal images.
 - `delete-first`: deletes the first of the two files
 - `delete-second`: deletes the second of the two files
-- `delete-bigger`: deletes the file with the bigger size
-- `delete-smaller`: deletes the file with the smaller size
+- `delete-bigger` or `d>`: deletes the file with the bigger size
+- `delete-smaller` or `d<`: deletes the file with the smaller size
 - `eog`: launches the `eog` image viewer to compare the two files
 - `xv`: launches the `xv` image viewer to compare the two files
 - `print`: prints the two files
+- `quote`: prints the two files with quotes around each 
 - `none`: does nothing.
 The default action is `print`.
   

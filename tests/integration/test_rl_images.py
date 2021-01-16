@@ -111,6 +111,6 @@ def test_weird_cases(data_dir, test_case, image_pair, algorithm, expected_pairs)
     'algorithm',
     ['ahash', 'dhash', 'colorhash', 'phash', 'whash', 'histogram']
 )
-def test_broken_image_files(data_dir, algorithm):
+def test_broken_image_files_do_not_raise_os_error(data_dir, algorithm):
     folder = data_dir / 'broken'
     get_matches([folder], algorithm, OPTIONS)
