@@ -120,7 +120,7 @@ description = "LZ4 Bindings for Python"
 name = "lz4"
 optional = false
 python-versions = ">=3.5"
-version = "3.1.1"
+version = "3.1.2"
 
 [package.extras]
 docs = ["sphinx (>=1.6.0)", "sphinx-bootstrap-theme"]
@@ -419,35 +419,20 @@ lazy-object-proxy = [
     {file = "lazy_object_proxy-1.4.3-cp38-cp38-win_amd64.whl", hash = "sha256:59f79fef100b09564bc2df42ea2d8d21a64fdcda64979c0fa3db7bdaabaf6239"},
 ]
 lz4 = [
-    {file = "lz4-3.1.1-cp35-cp35m-macosx_10_6_intel.whl", hash = "sha256:9357141371bb234b4a4c477f0a5b4acd910eca58919210fdadf450ef2333140a"},
-    {file = "lz4-3.1.1-cp35-cp35m-manylinux1_i686.whl", hash = "sha256:194dde84e58bb4ea4d6ae2fa043e44e60424a4918d940599431fe538c73a898f"},
-    {file = "lz4-3.1.1-cp35-cp35m-manylinux1_x86_64.whl", hash = "sha256:5b8d9e1340a13e57b24e144290511ce7eea74c1e5ef46f80af9f69f7e9b37fae"},
-    {file = "lz4-3.1.1-cp35-cp35m-manylinux2010_i686.whl", hash = "sha256:a0ac8aa58c508bb00d200fb097bc70b3eb578b692073196b1da555666ef840b9"},
-    {file = "lz4-3.1.1-cp35-cp35m-manylinux2010_x86_64.whl", hash = "sha256:f317fc6f0dd8b41beb2d3e67f3a2486a500e9017a89e5b64f4f9b780f888b3db"},
-    {file = "lz4-3.1.1-cp35-cp35m-win32.whl", hash = "sha256:2a8fb5ee5a0c603041fefb71550ca901292cf21ffca5b8a58bbc4c62f4bf69d1"},
-    {file = "lz4-3.1.1-cp35-cp35m-win_amd64.whl", hash = "sha256:e3b477ece832109855929f15f8626d1ab9201d38c7f078bafd445aee00232158"},
-    {file = "lz4-3.1.1-cp36-cp36m-macosx_10_6_intel.whl", hash = "sha256:4686f9be6c910f2f91fc4ae91b2d61d3c33980cc21a084a87c373b96591035f2"},
-    {file = "lz4-3.1.1-cp36-cp36m-manylinux1_i686.whl", hash = "sha256:10ce932782cbe0bb6ec3cedfd0fc703e883bddcd795856d8afdcb7190249ca85"},
-    {file = "lz4-3.1.1-cp36-cp36m-manylinux1_x86_64.whl", hash = "sha256:4d701b94879561b17b241066e3a4353dcbdfc65c9af3b961497957b9e6cef54a"},
-    {file = "lz4-3.1.1-cp36-cp36m-manylinux2010_i686.whl", hash = "sha256:6f7b7b9706c1c7ef7237411b1d7170d51351e60b887c65ad6eb4d1bd606bc1f2"},
-    {file = "lz4-3.1.1-cp36-cp36m-manylinux2010_x86_64.whl", hash = "sha256:d250af6ca0635fd1bc90d9038eaf0caddc8907f2e2380953f2c10788583d0655"},
-    {file = "lz4-3.1.1-cp36-cp36m-win32.whl", hash = "sha256:a2f080c64966e00e7d669d56d31aa1944afa61bed10a7708484bb1af0b51fdde"},
-    {file = "lz4-3.1.1-cp36-cp36m-win_amd64.whl", hash = "sha256:490ac5b2b4ef168cee6d123c54e6993d8f2c4e337ecf7cefe768b52a9578fc9a"},
-    {file = "lz4-3.1.1-cp37-cp37m-macosx_10_6_intel.whl", hash = "sha256:d70ae984663e511ba64cfb6c54a920c44ecdce58e84e75ee1fea69dd3c367da3"},
-    {file = "lz4-3.1.1-cp37-cp37m-manylinux1_i686.whl", hash = "sha256:27f42cb2df6e14b20b2372b9eaf6cc3f3ec93923243d4fba3716e8678ce9dbd5"},
-    {file = "lz4-3.1.1-cp37-cp37m-manylinux1_x86_64.whl", hash = "sha256:6d345a8fca48ca43575605ea439c48f29fa13654178e434f174733b37878184f"},
-    {file = "lz4-3.1.1-cp37-cp37m-manylinux2010_i686.whl", hash = "sha256:5143463a9d103c5917bde06a1d44b53eea9b4f74aa3a5741208fa03a59bd099f"},
-    {file = "lz4-3.1.1-cp37-cp37m-manylinux2010_x86_64.whl", hash = "sha256:4aff99678c4255408e3546c45b918830616a80ba2b009a013bd442be08d08cc4"},
-    {file = "lz4-3.1.1-cp37-cp37m-win32.whl", hash = "sha256:42efc263bdc71352df47727cead220c2af0b9dc67acf34836488018159c39af9"},
-    {file = "lz4-3.1.1-cp37-cp37m-win_amd64.whl", hash = "sha256:769fb9983a808beadf67ed5a9da8cefa1347e7dcb2ac61236f7828797a7b5e8f"},
-    {file = "lz4-3.1.1-cp38-cp38-macosx_10_9_x86_64.whl", hash = "sha256:273b87db52f8ee0ec2d58204c4dd564f8aa59867319543d12af4feb8ce92a3bc"},
-    {file = "lz4-3.1.1-cp38-cp38-manylinux1_i686.whl", hash = "sha256:8aab2d7ff9ca67e4e7288f05c15310beff3b1b4f2ad14419f58f05c6f9b38860"},
-    {file = "lz4-3.1.1-cp38-cp38-manylinux1_x86_64.whl", hash = "sha256:fe5d1a8943e29800cec8c12732553dd2bba3c7ef8e96aa7c85a0253cf93e25a1"},
-    {file = "lz4-3.1.1-cp38-cp38-manylinux2010_i686.whl", hash = "sha256:3205dc27bbc4e85961727a4de129b6e52b0cc45bc9de3f91181343a2960a117c"},
-    {file = "lz4-3.1.1-cp38-cp38-manylinux2010_x86_64.whl", hash = "sha256:65ba0471437c37c976082eb078d0c9fb869f78ebd3c9e03d76a790313c9377fb"},
-    {file = "lz4-3.1.1-cp38-cp38-win32.whl", hash = "sha256:44aae2a2d0df97af76faeecc00af7e5ce387ea12ea2654db886b99705ae8d76a"},
-    {file = "lz4-3.1.1-cp38-cp38-win_amd64.whl", hash = "sha256:f846ad0671a60602d87918043561619b6a735d468170137ae675274ed05cb8fb"},
-    {file = "lz4-3.1.1.tar.gz", hash = "sha256:1ac354804cb2d5fb3d213857a6bf8590a301ef051cc16fbb4938bd2d6e524bda"},
+    {file = "lz4-3.1.2-cp35-cp35m-manylinux1_i686.whl", hash = "sha256:e5597b4e1c267dcf3acef60320efa7cb7fb7772426832ee7487486345a346d57"},
+    {file = "lz4-3.1.2-cp35-cp35m-manylinux1_x86_64.whl", hash = "sha256:7994c6227cf7beb947effef47dce1341c98b4349d2764701f6488a9ae6605a29"},
+    {file = "lz4-3.1.2-cp35-cp35m-manylinux2010_i686.whl", hash = "sha256:56e6f5044b1eca88c3cc30b3d0e067454d64d61c656427ea74565817f9b0b4ae"},
+    {file = "lz4-3.1.2-cp35-cp35m-manylinux2010_x86_64.whl", hash = "sha256:704b409194e6fa1d0f81cc505709848788758e92682c61e32916712763e4b6b4"},
+    {file = "lz4-3.1.2-cp36-cp36m-manylinux1_i686.whl", hash = "sha256:fb5da3ff270af8d89a394e8ddf9a25eb63e694d588ff8e0cee3172f0506d7307"},
+    {file = "lz4-3.1.2-cp36-cp36m-manylinux1_x86_64.whl", hash = "sha256:468750cfad758e422baf5dc9bd1ddb5ee2cc982cf7cdaae6c4cad562a9c675dc"},
+    {file = "lz4-3.1.2-cp36-cp36m-manylinux2010_i686.whl", hash = "sha256:b5681c5f02c0dd7b90bb3112a4b8a6398cd085e399583c7fa4b68433fb8fcaf3"},
+    {file = "lz4-3.1.2-cp36-cp36m-manylinux2010_x86_64.whl", hash = "sha256:d72efd15606e196598d003f75af0542f253991165b4e9ec2a6d2fa5d66ccffd2"},
+    {file = "lz4-3.1.2-cp37-cp37m-manylinux1_i686.whl", hash = "sha256:6fb4847f6bbc7b20773b153d2201a39702240fffb2e99863bc2f4a6614662dd4"},
+    {file = "lz4-3.1.2-cp37-cp37m-manylinux1_x86_64.whl", hash = "sha256:8bfbd7963794aaa7c4ecdfa2738e61469f40236ac2fe2cddd533c2aa9e306498"},
+    {file = "lz4-3.1.2-cp37-cp37m-manylinux2010_i686.whl", hash = "sha256:acc10c2d5f76ac10ea4b4ff1482addd0716f55d5678f7785db35a3f6431cee9c"},
+    {file = "lz4-3.1.2-cp37-cp37m-manylinux2010_x86_64.whl", hash = "sha256:3ffa62f84a6708e5fadc78028bc5fd09cffdfed3fc4ff7e2620492b747cd70d3"},
+    {file = "lz4-3.1.2-cp37-cp37m-manylinux2014_aarch64.whl", hash = "sha256:d8a67467d3fb5c14a624bebf9a4c41e2ace887665496a13f84843a10302706ed"},
+    {file = "lz4-3.1.2.tar.gz", hash = "sha256:8253f2bb118715d3f728d21e26d27edb3bb39de4ac606b1403c417a6c008b080"},
 ]
 mccabe = [
     {file = "mccabe-0.6.1-py2.py3-none-any.whl", hash = "sha256:ab8a6258860da4b6677da4bd2fe5dc2c659cff31b3ee4f7f5d64e79735b80d42"},

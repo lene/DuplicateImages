@@ -16,6 +16,8 @@ def compare_image_histograms(
     def get_deviations(hist: List[float], other_hist: List[float]) -> Iterator[float]:
         return map(lambda a, b: (a - b) ** 2, hist, other_hist)
 
+    if not image.valid or not other_image.valid:
+        return False
     if not aspects_roughly_equal(image, other_image, aspect_fuzziness):
         return False
     deviations = get_deviations(image.get_histogram(), other_image.get_histogram())

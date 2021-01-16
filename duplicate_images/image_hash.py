@@ -19,8 +19,10 @@ IMAGE_HASH_ALGORITHM = {
 
 
 def is_similar(
-        image1: ImageWrapper, image2: ImageWrapper, hash_func: Callable[[Image.Image], int]
+        image: ImageWrapper, other_image: ImageWrapper, hash_func: Callable[[Image.Image], int]
 ) -> bool:
-    hash_distance = hash_func(image1.resized_image) - hash_func(image2.resized_image)
-    # print(f'hash_distance {image1.file.stem}, {image2.file.stem} -> {hash_distance}')
+    if not image.valid or not other_image.valid:
+        return False
+    hash_distance = hash_func(image.resized_image) - hash_func(other_image.resized_image)
+    # print(f'hash_distance {image.file.stem}, {other_image.file.stem} -> {hash_distance}')
     return hash_distance == 0
