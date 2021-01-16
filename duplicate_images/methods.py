@@ -9,7 +9,7 @@ from typing import Dict, Tuple, List
 
 import imagehash
 
-from duplicate_images.function_types import ActionFunction, AlgorithmOptions
+from duplicate_images.function_types import ActionFunction
 
 
 @lru_cache(maxsize=None)
@@ -22,9 +22,7 @@ def get_hash(file: Path) -> str:
     return sha256(file.open('rb').read()).hexdigest()
 
 
-def compare_exactly(
-        file: Path, other_file: Path, options: AlgorithmOptions  # pylint: disable=unused-argument
-) -> bool:
+def compare_exactly(file: Path, other_file: Path) -> bool:
     """Returns True if file and other_file are exactly exactly_equal"""
     return get_size(other_file) == get_size(file) and get_hash(file) == get_hash(other_file)
 

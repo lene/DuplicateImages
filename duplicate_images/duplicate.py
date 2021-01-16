@@ -2,17 +2,15 @@
 
 import logging
 from dataclasses import dataclass
-from functools import partial
 from imghdr import what
-from multiprocessing.dummy import Pool as DummyPool
-from multiprocessing import Pool
+from multiprocessing.dummy import Pool
 from os import walk
 from pathlib import Path
 from typing import Callable, Dict, List, Optional, Tuple
 
 from PIL import Image
 
-from duplicate_images.function_types import HashFunction, AlgorithmOptions, Results
+from duplicate_images.function_types import HashFunction, Results
 from duplicate_images.logging import setup_logging
 from duplicate_images.methods import ACTIONS_ON_EQUALITY, IMAGE_HASH_ALGORITHM
 from duplicate_images.parse_commandline import parse_command_line
@@ -45,66 +43,68 @@ def files_in_dirs(
     return files
 
 
-def pool_filter(
-        candidates: Results,
-        compare_images: HashFunction,
-        options: AlgorithmOptions, chunk_size: float
-) -> Results:
-    pool = DummyPool(None)
-    to_keep = pool.starmap(
-        partial(compare_images, options=options),
-        candidates, chunksize=chunk_size
-    )
-    return [c for c, keep in zip(candidates, to_keep) if keep]
+class ImagePairFinder:
 
+    def __init__(
+            self, files: List[Path], hash_algorithm: HashFunction,
+            parallel_options: ParallelOptions
+    ):
+        self.files = files
+        self.algorithm = hash_algorithm
+        self.parallel_options = parallel_options
+        self.precalculated_hashes = self.get_hashes(files)
 
-def get_hash(file: Path, algorithm: HashFunction) -> Tuple[Path, Optional[int]]:
-    # print('HASH', file, algorithm)
-    try:
-        return file, algorithm(Image.open(file))
-    except OSError as err:
-        logging.warning("%s/%s: %s", file.parent.name, file.name, err)
-        return file, None
+    def filter_matches(self, all_pairs: List[Tuple[Path, Path]]) -> Results:
+        # if self.parallel_options.parallel:
+        #     with Pool() as pool:
+        #         to_keep = pool.starmap(
+        #             self.are_images_equal, all_pairs, chunksize=self.parallel_options.chunk_size
+        #         )
+        #     return [c for c, keep in zip(all_pairs, to_keep) if keep]
+        return [
+            (file, other_file) for file, other_file in all_pairs
+            if self.are_images_equal(file, other_file)
+        ]
 
+    def are_images_equal(self, file: Path, other_file: Path) -> bool:
+        hash_distance = self.precalculated_hashes[file] - self.precalculated_hashes[other_file]
+        logging.debug(
+            "%-30s - %-30s = %d", file.stem, other_file.stem, hash_distance
+        )
+        return hash_distance == 0
 
-def get_hashes(
-        algorithm: HashFunction, image_files: List[Path],
-        parallel_options: ParallelOptions
-) -> Dict[Path, int]:
-    if parallel_options.parallel:
-        with Pool() as pool:
-            precalculated_hashes = pool.map(
-                partial(get_hash, algorithm=algorithm), image_files
-            )
-    else:
-        precalculated_hashes = [get_hash(file, algorithm) for file in image_files]
+    def get_hash(self, file: Path) -> Tuple[Path, Optional[int]]:
+        try:
+            return file, self.algorithm(Image.open(file))
+        except OSError as err:
+            logging.warning("%s/%s: %s", file.parent.name, file.name, err)
+            return file, None
 
-    # print('PRECALC', precalculated_hashes)
-    return {
-        file: image_hash for file, image_hash in precalculated_hashes
-        if image_hash is not None
-    }
+    def get_hashes(self, image_files: List[Path]) -> Dict[Path, int]:
+        if self.parallel_options.parallel:
+            with Pool() as pool:
+                precalculated_hashes = pool.map(
+                    self.get_hash, image_files
+                )
+        else:
+            precalculated_hashes = [self.get_hash(file) for file in image_files]
 
+        return {
+            file: image_hash for file, image_hash in precalculated_hashes
+            if image_hash is not None
+        }
 
-def similar_images(
-        files: List[Path], hash_algorithm: HashFunction,
-        parallel_options: ParallelOptions
-) -> Results:
-    """Returns all pairs of image files in the list files that are exactly_equal
-       according to comparison function compare_images"""
-    precalculated_hashes = get_hashes(hash_algorithm, files, parallel_options)
-    # print('PRECALC 2', precalculated_hashes)
-    image_files = list(precalculated_hashes.keys())
-    logging.info("%d hashes calculated", len(precalculated_hashes))
-    return [
-        (file, other_file)
-        for file in image_files
-        for other_file in image_files[image_files.index(file) + 1:]
-        if precalculated_hashes[file] - precalculated_hashes[other_file] == 0
-    ]
-    # logging.debug(
-    #     "%-30s - %-30s = %d", file.stem, other_file.stem, hash_distance
-    # )
+    def get_pairs(self) -> Results:
+        """Returns all pairs of image files in the list files that are exactly_equal
+           according to comparison function compare_images"""
+        image_files = list(self.precalculated_hashes.keys())
+        logging.info("%d hashes calculated", len(self.precalculated_hashes))
+        all_pairs = [
+            (file, other_file)
+            for file in image_files
+            for other_file in image_files[image_files.index(file) + 1:]
+        ]
+        return self.filter_matches(all_pairs)
 
 
 def get_matches(
@@ -115,7 +115,7 @@ def get_matches(
     image_files = sorted(files_in_dirs(root_directories, is_image_file))
     logging.info("%d total files", len(image_files))
 
-    return similar_images(image_files, hash_algorithm, parallel_options)
+    return ImagePairFinder(image_files, hash_algorithm, parallel_options).get_pairs()
 
 
 def execute_actions(matches: Results, action_name: str) -> None:
@@ -127,10 +127,14 @@ def execute_actions(matches: Results, action_name: str) -> None:
             continue
 
 
+def path_names_with_parent(folders: List[Path]) -> str:
+    return ' '.join(['/'.join(str(folder).split('/')[-2:]) for folder in folders])
+
+
 def main() -> None:
     args = parse_command_line()
     setup_logging(args)
-    logging.info('Scanning %s', ' '.join(args.root_directory))
+    logging.info('Scanning %s', path_names_with_parent(args.root_directory))
     try:
         matches = get_matches(
             [Path(folder) for folder in args.root_directory], args.algorithm,

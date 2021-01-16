@@ -15,9 +15,9 @@ class ActionsTest(SetupImages):
     to_create = {'jpeg', 'half'}
 
     def get_equals(self) -> Results:
-        equals = duplicate.similar_images(
+        equals = duplicate.ImagePairFinder(
             self.get_image_files(), HASH_ALGORITHM, self.options
-        )
+        ).get_pairs()
         assert len(equals) == 1
         return equals
 
