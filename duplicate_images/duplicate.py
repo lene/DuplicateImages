@@ -102,7 +102,10 @@ def execute_actions(matches: Results, action_name: str) -> None:
 def main() -> None:
     args = parse_command_line()
     log_level = logging.DEBUG if args.debug else logging.INFO
-    logging.basicConfig(format='%(levelname)s: %(message)s', level=log_level)
+    logging.basicConfig(
+        format='%(asctime)s %(levelname)s: %(message)s', level=log_level,
+        datefmt='%H:%M:%S'
+    )
     try:
         options = {'aspect_fuzziness': args.aspect_fuzziness, 'rms_error': args.fuzziness}
         matches = get_matches(

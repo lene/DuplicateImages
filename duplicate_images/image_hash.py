@@ -26,6 +26,6 @@ def is_similar(
         return False
     hash_distance = hash_func(image.resized_image) - hash_func(other_image.resized_image)
     logging.debug(
-        "hash_distance %s, %s -> %s", image.file.stem, other_image.file.stem, hash_distance
+        "%-30s - %-30s = %d", image.file.stem, other_image.file.stem, hash_distance
     )
     return hash_distance == 0
