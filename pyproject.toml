@@ -1,13 +1,13 @@
 [tool.poetry]
 name = "duplicate_images"
-version = "0.3.0"
+version = "0.3.1"
 description = ""
 authors = ["Lene Preuss <lene.preuss@gmail.com>"]
 repository = "https://gitlab.com/lilacashes/DuplicateImages.git"
 homepage = "https://gitlab.com/lilacashes/DuplicateImages"
 readme = "README.md"
 classifiers = [
-    "Development Status :: 2 - Pre-Alpha",
+    "Development Status :: 3 - Alpha",
     "Environment :: Console",
     "Programming Language :: Python :: 3",
     "Topic :: Multimedia :: Graphics",

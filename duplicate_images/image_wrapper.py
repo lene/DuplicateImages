@@ -1,9 +1,10 @@
 __author__ = 'lene'
 
+import logging
 from functools import lru_cache
+from imghdr import what
 from pathlib import Path
 from typing import Dict, List, Tuple
-from imghdr import what
 from PIL import Image
 
 
@@ -32,7 +33,13 @@ class ImageWrapper:
         reference_size = max(self.original_size)
         scale_factor = self.max_dimension() / reference_size
         new_size = (int(image.size[0] * scale_factor), int(image.size[1] * scale_factor))
-        self.resized_image = image.resize(new_size)
+        try:
+            self.resized_image = image.resize(new_size)
+            self.valid = True
+        except OSError as err:
+            logging.error("%s for %s/%s", err, file.parent.name, file.name)
+            self.resized_image = None
+            self.valid = False
 
     @property
     def original_image(self) -> Image.Image:
