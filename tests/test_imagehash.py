@@ -1,6 +1,6 @@
 from duplicate_images import duplicate
 from duplicate_images.function_types import Results
-from duplicate_images.methods import COMPARISON_METHODS
+from duplicate_images.methods import IMAGE_HASH_ALGORITHM
 
 from tests.setup_images import SetupImages
 
@@ -39,13 +39,13 @@ class TestImageHash(SetupImages):
 
     def execute_for_hash(self, hash_func: str) -> None:
         equals = duplicate.similar_images(
-            self.get_image_files(), COMPARISON_METHODS[hash_func], self.OPTIONS
+            self.get_image_files(), IMAGE_HASH_ALGORITHM[hash_func], self.options
         )
         self.check_results(equals)
 
     def execute_parallel_for_hash(self, hash_func: str) -> None:
         equals = duplicate.similar_images(
-            self.get_image_files(), COMPARISON_METHODS[hash_func], self.OPTIONS,
+            self.get_image_files(), IMAGE_HASH_ALGORITHM[hash_func],
             duplicate.ParallelOptions(parallel=True)
         )
         self.check_results(equals)

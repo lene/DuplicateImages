@@ -16,17 +16,13 @@ for a test run.
 ### Image comparison algorithms
 
 Use the `--algorithm` option to select how equal images are found.
-- `exact`: marks only binary exactly equal files as equal. This is by far the fastest, but most 
-  restricted algorithm.
-- `histogram`: checks the images' color histograms for equality. Faster than the image hashing 
-  algorithms, but tends to give a lot of false positives for images that are similar, but not equal.
-  Use the `--fuzziness` and `--aspect-fuzziness` options to fine-tune its behavior.
-- `ahash`, `colorhash`, `dhash`, `phash`, `whash`: five different image hashing algorithms. See 
-  https://pypi.org/project/ImageHash for an introduction on image hashing and 
-  https://tech.okcupid.com/evaluating-perceptual-image-hashes-okcupid for some gory details which
-  image hashing algorithm performs best in which situation. For a start I recommend using `phash`, 
-  and only evaluating the other algorithms if `phash` does not perform satisfactorily in your use 
-  case.
+
+`ahash`, `colorhash`, `dhash`, `phash`, `whash`: five different image hashing algorithms. See 
+https://pypi.org/project/ImageHash for an introduction on image hashing and 
+https://tech.okcupid.com/evaluating-perceptual-image-hashes-okcupid for some gory details which
+image hashing algorithm performs best in which situation. For a start I recommend using `phash`, 
+and only evaluating the other algorithms if `phash` does not perform satisfactorily in your use 
+case.
 
 ### Actions for matching image pairs
 

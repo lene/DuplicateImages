@@ -39,7 +39,7 @@ def fill_image_with_random_pixels(file: Path, seed: int = 0) -> None:
 
 def save(image: Image, path: Path) -> None:
     """
-    Save imqge without letting the wand module create a backup file (which would
+    Save image without letting the wand module create a backup file (which would
     confuse tearDownClass()
     """
     with path.open('wb') as file:
@@ -49,9 +49,6 @@ def save(image: Image, path: Path) -> None:
 class SetupImages(unittest.TestCase):
 
     width = 100
-    ASPECT_FUZZINESS = 0.05
-    RMS_ERROR = 0.05
-    OPTIONS = {'aspect_fuzziness': ASPECT_FUZZINESS, 'rms_error': RMS_ERROR}
 
     top_directory = Path()
     sub_directory = Path()
@@ -59,11 +56,12 @@ class SetupImages(unittest.TestCase):
     jpeg_file = Path()
     png_file = Path()
     half_file = Path()
-    noisy_file = Path()
     subdir_file = Path()
 
     to_create = {'jpeg', 'png', 'subdir', 'half'}
     tolerate_deleted_files = False
+
+    options = duplicate.ParallelOptions()
 
     @classmethod
     def setUpClass(cls) -> None:

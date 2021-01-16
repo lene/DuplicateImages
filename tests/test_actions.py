@@ -4,8 +4,10 @@ from pathlib import Path
 
 from duplicate_images import duplicate
 from duplicate_images.function_types import Results
-from duplicate_images.methods import compare_histograms
+from duplicate_images.methods import IMAGE_HASH_ALGORITHM
 from tests.setup_images import SetupImages
+
+HASH_ALGORITHM = IMAGE_HASH_ALGORITHM['phash']
 
 
 class ActionsTest(SetupImages):
@@ -14,7 +16,7 @@ class ActionsTest(SetupImages):
 
     def get_equals(self) -> Results:
         equals = duplicate.similar_images(
-            self.get_image_files(), compare_histograms, self.OPTIONS
+            self.get_image_files(), HASH_ALGORITHM, self.options
         )
         assert len(equals) == 1
         return equals
