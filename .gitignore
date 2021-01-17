@@ -4,3 +4,4 @@
 .code-quality.json
 *.egg-info
 dist
+*.db

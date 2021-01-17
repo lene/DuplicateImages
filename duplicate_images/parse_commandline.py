@@ -30,5 +30,8 @@ def parse_command_line() -> Namespace:
     parser.add_argument(
         '--debug', action='store_true', help="Print lots of debugging info"
     )
+    parser.add_argument(
+        '--hash-db', default=None, help="File storing precomputed hashes"
+    )
 
     return parser.parse_args()
