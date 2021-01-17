@@ -25,6 +25,9 @@ def parse_command_line() -> Namespace:
         '--parallel', action='store_true', help="Filter using all available cores (Experimental)"
     )
     parser.add_argument(
+        '--progress', action='store_true', help="Show progress bars during processing"
+    )
+    parser.add_argument(
         '--debug', action='store_true', help="Print lots of debugging info"
     )
 

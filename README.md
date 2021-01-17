@@ -40,9 +40,12 @@ The default action is `print`.
   
 ### Parallel execution
 
-Use the `--parallel` option to utilize all free cores on your system. There is also the 
-`--chunk-size` option to tune how many comparisons each thread should make in one go, but that 
-should hardly ever be advantageous to set explicitly. 
+Use the `--parallel` option to utilize all free cores on your system. 
+
+### Progress and verbosity control
+- `--progress` prints a progress bar each for the process of reading the images and the process of 
+  finding duplicates among the scanned image
+- `--debug` prints debugging output
 
 ## Development notes
 
