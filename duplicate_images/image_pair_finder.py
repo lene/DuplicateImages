@@ -6,41 +6,14 @@ from pathlib import Path
 from typing import Dict, List, Optional, Tuple, Iterator
 
 from PIL import Image
-from tqdm import tqdm
 
 from duplicate_images.common import path_with_parent
 from duplicate_images.function_types import HashFunction, Results
 from duplicate_images.parallel_options import ParallelOptions
+from duplicate_images.progress_bar_manager import ProgressBarManager
 
 CacheEntry = Tuple[Path, Optional[int]]
 ImagePair = Tuple[Path, Path]
-
-
-class ProgressBarManager:
-    def __init__(self, files_length: int) -> None:
-        self.reader_progress = tqdm(total=files_length)
-        self.filter_progress: Optional[tqdm] = None
-
-    def create_filter_bar(self, hashes_length: int) -> None:
-        self.close_reader()
-        self.filter_progress = tqdm(
-            total=int(hashes_length * (hashes_length - 1) / 2),
-            unit_scale=True, miniters=10000
-        )
-
-    def update_reader(self):
-        self.reader_progress.update(1)
-
-    def update_filter(self):
-        if self.filter_progress is not None:
-            self.filter_progress.update(1)
-
-    def close_reader(self):
-        self.reader_progress.close()
-
-    def close(self):
-        if self.filter_progress is not None:
-            self.filter_progress.close()
 
 
 class ImagePairFinder:
@@ -48,17 +21,22 @@ class ImagePairFinder:
     @classmethod
     def create(
             cls, files: List[Path], hash_algorithm: HashFunction,
-            parallel_options: ParallelOptions
+            parallel_options: ParallelOptions, show_progress_bar: bool = False
     ) -> 'ImagePairFinder':
         if parallel_options.parallel:
-            return ParallelImagePairFinder(files, hash_algorithm, parallel_options)
-        return ImagePairFinder(files, hash_algorithm)
+            return ParallelImagePairFinder(
+                files, hash_algorithm, parallel_options, show_progress_bar
+            )
+        return ImagePairFinder(files, hash_algorithm, show_progress_bar)
 
-    def __init__(self, files: List[Path], hash_algorithm: HashFunction):
+    def __init__(
+            self, files: List[Path], hash_algorithm: HashFunction, show_progress_bar: bool = False
+    ) -> None:
         self.files = files
         self.algorithm = hash_algorithm
-        self.progress_bars = ProgressBarManager(len(files))
+        self.progress_bars = ProgressBarManager(len(files), show_progress_bar)
         self.precalculated_hashes = self.get_hashes(files)
+        self.progress_bars.close_reader()
 
     def get_pairs(self) -> Results:
         image_files = list(self.precalculated_hashes.keys())
@@ -68,6 +46,7 @@ class ImagePairFinder:
             for file in image_files
             for other_file in image_files[image_files.index(file) + 1:]
         )
+        logging.info("Filtering duplicates")
         matches = self.filter_matches(all_pairs)
         self.progress_bars.close()
         return matches
@@ -108,10 +87,10 @@ class ImagePairFinder:
 class ParallelImagePairFinder(ImagePairFinder):
     def __init__(
             self, files: List[Path], hash_algorithm: HashFunction,
-            parallel_options: ParallelOptions
+            parallel_options: ParallelOptions, show_progress_bar: bool = False
     ):
         self.parallel_options = parallel_options
-        super().__init__(files, hash_algorithm)
+        super().__init__(files, hash_algorithm, show_progress_bar)
 
     def precalculate_hashes(self, image_files: List[Path]) -> List[CacheEntry]:
         with Pool() as pool:

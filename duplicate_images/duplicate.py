@@ -37,14 +37,17 @@ def files_in_dirs(
 
 
 def get_matches(
-        root_directories: List[Path], algorithm: str,
+        root_directories: List[Path], algorithm: str, show_progress_bars: bool = False,
         parallel_options: ParallelOptions = ParallelOptions()
 ) -> Results:
     hash_algorithm = IMAGE_HASH_ALGORITHM[algorithm]
     image_files = sorted(files_in_dirs(root_directories, is_image_file))
     logging.info("%d total files", len(image_files))
+    logging.info("Computing image hashes")
 
-    return ImagePairFinder.create(image_files, hash_algorithm, parallel_options).get_pairs()
+    return ImagePairFinder.create(
+        image_files, hash_algorithm, parallel_options, show_progress_bars
+    ).get_pairs()
 
 
 def execute_actions(matches: Results, action_name: str) -> None:
@@ -64,7 +67,7 @@ def main() -> None:
     try:
         matches = get_matches(
             [Path(folder) for folder in args.root_directory], args.algorithm,
-            ParallelOptions(args.parallel)
+            args.progress, ParallelOptions(args.parallel)
         )
         logging.info("%d matches", len(matches))
         execute_actions(matches, args.on_equal)
