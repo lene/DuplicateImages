@@ -30,6 +30,7 @@ Wand = "^0.6.5"
 pytest = "^6.2.1"
 pylint = "^2.6.0"
 filprofiler = "^0.14.0"
+pytest-xdist = "^2.2.0"
 
 [tool.poetry.scripts]
 find-dups = "duplicate_images.duplicate:main"
