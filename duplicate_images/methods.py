@@ -9,6 +9,7 @@ from typing import Dict, Tuple, List
 
 import imagehash
 
+from duplicate_images.common import path_with_parent
 from duplicate_images.function_types import ActionFunction
 
 
@@ -33,19 +34,21 @@ def ascending_by_size(pair: Tuple[Path, Path]) -> List[Path]:
 
 def delete_with_log_message(file: Path) -> None:
     file.unlink()
-    logging.info("Deleted %s/%s", file.parent.name, file.name)
+    logging.info("Deleted %s", path_with_parent(file))
+
+
+def quote(string: str) -> str:
+    if '"' in string:
+        if "'" in string:
+            raise ValueError(f"{string} contains both single and double quotes, giving up")
+        quotes = "'"
+    else:
+        quotes = '"'
+    return f"{quotes}{string}{quotes}"
 
 
 def quote_print(pair: Tuple[Path, Path]) -> None:
-    quotes = []
-    for path in pair:
-        if '"' in str(path):
-            if "'" in str(path):
-                raise ValueError(f"{path} contains both single and double quotes, giving up")
-            quotes.append("'")
-        else:
-            quotes.append('"')
-    print(f"{quotes[0]}{pair[0]}{quotes[0]} {quotes[1]}{pair[1]}{quotes[1]}")
+    print(f"{quote(str(pair[0]))} {quote(str(pair[1]))}")
 
 
 IMAGE_HASH_ALGORITHM = {

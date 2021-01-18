@@ -34,7 +34,7 @@ class ImagePairFinder:
     ) -> None:
         self.files = files
         self.algorithm = hash_algorithm
-        self.progress_bars = ProgressBarManager(len(files), show_progress_bar)
+        self.progress_bars = ProgressBarManager.create(len(files), show_progress_bar)
         self.precalculated_hashes = self.get_hashes(files)
         self.progress_bars.close_reader()
 
