@@ -16,7 +16,7 @@ from duplicate_images.progress_bar_manager import ProgressBarManager
 class ImagePairFinder:
 
     @classmethod
-    def create(
+    def create(  # pylint: disable = too-many-arguments
             cls, files: List[Path], hash_algorithm: HashFunction,
             parallel_options: ParallelOptions, show_progress_bar: bool = False,
             hash_store: Optional[Cache] = None
@@ -73,7 +73,6 @@ class ImagePairFinder:
         self.progress_bars.update_reader()
         try:
             cached = self.hash_store.get(file)
-            logging.debug(f'cached[{file}]: {cached}')
             if cached is not None:
                 return file, cached
             image_hash = self.algorithm(Image.open(file))
@@ -91,7 +90,7 @@ class ImagePairFinder:
 
 
 class ParallelImagePairFinder(ImagePairFinder):
-    def __init__(
+    def __init__(  # pylint: disable = too-many-arguments
             self, files: List[Path], hash_algorithm: HashFunction,
             parallel_options: ParallelOptions, show_progress_bar: bool = False,
             hash_store: Optional[Cache] = None

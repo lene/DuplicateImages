@@ -6,9 +6,9 @@ from PIL import Image
 from imagehash import ImageHash
 
 
-HashFunction = Callable[[Image.Image], int]
+HashFunction = Callable[[Image.Image], ImageHash]
 ActionFunction = Callable[[Tuple[Path, Path]], Any]
 Results = List[Tuple[Path, Path]]
-CacheEntry = Tuple[Path, Optional[int]]
+CacheEntry = Tuple[Path, Optional[ImageHash]]
 Cache = Dict[Path, ImageHash]
 ImagePair = Tuple[Path, Path]

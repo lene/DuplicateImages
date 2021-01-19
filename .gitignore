@@ -5,3 +5,5 @@
 *.egg-info
 dist
 *.db
+*.bak
+

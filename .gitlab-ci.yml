@@ -2,6 +2,10 @@ stages:
   - test
   - publish
 
+include:
+  - template: Code-Quality.gitlab-ci.yml
+  - template: Security/SAST.gitlab-ci.yml
+
 .test:
   stage: test
   image: python:3.9
@@ -12,7 +16,7 @@ stages:
 pytest:
   extends: .test
   script:
-    - poetry run pytest --junitxml=pytest.xml -n auto
+    - poetry run pytest --junitxml=pytest.xml
   artifacts:
     reports:
       junit:
