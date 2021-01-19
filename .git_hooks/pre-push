@@ -28,4 +28,12 @@ poetry run flake8 tests duplicate_images || status=1
 poetry run mypy duplicate_images tests || status=1
 poetry run pylint duplicate_images tests || status=1
 
+if [ $status -gt 0 ]; then
+  commitmsg=$(git log --oneline | head -n 1 | cut -d' ' -f 2-)
+  if echo $commitmsg | grep '^WIP:'; then
+    echo >&2 "Found WIP commit, pushing in spite of failed test suite"
+    status=0
+  fi
+fi
+
 exit $status
