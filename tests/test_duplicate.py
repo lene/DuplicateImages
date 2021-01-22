@@ -98,36 +98,46 @@ class DuplicateTest(SetupImages):  # pylint: disable=too-many-public-methods
 
     def _check_hashes_equal_for_copied_image(self, algorithm: str) -> None:
         copied_file = self.copy_image_file(self.jpeg_file)
-        equals = ImagePairFinder(
+        finder = ImagePairFinder(
             self.get_image_files(), IMAGE_HASH_ALGORITHM[algorithm]
-        ).get_pairs()
+        )
+        finder.calculate_hashes()
+        equals = finder.get_pairs()
         try:
             assert self.is_pair_found(self.jpeg_file, copied_file, equals)
         finally:
             self.delete_image_file(copied_file)
 
     def _check_hashes_not_equal_for_noisy_image(self, algorithm: str) -> None:
-        equals = ImagePairFinder(
+        finder = ImagePairFinder(
             self.get_image_files(), IMAGE_HASH_ALGORITHM[algorithm]
-        ).get_pairs()
+        )
+        finder.calculate_hashes()
+        equals = finder.get_pairs()
         assert not element_in_list_of_tuples(self.subdir_file, equals)
 
     def _check_hashes_equal_for_different_image_format(self, algorithm: str) -> None:
-        equals = ImagePairFinder(
+        finder = ImagePairFinder(
             self.get_image_files(), IMAGE_HASH_ALGORITHM[algorithm]
-        ).get_pairs()
+        )
+        finder.calculate_hashes()
+        equals = finder.get_pairs()
         assert (self.jpeg_file, self.png_file) in equals
 
     def _check_hashes_equal_for_scaled_image(self, algorithm: str) -> None:
-        equals = ImagePairFinder(
+        finder = ImagePairFinder(
             self.get_image_files(), IMAGE_HASH_ALGORITHM[algorithm]
-        ).get_pairs()
+        )
+        finder.calculate_hashes()
+        equals = finder.get_pairs()
         assert (self.jpeg_file, self.half_file) in equals
 
     def _check_parallel_filtering_gives_same_results(self, algorithm: str) -> None:
-        equals = ParallelImagePairFinder(
+        finder = ParallelImagePairFinder(
             self.get_image_files(), IMAGE_HASH_ALGORITHM[algorithm], ParallelOptions(parallel=True)
-        ).get_pairs()
+        )
+        finder.calculate_hashes()
+        equals = finder.get_pairs()
         assert len(equals) == 3
         assert self.is_pair_found(self.jpeg_file, self.png_file, equals)
         assert self.is_pair_found(self.jpeg_file, self.half_file, equals)

@@ -39,16 +39,20 @@ class TestImageHash(SetupImages):
         self.execute_parallel_for_hash('whash')
 
     def execute_for_hash(self, hash_func: str) -> None:
-        equals = ImagePairFinder(
+        finder = ImagePairFinder(
             self.get_image_files(), IMAGE_HASH_ALGORITHM[hash_func]
-        ).get_pairs()
+        )
+        finder.calculate_hashes()
+        equals = finder.get_pairs()
         self.check_results(equals)
 
     def execute_parallel_for_hash(self, hash_func: str) -> None:
-        equals = ParallelImagePairFinder(
+        finder = ParallelImagePairFinder(
             self.get_image_files(), IMAGE_HASH_ALGORITHM[hash_func],
             ParallelOptions(parallel=True)
-        ).get_pairs()
+        )
+        finder.calculate_hashes()
+        equals = finder.get_pairs()
         self.check_results(equals)
 
     def check_results(self, equals: Results) -> None:

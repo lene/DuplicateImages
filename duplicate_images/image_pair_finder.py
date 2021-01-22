@@ -3,39 +3,31 @@ __author__ = 'Lene Preuss <lene.preuss@gmail.com>'
 import logging
 from multiprocessing.pool import ThreadPool as Pool
 from pathlib import Path
-from typing import Dict, List, Iterator, Optional
+from typing import Dict, List, Iterator
 
 from PIL import Image
+from imagehash import ImageHash
 
 from duplicate_images.common import path_with_parent
-from duplicate_images.function_types import Cache, CacheEntry, HashFunction, ImagePair, Results
+from duplicate_images.function_types import CacheEntry, HashFunction, ImagePair, Results
+from duplicate_images.pair_finder_interface import PairFinderInterface
 from duplicate_images.parallel_options import ParallelOptions
 from duplicate_images.progress_bar_manager import ProgressBarManager
 
 
-class ImagePairFinder:
-
-    @classmethod
-    def create(  # pylint: disable = too-many-arguments
-            cls, files: List[Path], hash_algorithm: HashFunction,
-            parallel_options: ParallelOptions, show_progress_bar: bool = False,
-            hash_store: Optional[Cache] = None
-    ) -> 'ImagePairFinder':
-        if parallel_options.parallel:
-            return ParallelImagePairFinder(
-                files, hash_algorithm, parallel_options, show_progress_bar, hash_store
-            )
-        return ImagePairFinder(files, hash_algorithm, show_progress_bar, hash_store)
+class ImagePairFinder(PairFinderInterface):
 
     def __init__(
-            self, files: List[Path], hash_algorithm: HashFunction, show_progress_bar: bool = False,
-            hash_store: Optional[Cache] = None
+            self, files: List[Path], hash_algorithm: HashFunction, show_progress_bar: bool = False
     ) -> None:
         self.files = files
         self.algorithm = hash_algorithm
-        self.hash_store = hash_store if hash_store is not None else {}
+        self.precalculated_hashes: Dict[Path, ImageHash] = {}
         self.progress_bars = ProgressBarManager.create(len(files), show_progress_bar)
-        self.precalculated_hashes = self.get_hashes(files)
+
+    def calculate_hashes(self) -> None:
+        print('ImagePairFinder.calculate_hashes')
+        self.precalculated_hashes = self.get_hashes(self.files)
         self.progress_bars.close_reader()
 
     def get_pairs(self) -> Results:
@@ -72,17 +64,14 @@ class ImagePairFinder:
     def get_hash(self, file: Path) -> CacheEntry:
         self.progress_bars.update_reader()
         try:
-            cached = self.hash_store.get(file)
-            if cached is not None:
-                return file, cached
             image_hash = self.algorithm(Image.open(file))
-            self.hash_store[file] = image_hash
             return file, image_hash
         except OSError as err:
             logging.warning("%s: %s", path_with_parent(file), err)
             return file, None
 
-    def get_hashes(self, image_files: List[Path]) -> Dict[Path, int]:
+    def get_hashes(self, image_files: List[Path]) -> Dict[Path, ImageHash]:
+        print('ImagePairFinder.calculate_hashes')
         return {
             file: image_hash for file, image_hash in self.precalculate_hashes(image_files)
             if image_hash is not None
@@ -92,11 +81,10 @@ class ImagePairFinder:
 class ParallelImagePairFinder(ImagePairFinder):
     def __init__(  # pylint: disable = too-many-arguments
             self, files: List[Path], hash_algorithm: HashFunction,
-            parallel_options: ParallelOptions, show_progress_bar: bool = False,
-            hash_store: Optional[Cache] = None
+            parallel_options: ParallelOptions, show_progress_bar: bool = False
     ):
         self.parallel_options = parallel_options
-        super().__init__(files, hash_algorithm, show_progress_bar, hash_store)
+        super().__init__(files, hash_algorithm, show_progress_bar)
 
     def precalculate_hashes(self, image_files: List[Path]) -> List[CacheEntry]:
         with Pool() as pool:
