@@ -21,15 +21,12 @@ $ find-dups $IMAGE_ROOT
 
 Typical usage:
 ```shell
-$ find-dups $IMAGE_ROOT \
-    --parallel --progress \
-    --algorithm phash --on-equal print \
-    --hash-db hashes.pickle
+$ find-dups $IMAGE_ROOT --parallel --progress --hash-db hashes.pickle
 ```
 
 ### Image comparison algorithms
 
-Use the `--algorithm` option to select how equal images are found.
+Use the `--algorithm` option to select how equal images are found. The default algorithm is `phash`.
 
 `ahash`, `colorhash`, `dhash`, `phash`, `whash`: five different image hashing algorithms. See 
 https://pypi.org/project/ImageHash for an introduction on image hashing and 
@@ -40,7 +37,8 @@ case.
 
 ### Actions for matching image pairs
 
-Use the `--on-equal` option to select what to do to pairs of equal images.
+Use the `--on-equal` option to select what to do to pairs of equal images. The default action is 
+`print`.
 - `delete-first`: deletes the first of the two files
 - `delete-second`: deletes the second of the two files
 - `delete-bigger` or `d>`: deletes the file with the bigger size
@@ -50,7 +48,6 @@ Use the `--on-equal` option to select what to do to pairs of equal images.
 - `print`: prints the two files
 - `quote`: prints the two files with quotes around each 
 - `none`: does nothing.
-The default action is `print`.
   
 ### Parallel execution
 
