@@ -51,10 +51,7 @@ class PickleHashStore:
 
 
 def checked_load(file: BinaryIO) -> Cache:
-    try:
-        values = pickle.load(file)  # noqa: S301
-    except EOFError:
-        return {}
+    values = pickle.load(file)  # noqa: S301
     if not isinstance(values, dict):
         raise ValueError(f"Not a dict: {values}")
     bad_keys = [key for key in values.keys() if not isinstance(key, Path)]

@@ -6,5 +6,4 @@
 dist
 *.db
 *.bak
-*.pickle
 
