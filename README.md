@@ -3,15 +3,29 @@
 Finds equal or similar images in a directory containing (many) image files.
 
 ## Usage
+
+Installing:
 ```shell
 $ pip install duplicate_images
+```
+
+Printing the help screen:
+```shell
 $ find-dups -h
 ```
-to print the help screen. Or just
+
+Quick test run:
 ```shell
 $ find-dups $IMAGE_ROOT 
 ```
-for a test run.
+
+Typical usage:
+```shell
+$ find-dups $IMAGE_ROOT \
+    --parallel --progress \
+    --algorithm phash --on-equal print \
+    --hash-db hashes.pickle
+```
 
 ### Image comparison algorithms
 
@@ -43,9 +57,16 @@ The default action is `print`.
 Use the `--parallel` option to utilize all free cores on your system. 
 
 ### Progress and verbosity control
+
 - `--progress` prints a progress bar each for the process of reading the images and the process of 
   finding duplicates among the scanned image
 - `--debug` prints debugging output
+
+### Pre-storing and using image hashes to speed up computation
+
+Use the `--hash-db $PICKLE_FILE` option to store image hashes in the file `$PICKLE_FILE` and read
+image hashes from that file if they are already present there. This avoids having to compute the 
+image hashes anew at every run and can significantly speed up run times.
 
 ## Development notes
 
