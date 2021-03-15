@@ -116,6 +116,11 @@ $ ln -s ../../.git_hooks/pre-push .
 
 ### Publishing
 
+There is a job in GitLab CI for publishing to `pypi.org` that runs as soon as a new tag is added. 
+The tag needs to be the same as the `version` in the `pyproject.toml` file or else the job will 
+fail.
+
+To publish the package on PyPI manually:
 ```shell
 $ poetry config repositories.testpypi https://test.pypi.org/legacy/
 $ poetry build
@@ -123,6 +128,23 @@ $ poetry publish --username $PYPI_USER --password $PYPI_PASSWORD --repository te
   poetry publish --username $PYPI_USER --password $PYPI_PASSWORD
 ```
 (obviously assuming that username and password are the same on PyPI and TestPyPI)
+
+#### Updating GitHub mirror
+
+GitHub is set up as a push mirror in GitLab CI, but mirroring is flaky at the time and may not
+succeed. 
+
+To push to the GitHub repository manually (assuming the GitHub repository is set up as remote 
+`github`):
+```shell
+$ git checkout master
+$ git fetch
+$ git pull --rebase
+$ git tag  # to check that the latest tag is present
+$ git push github master
+$ git push --tags github master 
+```
+
 ### Profiling
 
 #### CPU time
