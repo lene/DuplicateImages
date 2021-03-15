@@ -37,7 +37,7 @@ class PickleHashStore:
             logging.info(
                 'Opened persistent storage %s with %d entries', store_path, len(self.values)
             )
-        except (FileNotFoundError, pickle.PickleError):
+        except (FileNotFoundError, EOFError, pickle.PickleError):
             logging.info('Creating new persistent storage at %s', store_path)
 
     def __enter__(self) -> Cache:
@@ -61,3 +61,6 @@ def checked_load(file: BinaryIO) -> Cache:
     if bad_values:
         raise ValueError(f"Not an image hash: {bad_values}")
     return values
+
+
+HashStore = Union[NullHashStore, PickleHashStore]
