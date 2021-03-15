@@ -4,3 +4,7 @@
 .code-quality.json
 *.egg-info
 dist
+*.db
+*.pickle
+*.bak
+
