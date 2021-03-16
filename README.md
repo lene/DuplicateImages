@@ -39,8 +39,8 @@ case.
 
 Use the `--on-equal` option to select what to do to pairs of equal images. The default action is 
 `print`.
-- `delete-first`: deletes the first of the two files
-- `delete-second`: deletes the second of the two files
+- `delete-first` or `d1`: deletes the first of the two files
+- `delete-second` or `d2`: deletes the second of the two files
 - `delete-bigger` or `d>`: deletes the file with the bigger size
 - `delete-smaller` or `d<`: deletes the file with the smaller size
 - `eog`: launches the `eog` image viewer to compare the two files
