@@ -58,6 +58,8 @@ Use the `--parallel` option to utilize all free cores on your system.
 - `--progress` prints a progress bar each for the process of reading the images and the process of 
   finding duplicates among the scanned image
 - `--debug` prints debugging output
+- `--quiet` decreases the log level by 1 for each time it is called; `--debug` and `--quiet` nullify
+  each other
 
 ### Pre-storing and using image hashes to speed up computation
 

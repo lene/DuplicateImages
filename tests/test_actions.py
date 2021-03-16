@@ -101,7 +101,7 @@ class DLessTest(DeleteSmallerTest):
         self.run_test('d<')
 
 
-class XVTest(ActionsTest):
+class OtherActionsTest(ActionsTest):
     @patch('duplicate_images.methods.call')
     def test_xv(self, mock_call: Mock) -> None:
         self.check_command_is_called(mock_call, 'xv')
