@@ -12,6 +12,8 @@ import imagehash
 from duplicate_images.common import path_with_parent
 from duplicate_images.function_types import ActionFunction
 
+__all__ = ['call', 'quote', 'IMAGE_HASH_ALGORITHM', 'ACTIONS_ON_EQUALITY']
+
 
 @lru_cache(maxsize=None)
 def get_size(file: Path) -> int:
@@ -61,7 +63,9 @@ IMAGE_HASH_ALGORITHM = {
 
 ACTIONS_ON_EQUALITY: Dict[str, ActionFunction] = {
     'delete-first': lambda pair: delete_with_log_message(pair[0]),
+    'd1': lambda pair: delete_with_log_message(pair[0]),
     'delete-second': lambda pair: delete_with_log_message(pair[1]),
+    'd2': lambda pair: delete_with_log_message(pair[1]),
     'delete-bigger': lambda pair: delete_with_log_message(ascending_by_size(pair)[-1]),
     'd>': lambda pair: delete_with_log_message(ascending_by_size(pair)[-1]),
     'delete-smaller': lambda pair: delete_with_log_message(ascending_by_size(pair)[0]),
