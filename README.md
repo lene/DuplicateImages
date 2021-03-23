@@ -2,6 +2,12 @@
 
 Finds equal or similar images in a directory containing (many) image files.
 
+Official home page: https://github.com/lene/DuplicateImages
+
+Development page: https://gitlab.com/lilacashes/DuplicateImages
+
+PyPI page: https://pypi.org/project/duplicate-images/0.5.3
+
 ## Usage
 
 Installing:
@@ -55,11 +61,11 @@ Use the `--parallel` option to utilize all free cores on your system.
 
 ### Progress and verbosity control
 
-- `--progress` prints a progress bar each for the process of reading the images and the process of 
+- `--progress` prints a progress bar each for the process of reading the images, and the process of 
   finding duplicates among the scanned image
 - `--debug` prints debugging output
-- `--quiet` decreases the log level by 1 for each time it is called; `--debug` and `--quiet` nullify
-  each other
+- `--quiet` decreases the log level by 1 for each time it is called; `--debug` and `--quiet` cancel
+  each other out
 
 ### Pre-storing and using image hashes to speed up computation
 
@@ -140,7 +146,6 @@ $ git checkout master
 $ git fetch
 $ git pull --rebase
 $ git tag  # to check that the latest tag is present
-$ git push github master
 $ git push --tags github master 
 ```
 
