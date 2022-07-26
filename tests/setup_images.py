@@ -97,7 +97,7 @@ class SetupImages(unittest.TestCase):
                 cls.width
             )
             image = Image(filename=cls.half_file)
-            image.transform('{}x{}'.format(int(cls.width / 2), int(cls.width * 3 / 8)))
+            image.transform(f'{int(cls.width / 2)}x{int(cls.width * 3 / 8)}')
             save(image, cls.half_file)
             cls.image_files.append(cls.half_file)
 
