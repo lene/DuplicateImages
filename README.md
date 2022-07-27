@@ -6,7 +6,7 @@ Official home page: https://github.com/lene/DuplicateImages
 
 Development page: https://gitlab.com/lilacashes/DuplicateImages
 
-PyPI page: https://pypi.org/project/duplicate-images/0.5.3
+PyPI page: https://pypi.org/project/duplicate-images/0.6.0
 
 ## Usage
 
@@ -29,6 +29,11 @@ Typical usage:
 ```shell
 $ find-dups $IMAGE_ROOT --parallel --progress --hash-db hashes.pickle
 ```
+
+### Supported image formats
+
+* JPEG and PNG (tested quite thoroughly)
+* HEIC (experimental support, tested cursorily only)
 
 ### Image comparison algorithms
 
@@ -75,7 +80,8 @@ image hashes anew at every run and can significantly speed up run times.
 
 ## Development notes
 
-Needs Python3 and Pillow imaging library to run, additionally Wand for the test suite.
+Needs Python3, Pillow imaging library and `pillow-heif` HEIF plugin to run, additionally Wand for 
+the test suite.
 
 Uses Poetry for dependency management.
 

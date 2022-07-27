@@ -128,10 +128,14 @@ class DuplicateTest(SetupImages):  # pylint: disable=too-many-public-methods
         equals = ParallelImagePairFinder(
             self.get_image_files(), IMAGE_HASH_ALGORITHM[algorithm], ParallelOptions(parallel=True)
         ).get_pairs()
-        assert len(equals) == 3
+        assert len(equals) == 6
         assert self.is_pair_found(self.jpeg_file, self.png_file, equals)
+        assert self.is_pair_found(self.jpeg_file, self.heif_file, equals)
         assert self.is_pair_found(self.jpeg_file, self.half_file, equals)
         assert self.is_pair_found(self.png_file, self.half_file, equals)
+        assert self.is_pair_found(self.png_file, self.heif_file, equals)
+        assert self.is_pair_found(self.half_file, self.heif_file, equals)
         assert not self.is_pair_found(self.jpeg_file, self.subdir_file, equals)
         assert not self.is_pair_found(self.png_file, self.subdir_file, equals)
+        assert not self.is_pair_found(self.heif_file, self.subdir_file, equals)
         assert not self.is_pair_found(self.half_file, self.subdir_file, equals)

@@ -35,7 +35,9 @@ def test_similar_many(
     'algorithm,expected_pairs',
     [('ahash', 1), ('dhash', 1), ('colorhash', 1), ('phash', 1), ('whash', 1)]
 )
-@pytest.mark.parametrize('image_pair', ['pair1', 'shrunk10%', 'shrunk50%'])
+@pytest.mark.parametrize(
+    'image_pair', ['pair1', 'pair2', 'pair3', 'pair4', 'shrunk10%', 'shrunk50%']
+)
 def test_equal_but_binary_different(
         data_dir: Path, image_pair: str, algorithm: str, expected_pairs: int
 ) -> None:

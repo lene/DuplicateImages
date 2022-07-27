@@ -6,6 +6,9 @@ from os import walk, access, R_OK
 from pathlib import Path
 from typing import Callable, List, Optional
 
+from pillow_heif import open_heif, register_heif_opener
+from pillow_heif.error import HeifError
+
 from duplicate_images.common import path_with_parent
 from duplicate_images.function_types import Results
 from duplicate_images.hash_store import PickleHashStore
@@ -16,11 +19,23 @@ from duplicate_images.parallel_options import ParallelOptions
 from duplicate_images.parse_commandline import parse_command_line
 
 
+register_heif_opener()
+
+
 def is_image_file(filename: Path) -> bool:
     """Returns True if filename is a readable image file"""
     if access(filename, R_OK) and not filename.is_symlink():
-        return what(filename) is not None
+        if what(filename) is not None or is_heif_file(filename):
+            return True
     return False
+
+
+def is_heif_file(filename: Path) -> bool:
+    try:
+        open_heif(filename)
+        return True
+    except HeifError:
+        return False
 
 
 def files_in_dirs(
@@ -69,7 +84,8 @@ def main() -> None:
     try:
         matches = get_matches(
             [Path(folder) for folder in args.root_directory], args.algorithm,
-            Path(args.hash_db), args.progress, ParallelOptions(args.parallel)
+            Path(args.hash_db) if args.hash_db else None,
+            args.progress, ParallelOptions(args.parallel)
         )
         logging.info("%d matches", len(matches))
         execute_actions(matches, args.on_equal)
