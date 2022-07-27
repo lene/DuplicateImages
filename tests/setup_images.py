@@ -5,6 +5,7 @@ import shutil
 from pathlib import Path
 from typing import List, Tuple
 
+import pillow_heif
 from wand.color import Color
 from wand.drawing import Drawing
 from wand.image import Image
@@ -19,6 +20,18 @@ def create_image(file: Path, width: int) -> Path:
     image = Image(width=width, height=height, background=color)
     image.save(filename=file)
     return file
+
+
+def create_heif_image(file_path: Path, width: int) -> Path:
+    height = int(width * 3 / 4)
+    heif_file = pillow_heif.from_bytes(
+        mode="BGR;16",
+        size=(height, width),
+        data=bytes([0] * 3 * 2 * width * height)
+    )
+    with open(file_path, 'wb') as file:
+        heif_file.save(fp=file, quality=-1)
+    return file_path
 
 
 def random_short() -> int:
@@ -56,10 +69,11 @@ class SetupImages(unittest.TestCase):
     image_files: List[Path] = []
     jpeg_file = Path()
     png_file = Path()
+    heif_file = Path()
     half_file = Path()
     subdir_file = Path()
 
-    to_create = {'jpeg', 'png', 'subdir', 'half'}
+    to_create = {'jpeg', 'png', 'heif', 'subdir', 'half'}
     tolerate_deleted_files = False
 
     options = ParallelOptions()
@@ -81,6 +95,12 @@ class SetupImages(unittest.TestCase):
                 cls.width
             )
             cls.image_files.append(cls.png_file)
+        if 'heif' in cls.to_create:
+            cls.heif_file = create_heif_image(
+                Path(tempfile.mkstemp(dir=cls.top_directory, prefix="heif_", suffix=".heif")[1]),
+                cls.width
+            )
+            cls.image_files.append(cls.heif_file)
         if 'subdir' in cls.to_create:
             cls.sub_directory = Path(tempfile.mkdtemp(dir=cls.top_directory))
             cls.subdir_file = create_image(
