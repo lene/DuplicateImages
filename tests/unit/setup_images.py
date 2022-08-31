@@ -1,63 +1,16 @@
 import unittest
 import tempfile
-import random
-import shutil
 from pathlib import Path
-from typing import List, Tuple
+from typing import List
 
-import pillow_heif
-from wand.color import Color
-from wand.drawing import Drawing
 from wand.image import Image
 
 from duplicate_images import duplicate
 from duplicate_images.parallel_options import ParallelOptions
-
-
-def create_image(file: Path, width: int) -> Path:
-    height = int(width * 3 / 4)
-    color = Color("Black")
-    image = Image(width=width, height=height, background=color)
-    image.save(filename=file)
-    return file
-
-
-def create_heif_image(file_path: Path, width: int) -> Path:
-    height = int(width * 3 / 4)
-    heif_file = pillow_heif.from_bytes(
-        mode="BGR;16",
-        size=(height, width),
-        data=bytes([0] * 3 * 2 * width * height)
-    )
-    with open(file_path, 'wb') as file:
-        heif_file.save(fp=file, quality=-1)
-    return file_path
-
-
-def random_short() -> int:
-    return random.randrange(65535)  # noqa: S311
-
-
-def fill_image_with_random_pixels(file: Path, seed: int = 0) -> None:
-    random.seed(seed)
-    image = Image(filename=file)
-    with Drawing() as draw:
-        for x in range(0, image.size[0]):
-            for y in range(0, image.size[1]):
-                color = Color(f'rgb({random_short()},{random_short()},{random_short()}')
-                draw.fill_color = color
-                draw.point(x, y)
-            draw(image)
-    image.save(filename=file)
-
-
-def save(image: Image, path: Path) -> None:
-    """
-    Save image without letting the wand module create a backup file (which would
-    confuse tearDownClass()
-    """
-    with path.open('wb') as file:
-        image.save(file=file)
+from .conftest import (
+    create_image, create_heif_image, fill_image_with_random_pixels, save,
+    delete_image_file, copy_image_file
+)
 
 
 class SetupImages(unittest.TestCase):
@@ -134,15 +87,7 @@ class SetupImages(unittest.TestCase):
         return sorted(duplicate.files_in_dirs([self.top_directory]))
 
     def copy_image_file(self, file: Path) -> Path:
-        copied_file = file.with_suffix(".bak")
-        shutil.copyfile(file, copied_file)
-        self.image_files.append(copied_file)
-        return copied_file
+        return copy_image_file(file, self.image_files)
 
     def delete_image_file(self, file: Path) -> None:
-        file.unlink()
-        self.image_files.remove(file)
-
-    @staticmethod
-    def is_pair_found(element1: Path, element2: Path, matches: List[Tuple[Path, Path]]) -> bool:
-        return (element1, element2) in matches or (element2, element1) in matches
+        delete_image_file(file, self.image_files)

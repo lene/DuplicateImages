@@ -10,7 +10,7 @@ from unittest.mock import Mock
 from duplicate_images.function_types import Cache
 from duplicate_images.image_pair_finder import ImagePairFinder
 from duplicate_images.hash_store import PickleHashStore
-from tests.setup_images import SetupImages
+from tests.unit.setup_images import SetupImages
 
 
 class TestPersistentStorage(SetupImages):

@@ -63,7 +63,8 @@ def get_matches(
 
     with PickleHashStore.create(hash_store_path) as hash_store:
         return ImagePairFinder.create(
-            image_files, hash_algorithm, parallel_options, show_progress_bars, hash_store
+            image_files, hash_algorithm, parallel_options,
+            show_progress_bar=show_progress_bars, hash_store=hash_store
         ).get_pairs()
 
 

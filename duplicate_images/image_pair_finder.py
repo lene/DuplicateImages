@@ -18,21 +18,30 @@ class ImagePairFinder:
     @classmethod
     def create(  # pylint: disable = too-many-arguments
             cls, files: List[Path], hash_algorithm: HashFunction,
-            parallel_options: ParallelOptions, show_progress_bar: bool = False,
+            parallel_options: ParallelOptions,
+            max_distance: int = 0, show_progress_bar: bool = False,
             hash_store: Optional[Cache] = None
     ) -> 'ImagePairFinder':
         if parallel_options.parallel:
             return ParallelImagePairFinder(
-                files, hash_algorithm, parallel_options, show_progress_bar, hash_store
+                files, hash_algorithm, parallel_options,
+                max_distance=max_distance, show_progress_bar=show_progress_bar,
+                hash_store=hash_store
             )
-        return ImagePairFinder(files, hash_algorithm, show_progress_bar, hash_store)
+        return ImagePairFinder(
+            files, hash_algorithm,
+            max_distance=max_distance, show_progress_bar=show_progress_bar, hash_store=hash_store
+        )
 
-    def __init__(
-            self, files: List[Path], hash_algorithm: HashFunction, show_progress_bar: bool = False,
+    def __init__(  # pylint: disable = too-many-arguments
+            self, files: List[Path], hash_algorithm: HashFunction,
+            max_distance: int = 0,
+            show_progress_bar: bool = False,
             hash_store: Optional[Cache] = None
     ) -> None:
         self.files = files
         self.algorithm = hash_algorithm
+        self.max_distance = max_distance
         self.hash_store = hash_store if hash_store is not None else {}
         self.progress_bars = ProgressBarManager.create(len(files), show_progress_bar)
         self.precalculated_hashes = self.get_hashes(files)
@@ -67,7 +76,7 @@ class ImagePairFinder:
         logging.debug(
             "%-30s - %-30s = %d", file.stem, other_file.stem, hash_distance
         )
-        return hash_distance == 0
+        return hash_distance <= self.max_distance
 
     def get_hash(self, file: Path) -> CacheEntry:
         self.progress_bars.update_reader()
@@ -93,11 +102,15 @@ class ImagePairFinder:
 class ParallelImagePairFinder(ImagePairFinder):
     def __init__(  # pylint: disable = too-many-arguments
             self, files: List[Path], hash_algorithm: HashFunction,
-            parallel_options: ParallelOptions, show_progress_bar: bool = False,
+            parallel_options: ParallelOptions,
+            max_distance: int = 0, show_progress_bar: bool = False,
             hash_store: Optional[Cache] = None
     ):
         self.parallel_options = parallel_options
-        super().__init__(files, hash_algorithm, show_progress_bar, hash_store)
+        super().__init__(
+            files, hash_algorithm,
+            max_distance=max_distance, show_progress_bar=show_progress_bar, hash_store=hash_store
+        )
 
     def precalculate_hashes(self, image_files: List[Path]) -> List[CacheEntry]:
         with Pool() as pool:
