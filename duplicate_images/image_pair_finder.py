@@ -1,6 +1,8 @@
 __author__ = 'Lene Preuss <lene.preuss@gmail.com>'
 
 import logging
+from argparse import Namespace
+from dataclasses import dataclass
 from multiprocessing.pool import ThreadPool as Pool
 from pathlib import Path
 from typing import Dict, List, Iterator, Optional
@@ -9,41 +11,46 @@ from PIL import Image
 
 from duplicate_images.common import path_with_parent
 from duplicate_images.function_types import Cache, CacheEntry, HashFunction, ImagePair, Results
-from duplicate_images.parallel_options import ParallelOptions
 from duplicate_images.progress_bar_manager import ProgressBarManager
+
+
+@dataclass(frozen=True)
+class PairFinderOptions:
+    max_distance: int = 0
+    show_progress_bars: bool = False
+    parallel: bool = False
+
+    @classmethod
+    def from_args(cls, args: Namespace):
+        return cls(args.max_distance, args.progress, args.parallel)
 
 
 class ImagePairFinder:
 
     @classmethod
-    def create(  # pylint: disable = too-many-arguments
+    def create(
             cls, files: List[Path], hash_algorithm: HashFunction,
-            parallel_options: ParallelOptions,
-            max_distance: int = 0, show_progress_bar: bool = False,
+            options: PairFinderOptions = PairFinderOptions(),
             hash_store: Optional[Cache] = None
     ) -> 'ImagePairFinder':
-        if parallel_options.parallel:
+        if options.parallel:
             return ParallelImagePairFinder(
-                files, hash_algorithm, parallel_options,
-                max_distance=max_distance, show_progress_bar=show_progress_bar,
-                hash_store=hash_store
+                files, hash_algorithm, options=options, hash_store=hash_store
             )
         return ImagePairFinder(
-            files, hash_algorithm,
-            max_distance=max_distance, show_progress_bar=show_progress_bar, hash_store=hash_store
+            files, hash_algorithm, options=options, hash_store=hash_store
         )
 
     def __init__(  # pylint: disable = too-many-arguments
             self, files: List[Path], hash_algorithm: HashFunction,
-            max_distance: int = 0,
-            show_progress_bar: bool = False,
+            options: PairFinderOptions = PairFinderOptions(),
             hash_store: Optional[Cache] = None
     ) -> None:
         self.files = files
         self.algorithm = hash_algorithm
-        self.max_distance = max_distance
+        self.max_distance = options.max_distance
         self.hash_store = hash_store if hash_store is not None else {}
-        self.progress_bars = ProgressBarManager.create(len(files), show_progress_bar)
+        self.progress_bars = ProgressBarManager.create(len(files), options.show_progress_bars)
         self.precalculated_hashes = self.get_hashes(files)
         self.progress_bars.close_reader()
 
@@ -100,18 +107,6 @@ class ImagePairFinder:
 
 
 class ParallelImagePairFinder(ImagePairFinder):
-    def __init__(  # pylint: disable = too-many-arguments
-            self, files: List[Path], hash_algorithm: HashFunction,
-            parallel_options: ParallelOptions,
-            max_distance: int = 0, show_progress_bar: bool = False,
-            hash_store: Optional[Cache] = None
-    ):
-        self.parallel_options = parallel_options
-        super().__init__(
-            files, hash_algorithm,
-            max_distance=max_distance, show_progress_bar=show_progress_bar, hash_store=hash_store
-        )
-
     def precalculate_hashes(self, image_files: List[Path]) -> List[CacheEntry]:
         with Pool() as pool:
             return pool.map(self.get_hash, image_files)
@@ -125,10 +120,12 @@ class ParallelFilteringImagePairFinder(ParallelImagePairFinder):
     parallel one day. In that case ImagePairFinder.create() needs to return a
     ParallelFilteringImagePairFinder to utilize it.
     """
+    CHUNK_SIZE = 100
+
     def filter_matches(self, all_pairs: Iterator[ImagePair]) -> Results:
         pairs = list(all_pairs)
         with Pool() as pool:
             to_keep = pool.starmap(
-                self.are_images_equal, pairs, chunksize=self.parallel_options.chunk_size
+                self.are_images_equal, pairs, chunksize=self.CHUNK_SIZE
             )
         return [c for c, keep in zip(pairs, to_keep) if keep]

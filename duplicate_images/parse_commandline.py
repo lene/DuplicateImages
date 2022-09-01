@@ -18,8 +18,12 @@ def parse_command_line() -> Namespace:
         help="Method used to determine if two images are considered equal"
     )
     parser.add_argument(
+        '--max-distance', type=int, default=0,
+        help="Maximum hash distance for images to be considered equal"
+    )
+    parser.add_argument(
         '--on-equal', choices=ACTIONS_ON_EQUALITY.keys(),
-        default='print', help="command to be run on each pair of images found to be equal"
+        default='print', help="Command to be run on each pair of images found to be equal"
     )
     parser.add_argument(
         '--parallel', action='store_true', help="Filter using all available cores (Experimental)"

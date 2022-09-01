@@ -4,6 +4,11 @@ from pathlib import Path
 
 import pytest
 
+from PIL import Image
+
+from duplicate_images.image_pair_finder import PairFinderOptions
+from duplicate_images.methods import IMAGE_HASH_ALGORITHM
+from duplicate_images.duplicate import files_in_dirs, is_image_file
 from duplicate_images.duplicate import get_matches
 
 
@@ -17,6 +22,34 @@ def test_similar(
 ) -> None:
     folder = data_dir / 'similar' / image_pair
     assert len(get_matches([folder], algorithm)) == expected_pairs
+
+
+@pytest.mark.parametrize(
+    'algorithm,min_distance',
+    [('ahash', 14), ('dhash', 12), ('phash', 8), ('whash', 16), ('colorhash', 0)]
+)
+def test_hash_distance(
+        data_dir: Path, algorithm: str, min_distance: int
+) -> None:
+    folder = data_dir / 'similar' / 'pair1'
+    hash_algorithm = IMAGE_HASH_ALGORITHM[algorithm]
+    image_files = sorted(files_in_dirs([folder], is_image_file))
+    assert len(image_files) == 2
+    hashes = [hash_algorithm(Image.open(file)) for file in image_files]
+    assert hashes[0] - hashes[1] == min_distance, str(hashes[0] - hashes[1])
+
+
+@pytest.mark.parametrize(
+    'algorithm,min_distance',
+    [('ahash', 14), ('dhash', 12), ('phash', 8), ('whash', 16), ('colorhash', 0)]
+)
+def test_similar_distance_matches(
+        data_dir: Path, algorithm: str, min_distance: int
+) -> None:
+    folder = data_dir / 'similar' / 'pair1'
+    assert len(
+        get_matches([folder], algorithm, PairFinderOptions(max_distance=min_distance))
+    ) == 1
 
 
 @pytest.mark.parametrize(

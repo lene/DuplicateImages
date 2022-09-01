@@ -7,8 +7,9 @@ from typing import Any, List, Tuple
 import pytest
 
 from duplicate_images.duplicate import files_in_dirs
-from duplicate_images.image_pair_finder import ImagePairFinder, ParallelImagePairFinder
-from duplicate_images.parallel_options import ParallelOptions
+from duplicate_images.image_pair_finder import (
+    ImagePairFinder, PairFinderOptions, ParallelImagePairFinder
+)
 from duplicate_images.methods import IMAGE_HASH_ALGORITHM
 from tests.unit.conftest import is_pair_found, copy_image_file, delete_image_file
 
@@ -36,7 +37,8 @@ def test_hashes_equal_for_copied_image(
     jpeg_file = named_file('jpeg', image_files)
     copied_file = copy_image_file(jpeg_file, image_files)
     equals = ImagePairFinder(
-        image_files, IMAGE_HASH_ALGORITHM[algorithm], max_distance=max_distance
+        image_files, IMAGE_HASH_ALGORITHM[algorithm],
+        PairFinderOptions(max_distance=max_distance)
     ).get_pairs()
     try:
         assert is_pair_found(jpeg_file, copied_file, equals)
@@ -51,7 +53,8 @@ def test_hashes_not_equal_for_noisy_image(
 ) -> None:
     subdir_file = named_file('subdir', image_files)
     equals = ImagePairFinder(
-        image_files, IMAGE_HASH_ALGORITHM[algorithm], max_distance=max_distance
+        image_files, IMAGE_HASH_ALGORITHM[algorithm],
+        PairFinderOptions(max_distance=max_distance)
     ).get_pairs()
     assert not element_in_list_of_tuples(subdir_file, equals)
 
@@ -64,7 +67,8 @@ def test_hashes_equal_for_different_image_format(
     jpeg_file = named_file('jpeg', image_files)
     png_file = named_file('png', image_files)
     equals = ImagePairFinder(
-        image_files, IMAGE_HASH_ALGORITHM[algorithm], max_distance=max_distance
+        image_files, IMAGE_HASH_ALGORITHM[algorithm],
+        PairFinderOptions(max_distance=max_distance)
     ).get_pairs()
     assert (jpeg_file, png_file) in equals
 
@@ -77,7 +81,8 @@ def test_hashes_equal_for_scaled_image(
     jpeg_file = named_file('jpeg', image_files)
     half_file = named_file('half', image_files)
     equals = ImagePairFinder(
-        image_files, IMAGE_HASH_ALGORITHM[algorithm], max_distance=max_distance
+        image_files, IMAGE_HASH_ALGORITHM[algorithm],
+        PairFinderOptions(max_distance=max_distance)
     ).get_pairs()
     assert (jpeg_file, half_file) in equals
 
@@ -93,8 +98,8 @@ def test_parallel_filtering_gives_same_results(
     heif_file = named_file('heif', image_files)
     subdir_file = named_file('subdir', image_files)
     equals = ParallelImagePairFinder(
-        image_files, IMAGE_HASH_ALGORITHM[algorithm], ParallelOptions(parallel=True),
-        max_distance=max_distance
+        image_files, IMAGE_HASH_ALGORITHM[algorithm],
+        PairFinderOptions(max_distance=max_distance, parallel=True)
     ).get_pairs()
     assert len(equals) == 6
     assert is_pair_found(jpeg_file, png_file, equals)

@@ -4,9 +4,10 @@ from typing import List
 import pytest
 
 from duplicate_images.function_types import Results
-from duplicate_images.image_pair_finder import ImagePairFinder, ParallelImagePairFinder
+from duplicate_images.image_pair_finder import (
+    ImagePairFinder, PairFinderOptions, ParallelImagePairFinder
+)
 from duplicate_images.methods import IMAGE_HASH_ALGORITHM
-from duplicate_images.parallel_options import ParallelOptions
 
 
 @pytest.mark.parametrize('algorithm', list(IMAGE_HASH_ALGORITHM.keys()))
@@ -21,7 +22,7 @@ def test_sequential(image_files: List[Path], algorithm: str) -> None:
 def test_parallel(image_files: List[Path], algorithm: str) -> None:
     equals = ParallelImagePairFinder(
         image_files, IMAGE_HASH_ALGORITHM[algorithm],
-        ParallelOptions(parallel=True)
+        PairFinderOptions(parallel=True)
     ).get_pairs()
     check_results(equals)
 
@@ -29,7 +30,7 @@ def test_parallel(image_files: List[Path], algorithm: str) -> None:
 @pytest.mark.parametrize('algorithm', list(IMAGE_HASH_ALGORITHM.keys()))
 def test_max_distance(image_files: List[Path], algorithm: str) -> None:
     equals = ImagePairFinder(
-        image_files, IMAGE_HASH_ALGORITHM[algorithm], max_distance=1
+        image_files, IMAGE_HASH_ALGORITHM[algorithm], PairFinderOptions(max_distance=1)
     ).get_pairs()
     check_results(equals)
 
@@ -38,7 +39,7 @@ def test_max_distance(image_files: List[Path], algorithm: str) -> None:
 def test_max_distance_parallel(image_files: List[Path], algorithm: str) -> None:
     equals = ParallelImagePairFinder(
         image_files, IMAGE_HASH_ALGORITHM[algorithm],
-        ParallelOptions(parallel=True), max_distance=1
+        PairFinderOptions(parallel=True, max_distance=1)
     ).get_pairs()
     check_results(equals)
 
@@ -51,7 +52,7 @@ def test_create(
 ) -> None:
     equals = ImagePairFinder.create(
         image_files, IMAGE_HASH_ALGORITHM[algorithm],
-        ParallelOptions(parallel=parallel), max_distance=max_distance
+        PairFinderOptions(max_distance=max_distance, parallel=parallel)
     ).get_pairs()
     check_results(equals)
 

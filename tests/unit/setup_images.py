@@ -6,7 +6,6 @@ from typing import List
 from wand.image import Image
 
 from duplicate_images import duplicate
-from duplicate_images.parallel_options import ParallelOptions
 from .conftest import (
     create_image, create_heif_image, fill_image_with_random_pixels, save,
     delete_image_file, copy_image_file
@@ -28,8 +27,6 @@ class SetupImages(unittest.TestCase):
 
     to_create = {'jpeg', 'png', 'heif', 'subdir', 'half'}
     tolerate_deleted_files = False
-
-    options = ParallelOptions()
 
     @classmethod
     def setUpClass(cls) -> None:
