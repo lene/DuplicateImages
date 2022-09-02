@@ -58,8 +58,8 @@ def get_matches(
 ) -> Results:
     hash_algorithm = IMAGE_HASH_ALGORITHM[algorithm]
     image_files = sorted(files_in_dirs(root_directories, is_image_file))
-    logging.info("%d total files", len(image_files))
-    logging.info("Computing image hashes")
+    logging.info('%d total files', len(image_files))
+    logging.info('Computing image hashes')
 
     with PickleHashStore.create(hash_store_path) as hash_store:
         return ImagePairFinder.create(
@@ -87,7 +87,7 @@ def main() -> None:
             [Path(folder) for folder in args.root_directory], args.algorithm,
             options=options, hash_store_path=Path(args.hash_db) if args.hash_db else None
         )
-        logging.info("%d matches", len(matches))
+        logging.info('%d matches', len(matches))
         execute_actions(matches, args.on_equal)
     except KeyboardInterrupt:
         pass

@@ -53,13 +53,13 @@ class PickleHashStore:
 def checked_load(file: BinaryIO) -> Cache:
     values = pickle.load(file)  # noqa: S301
     if not isinstance(values, dict):
-        raise ValueError(f"Not a dict: {values}")
+        raise ValueError(f'Not a dict: {values}')
     bad_keys = [key for key in values.keys() if not isinstance(key, Path)]
     if bad_keys:
-        raise ValueError(f"Not a Path: {bad_keys}")
+        raise ValueError(f'Not a Path: {bad_keys}')
     bad_values = [value for value in values.values() if not isinstance(value, ImageHash)]
     if bad_values:
-        raise ValueError(f"Not an image hash: {bad_values}")
+        raise ValueError(f'Not an image hash: {bad_values}')
     return values
 
 

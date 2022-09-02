@@ -17,7 +17,7 @@ WIDTH = 100
 
 def create_image(file: Path, width: int) -> Path:
     height = int(width * 3 / 4)
-    color = Color("Black")
+    color = Color('Black')
     image = Image(width=width, height=height, background=color)
     image.save(filename=file)
     return file
@@ -26,7 +26,7 @@ def create_image(file: Path, width: int) -> Path:
 def create_heif_image(file_path: Path, width: int) -> Path:
     height = int(width * 3 / 4)
     heif_file = pillow_heif.from_bytes(
-        mode="BGR;16",
+        mode='BGR;16',
         size=(height, width),
         data=bytes([0] * 3 * 2 * width * height)
     )
@@ -67,7 +67,7 @@ def delete_image_file(file: Path, images: List[Path]) -> None:
 
 
 def copy_image_file(file: Path, images: List[Path]) -> Path:
-    copied_file = file.with_suffix(".bak")
+    copied_file = file.with_suffix('.bak')
     shutil.copyfile(file, copied_file)
     images.append(copied_file)
     return copied_file
@@ -77,7 +77,7 @@ def is_pair_found(element1: Path, element2: Path, matches: List[Tuple[Path, Path
     return (element1, element2) in matches or (element2, element1) in matches
 
 
-@pytest.fixture(name="top_directory", scope="session")
+@pytest.fixture(name='top_directory', scope='session')
 def fixture_top_directory() -> Generator[TemporaryDirectory, None, None]:
     top_dir = TemporaryDirectory()
     yield top_dir
@@ -87,40 +87,40 @@ def fixture_top_directory() -> Generator[TemporaryDirectory, None, None]:
         pass
 
 
-@pytest.fixture(name="sub_directory", scope="session")
+@pytest.fixture(name='sub_directory', scope='session')
 def fixture_sub_directory(top_directory: TemporaryDirectory) -> TemporaryDirectory:
     return TemporaryDirectory(dir=top_directory.name)
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope='session')
 def image_files(
         top_directory: TemporaryDirectory, sub_directory: TemporaryDirectory
 ) -> Generator[List[Path], None, None]:
     images = []
     jpeg_file = create_image(
-        Path(NamedTemporaryFile(dir=top_directory.name, prefix="jpeg_", suffix=".jpg").name),
+        Path(NamedTemporaryFile(dir=top_directory.name, prefix='jpeg_', suffix='.jpg').name),
         WIDTH
     )
     images.append(jpeg_file)
     png_file = create_image(
-        Path(NamedTemporaryFile(dir=top_directory.name, prefix="png_", suffix=".png").name),
+        Path(NamedTemporaryFile(dir=top_directory.name, prefix='png_', suffix='.png').name),
         WIDTH
     )
     images.append(png_file)
     heif_file = create_heif_image(
-        Path(NamedTemporaryFile(dir=top_directory.name, prefix="heif_", suffix=".heif").name),
+        Path(NamedTemporaryFile(dir=top_directory.name, prefix='heif_', suffix='.heif').name),
         WIDTH
     )
     images.append(heif_file)
     subdir_file = create_image(
-        Path(NamedTemporaryFile(dir=sub_directory.name, prefix="subdir_", suffix=".jpg").name),
+        Path(NamedTemporaryFile(dir=sub_directory.name, prefix='subdir_', suffix='.jpg').name),
         WIDTH
     )
     fill_image_with_random_pixels(subdir_file)
     images.append(subdir_file)
     half_file = create_image(
         Path(
-            NamedTemporaryFile(dir=top_directory.name, prefix="test_half_", suffix=".jpg").name
+            NamedTemporaryFile(dir=top_directory.name, prefix='test_half_', suffix='.jpg').name
         ),
         WIDTH
     )

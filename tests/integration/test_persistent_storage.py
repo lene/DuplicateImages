@@ -34,7 +34,7 @@ def test_open_bad_file_format(data_dir: Path, test_set: str) -> None:
 def test_open_correct_file_format_but_bad_data_format(
         tmp_dir: Path, data_dir: Path, test_set: str
 ) -> None:
-    check_garbage(tmp_dir, data_dir / test_set, garbage_data='garbage', message="Not a dict")
+    check_garbage(tmp_dir, data_dir / test_set, garbage_data='garbage', message='Not a dict')
 
 
 @pytest.mark.parametrize('test_set', ['different', 'equal_but_binary_different'])
@@ -44,7 +44,7 @@ def test_open_correct_file_format_but_keys_not_paths(
     folder = data_dir / test_set
     check_garbage(
         tmp_dir, folder,
-        garbage_data={str(path): 0 for path in folder.glob("**")}, message="Not a Path"
+        garbage_data={str(path): 0 for path in folder.glob('**')}, message='Not a Path'
     )
 
 
@@ -55,7 +55,7 @@ def test_open_correct_file_format_but_values_not_image_hashes(
     folder = data_dir / test_set
     check_garbage(
         tmp_dir, folder,
-        garbage_data={path: 0 for path in folder.glob("**")}, message="Not an image hash"
+        garbage_data={path: 0 for path in folder.glob('**')}, message='Not an image hash'
     )
 
 

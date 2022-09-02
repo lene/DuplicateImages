@@ -29,5 +29,5 @@ if [ $status -gt 0 ]; then
     status=0
   fi
 fi
-
+echo Status: $status
 exit $status

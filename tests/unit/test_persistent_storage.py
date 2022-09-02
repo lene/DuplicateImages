@@ -58,7 +58,7 @@ class TestPersistentStorage(SetupImages):
     @staticmethod
     def get_hash_store_path() -> Path:
         top_directory = Path(tempfile.mkdtemp())
-        return Path(tempfile.mkstemp(dir=top_directory, suffix=".pickle")[1])
+        return Path(tempfile.mkstemp(dir=top_directory, suffix='.pickle')[1])
 
     def generate_correct_hashes(self, finder: ImagePairFinder) -> None:
         finder.precalculate_hashes(self.get_image_files())
