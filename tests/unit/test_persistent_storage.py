@@ -10,7 +10,7 @@ from unittest.mock import Mock
 from duplicate_images.function_types import Cache
 from duplicate_images.image_pair_finder import ImagePairFinder
 from duplicate_images.hash_store import PickleHashStore
-from tests.setup_images import SetupImages
+from tests.unit.setup_images import SetupImages
 
 
 class TestPersistentStorage(SetupImages):
@@ -71,7 +71,7 @@ class TestPersistentStorage(SetupImages):
 
     def create_pair_finder(self, hash_store: Optional[Cache]) -> ImagePairFinder:
         return ImagePairFinder.create(
-            self.get_image_files(), self.MOCK_ALGORITHM, self.options, hash_store=hash_store
+            self.get_image_files(), self.MOCK_ALGORITHM, hash_store=hash_store
         )
 
     def check_correct_results(self, finder: ImagePairFinder) -> None:

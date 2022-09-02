@@ -46,6 +46,13 @@ image hashing algorithm performs best in which situation. For a start I recommen
 and only evaluating the other algorithms if `phash` does not perform satisfactorily in your use 
 case.
 
+### Image similarity threshold configuration
+
+Use the `--max-distance` parameter to tune how close images should be to be considered duplicates.
+The argument is a positive integer. Its value is highly dependent on the algorithm used and the 
+nature of the images compared, so the best value for your use case can oly be found through 
+experimentation.
+
 ### Actions for matching image pairs
 
 Use the `--on-equal` option to select what to do to pairs of equal images. The default action is 

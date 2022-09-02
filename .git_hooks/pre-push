@@ -17,8 +17,8 @@ remote="$1"
 url="$2"
 
 status=0
-poetry run pytest -n auto || status=1
-poetry run flake8 tests duplicate_images || status=1
+poetry run pytest -n auto tests || status=1
+poetry run flake8 duplicate_images tests || status=1
 poetry run mypy duplicate_images tests || status=1
 poetry run pylint duplicate_images tests || status=1
 
