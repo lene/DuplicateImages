@@ -37,9 +37,7 @@ class ImagePairFinder:
             return ParallelImagePairFinder(
                 files, hash_algorithm, options=options, hash_store=hash_store
             )
-        return ImagePairFinder(
-            files, hash_algorithm, options=options, hash_store=hash_store
-        )
+        return ImagePairFinder(files, hash_algorithm, options=options, hash_store=hash_store)
 
     def __init__(  # pylint: disable = too-many-arguments
             self, files: List[Path], hash_algorithm: HashFunction,
