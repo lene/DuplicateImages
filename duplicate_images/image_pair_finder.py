@@ -54,13 +54,13 @@ class ImagePairFinder:
 
     def get_pairs(self) -> Results:
         image_files = list(self.precalculated_hashes.keys())
-        logging.info("%d hashes calculated", len(self.precalculated_hashes))
+        logging.info('%d hashes calculated', len(self.precalculated_hashes))
         all_pairs = (
             (file, other_file)
             for file in image_files
             for other_file in image_files[image_files.index(file) + 1:]
         )
-        logging.info("Filtering duplicates")
+        logging.info('Filtering duplicates')
         matches = self.filter_matches(all_pairs)
         self.progress_bars.close()
         return matches
@@ -79,7 +79,7 @@ class ImagePairFinder:
         self.progress_bars.update_filter()
         hash_distance = self.precalculated_hashes[file] - self.precalculated_hashes[other_file]
         logging.debug(
-            "%-30s - %-30s = %d", file.stem, other_file.stem, hash_distance
+            '%-30s - %-30s = %d', file.stem, other_file.stem, hash_distance
         )
         return hash_distance <= self.max_distance
 
@@ -94,7 +94,7 @@ class ImagePairFinder:
             self.hash_store[file] = image_hash
             return file, image_hash
         except OSError as err:
-            logging.warning("%s: %s", path_with_parent(file), err)
+            logging.warning('%s: %s', path_with_parent(file), err)
             return file, None
 
     def get_hashes(self, image_files: List[Path]) -> Dict[Path, int]:

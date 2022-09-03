@@ -36,21 +36,21 @@ def ascending_by_size(pair: Tuple[Path, Path]) -> List[Path]:
 
 def delete_with_log_message(file: Path) -> None:
     file.unlink()
-    logging.info("Deleted %s", path_with_parent(file))
+    logging.info('Deleted %s', path_with_parent(file))
 
 
 def quote(string: str) -> str:
     if '"' in string:
         if "'" in string:
-            raise ValueError(f"{string} contains both single and double quotes, giving up")
+            raise ValueError(f'{string} contains both single and double quotes, giving up')
         quotes = "'"
     else:
         quotes = '"'
-    return f"{quotes}{string}{quotes}"
+    return f'{quotes}{string}{quotes}'
 
 
 def quote_print(pair: Tuple[Path, Path]) -> None:
-    print(f"{quote(str(pair[0]))} {quote(str(pair[1]))}")
+    print(f'{quote(str(pair[0]))} {quote(str(pair[1]))}')
 
 
 IMAGE_HASH_ALGORITHM = {
@@ -70,8 +70,8 @@ ACTIONS_ON_EQUALITY: Dict[str, ActionFunction] = {
     'd>': lambda pair: delete_with_log_message(ascending_by_size(pair)[-1]),
     'delete-smaller': lambda pair: delete_with_log_message(ascending_by_size(pair)[0]),
     'd<': lambda pair: delete_with_log_message(ascending_by_size(pair)[0]),
-    'eog': lambda pair: call(["eog"] + [str(pic) for pic in pair]),  # noqa: S603
-    'xv': lambda pair: call(["xv", "-nolim"] + [str(pic) for pic in pair]),  # noqa: S603
+    'eog': lambda pair: call(['eog'] + [str(pic) for pic in pair]),  # noqa: S603
+    'xv': lambda pair: call(['xv', '-nolim'] + [str(pic) for pic in pair]),  # noqa: S603
     'print': lambda pair: print(pair[0], pair[1]),
     'quote': quote_print,
     'none': lambda pair: None

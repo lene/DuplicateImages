@@ -35,26 +35,26 @@ class SetupImages(unittest.TestCase):
         cls.image_files = []
         if 'jpeg' in cls.to_create:
             cls.jpeg_file = create_image(
-                Path(tempfile.mkstemp(dir=cls.top_directory, prefix="jpeg_", suffix=".jpg")[1]),
+                Path(tempfile.mkstemp(dir=cls.top_directory, prefix='jpeg_', suffix='.jpg')[1]),
                 cls.width
             )
             cls.image_files.append(cls.jpeg_file)
         if 'png' in cls.to_create:
             cls.png_file = create_image(
-                Path(tempfile.mkstemp(dir=cls.top_directory, prefix="png_", suffix=".png")[1]),
+                Path(tempfile.mkstemp(dir=cls.top_directory, prefix='png_', suffix='.png')[1]),
                 cls.width
             )
             cls.image_files.append(cls.png_file)
         if 'heif' in cls.to_create:
             cls.heif_file = create_heif_image(
-                Path(tempfile.mkstemp(dir=cls.top_directory, prefix="heif_", suffix=".heif")[1]),
+                Path(tempfile.mkstemp(dir=cls.top_directory, prefix='heif_', suffix='.heif')[1]),
                 cls.width
             )
             cls.image_files.append(cls.heif_file)
         if 'subdir' in cls.to_create:
             cls.sub_directory = Path(tempfile.mkdtemp(dir=cls.top_directory))
             cls.subdir_file = create_image(
-                Path(tempfile.mkstemp(dir=cls.sub_directory, prefix="subdir_", suffix=".jpg")[1]),
+                Path(tempfile.mkstemp(dir=cls.sub_directory, prefix='subdir_', suffix='.jpg')[1]),
                 cls.width
             )
             fill_image_with_random_pixels(cls.subdir_file)
@@ -62,7 +62,7 @@ class SetupImages(unittest.TestCase):
         if 'half' in cls.to_create:
             cls.half_file = create_image(
                 Path(
-                    tempfile.mkstemp(dir=cls.top_directory, prefix="test_half_", suffix=".jpg")[1]
+                    tempfile.mkstemp(dir=cls.top_directory, prefix='test_half_', suffix='.jpg')[1]
                 ),
                 cls.width
             )
@@ -73,7 +73,7 @@ class SetupImages(unittest.TestCase):
 
     @classmethod
     def tearDownClass(cls) -> None:
-        """"remove all the files created by setUp"""
+        """remove all the files created by setUp"""
         for file in cls.image_files:
             file.unlink(missing_ok=cls.tolerate_deleted_files)
         if 'subdir' in cls.to_create:
