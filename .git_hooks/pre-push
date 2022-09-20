@@ -16,18 +16,37 @@
 remote="$1"
 url="$2"
 
-status=0
-poetry run pytest -n auto tests || status=1
-poetry run flake8 duplicate_images tests || status=1
-poetry run mypy duplicate_images tests || status=1
-poetry run pylint duplicate_images tests || status=1
+CI_LINT_OUTPUT=/tmp/gitlab-ci-lint.json
+STATUS=0
+poetry run pytest -n auto tests || STATUS=1
+poetry run flake8 duplicate_images tests || STATUS=1
+poetry run mypy duplicate_images tests || STATUS=1
+poetry run pylint duplicate_images tests || STATUS=1
 
-if [ $status -gt 0 ]; then
+# lint GitLab CI (nod to https://stackoverflow.com/questions/49090675/how-can-i-test-gitlab-ci-yml#68723161 )
+if [ "$GITLAB_ACCESS_TOKEN" != "" ]; then
+    rm -f "$CI_LINT_OUTPUT"
+    jq --null-input --arg yaml "$(cat .gitlab-ci.yml)" '{ content: $yaml }' | \
+      curl -s 'https://gitlab.com/api/v4/ci/lint' \
+        --header 'Content-Type: application/json' \
+        --header "PRIVATE-TOKEN: $GITLAB_ACCESS_TOKEN" \
+        --data @- > "$CI_LINT_OUTPUT"
+    echo "GitLab CI: $(jq -r .status < "$CI_LINT_OUTPUT")"
+    if [ "$(jq -r .status <"$CI_LINT_OUTPUT")" != "valid" ]; then
+        STATUS=1
+        echo "errors: $(jq .errors < "$CI_LINT_OUTPUT")"
+        echo "warnings: $(jq .warnings < "$CI_LINT_OUTPUT")"
+    fi
+else
+    echo "\$GITLAB_ACCESS_TOKEN not set"
+fi
+
+if [ $STATUS -gt 0 ]; then
   commitmsg=$(git log --oneline | head -n 1 | cut -d' ' -f 2-)
   if echo $commitmsg | grep '^WIP:'; then
     echo >&2 "Found WIP commit, pushing in spite of failed test suite"
-    status=0
+    STATUS=0
   fi
 fi
-echo Status: $status
-exit $status
+echo Status: $STATUS
+exit $STATUS

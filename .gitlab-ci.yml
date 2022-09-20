@@ -57,3 +57,28 @@ PublishToPyPI:
     - pip install -q --index-url https://test.pypi.org/simple --extra-index-url https://pypi.org/simple duplicate_images
     - echo "**** Publishing on live PyPI server"
     - poetry publish --username ${PYPI_USERNAME} --password ${PYPI_PASSWORD}
+
+PushToGithub:
+  stage: publish
+  image: ubuntu:latest
+  rules:
+    - if: "$CI_COMMIT_TAG"
+      when: on_success
+  before_script:
+    - apt-get update -y
+    - apt-get install -yqf openssh-client git unzip sshpass rsync --fix-missing
+    - eval $(ssh-agent -s)
+    - echo "$GITHUB_SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add - > /dev/null
+    - mkdir -p ~/.ssh
+    - chmod 700 ~/.ssh
+    - ssh-keyscan github.com >> ~/.ssh/known_hosts
+    - chmod 644 ~/.ssh/known_hosts
+    - ssh -T git@github.com 2>&1 || true
+    - git config --global user.email "$COMMIT_EMAIL"
+    - git config --global user.name "GitLab runner automated push"
+  script:
+    - git remote add github git@github.com:lene/DuplicateImages.git
+    - git remote show github
+    - git checkout $CI_COMMIT_BRANCH
+    - git push github $CI_COMMIT_BRANCH
+    - git push github $CI_COMMIT_TAG
