@@ -7,6 +7,7 @@ from multiprocessing.pool import ThreadPool as Pool
 from pathlib import Path
 from typing import Dict, List, Iterator, Optional
 
+from imagehash import ImageHash
 from PIL import Image
 
 from duplicate_images.common import path_with_parent
@@ -97,7 +98,7 @@ class ImagePairFinder:
             logging.warning('%s: %s', path_with_parent(file), err)
             return file, None
 
-    def get_hashes(self, image_files: List[Path]) -> Dict[Path, int]:
+    def get_hashes(self, image_files: List[Path]) -> Dict[Path, ImageHash]:
         return {
             file: image_hash for file, image_hash in self.precalculate_hashes(image_files)
             if image_hash is not None
