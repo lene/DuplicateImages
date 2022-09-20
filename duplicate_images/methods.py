@@ -5,7 +5,7 @@ from functools import lru_cache
 from hashlib import sha256
 from pathlib import Path
 from subprocess import call  # noqa: S404
-from typing import Dict, Tuple, List
+from typing import Any, Callable, Dict, Tuple, List
 
 import imagehash
 
@@ -59,7 +59,7 @@ IMAGE_HASH_ALGORITHM = {
     'dhash': imagehash.dhash,
     'phash': imagehash.phash,
     'whash': imagehash.whash
-}
+}  # type: Dict[str, Callable[[Any], imagehash.ImageHash]]
 
 ACTIONS_ON_EQUALITY: Dict[str, ActionFunction] = {
     'delete-first': lambda pair: delete_with_log_message(pair[0]),

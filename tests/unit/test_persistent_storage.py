@@ -7,6 +7,9 @@ from pathlib import Path
 from typing import Optional
 from unittest.mock import Mock
 
+from imagehash import ImageHash
+from numpy import ndarray
+
 from duplicate_images.function_types import Cache
 from duplicate_images.image_pair_finder import ImagePairFinder
 from duplicate_images.hash_store import PickleHashStore
@@ -15,7 +18,7 @@ from tests.unit.setup_images import SetupImages
 
 class TestPersistentStorage(SetupImages):
 
-    MOCK_IMAGE_HASH_VALUE = 123  # just some random value
+    MOCK_IMAGE_HASH_VALUE = ImageHash(ndarray(123))  # just some random value
     MOCK_ALGORITHM = Mock(return_value=MOCK_IMAGE_HASH_VALUE)
 
     def setUp(self) -> None:
