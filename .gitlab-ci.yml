@@ -37,6 +37,20 @@ pylint:
   script:
     - poetry run pylint duplicate_images tests
 
+TagIsNew:
+  stage: test
+  image: ubuntu:latest
+  rules:
+    - if: $CI_PIPELINE_SOURCE != "merge_request_event"
+      allow_failure: true
+  before_script:
+    - apt-get update -y
+    - apt-get install -yqf git --fix-missing
+  script:
+    - VERSION=$(egrep 'version = ".*"' pyproject.toml | cut -d \" -f 2)
+    - test -n "$VERSION"
+    - git tag | grep ^$VERSION\$ && exit 1
+
 PublishToPyPI:
   stage: publish
   image: python:3.9
@@ -66,7 +80,7 @@ PushToGithub:
       when: on_success
   before_script:
     - apt-get update -y
-    - apt-get install -yqf openssh-client git unzip sshpass rsync --fix-missing
+    - apt-get install -yqf openssh-client git sshpass --fix-missing
     - eval $(ssh-agent -s)
     - echo "$GITHUB_SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add - > /dev/null
     - mkdir -p ~/.ssh

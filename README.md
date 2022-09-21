@@ -6,7 +6,7 @@ Official home page: https://github.com/lene/DuplicateImages
 
 Development page: https://gitlab.com/lilacashes/DuplicateImages
 
-PyPI page: https://pypi.org/project/duplicate-images/0.6.0
+PyPI page: https://pypi.org/project/duplicate-images
 
 ## Usage
 
