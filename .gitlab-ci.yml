@@ -39,17 +39,36 @@ pylint:
 
 TagIsNew:
   stage: test
-  image: ubuntu:latest
+  image: alpine:latest
   rules:
-    - if: $CI_PIPELINE_SOURCE != "merge_request_event"
-      allow_failure: true
+    - if: "$CI_MERGE_REQUEST_ID"
+    - if: $CI_COMMIT_BRANCH == "master"
   before_script:
-    - apt-get update -y
-    - apt-get install -yqf git --fix-missing
+    - apk update
+    - apk add git
   script:
     - VERSION=$(egrep 'version = ".*"' pyproject.toml | cut -d \" -f 2)
     - test -n "$VERSION"
-    - git tag | grep ^$VERSION\$ && exit 1
+    - git tag | ( ! grep "^${VERSION}\$" )
+
+CreateTag:
+  stage: publish
+  image: alpine:latest
+  rules:
+    - if: $CI_COMMIT_BRANCH == "master" && $CI_PIPELINE_SOURCE != "schedule"
+  needs:
+    - TagIsNew
+  before_script:
+    - apk update
+    - apk add git
+    - git config user.email "${GITLAB_USER_EMAIL}"
+    - git config user.name "${GITLAB_USER_NAME}"
+  script:
+    - VERSION=$(egrep 'version = ".*"' pyproject.toml | cut -d \" -f 2)
+    - echo "**** Tagging release as version $VERSION"
+    - git remote add tag-origin https://oauth2:${GITLAB_ACCESS_TOKEN}@gitlab.com/${CI_PROJECT_PATH}
+    - git tag -a "${VERSION}" -m "Released $(date +%Y-%m-%d)"
+    - git push tag-origin "${VERSION}"
 
 PublishToPyPI:
   stage: publish
@@ -88,8 +107,8 @@ PushToGithub:
     - ssh-keyscan github.com >> ~/.ssh/known_hosts
     - chmod 644 ~/.ssh/known_hosts
     - ssh -T git@github.com 2>&1 || true
-    - git config --global user.email "$COMMIT_EMAIL"
-    - git config --global user.name "GitLab runner automated push"
+    - git config user.email "${GITLAB_USER_EMAIL}"
+    - git config user.name "${GITLAB_USER_NAME}"
   script:
     - git remote add github git@github.com:lene/DuplicateImages.git
     - git remote show github
