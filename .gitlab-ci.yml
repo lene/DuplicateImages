@@ -79,6 +79,7 @@ PushToGithub:
   script:
     - git remote add github git@github.com:lene/DuplicateImages.git
     - git remote show github
-    - git checkout $CI_COMMIT_BRANCH
-    - git push github $CI_COMMIT_BRANCH
+    - BRANCH=${CI_COMMIT_BRANCH:-master}
+    - git checkout $BRANCH
+    - git push github $BRANCH
     - git push github $CI_COMMIT_TAG
