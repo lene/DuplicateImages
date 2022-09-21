@@ -56,6 +56,7 @@ CreateTag:
   image: alpine:latest
   rules:
     - if: $CI_COMMIT_BRANCH == "master" && $CI_PIPELINE_SOURCE != "schedule"
+      when: on_success
   needs:
     - TagIsNew
   before_script:
@@ -72,7 +73,7 @@ CreateTag:
 
 PublishToPyPI:
   stage: publish
-  image: python:3.9
+  image: python:latest
   rules:
     - if: "$CI_COMMIT_TAG"
       when: on_success
@@ -93,13 +94,13 @@ PublishToPyPI:
 
 PushToGithub:
   stage: publish
-  image: ubuntu:latest
+  image: alpine:latest
   rules:
     - if: "$CI_COMMIT_TAG"
       when: on_success
   before_script:
-    - apt-get update -y
-    - apt-get install -yqf openssh-client git sshpass --fix-missing
+    - apk update
+    - apk add openssh-client git sshpass
     - eval $(ssh-agent -s)
     - echo "$GITHUB_SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add - > /dev/null
     - mkdir -p ~/.ssh
