@@ -55,11 +55,17 @@ def quote_print(pair: Tuple[Path, Path]) -> None:
 
 IMAGE_HASH_ALGORITHM = {
     'ahash': imagehash.average_hash,
-    'colorhash': imagehash.colorhash,
-    'dhash': imagehash.dhash,
     'phash': imagehash.phash,
-    'whash': imagehash.whash
+    'phash_simple': imagehash.phash_simple,
+    'dhash': imagehash.dhash,
+    'dhash_vertical': imagehash.dhash_vertical,
+    'whash': imagehash.whash,
+    'colorhash': imagehash.colorhash,
 }  # type: Dict[str, Callable[[Any], imagehash.ImageHash]]
+
+ALGORITHM_DEFAULTS = {
+
+}
 
 ACTIONS_ON_EQUALITY: Dict[str, ActionFunction] = {
     'delete-first': lambda pair: delete_with_log_message(pair[0]),
