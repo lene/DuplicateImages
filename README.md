@@ -53,6 +53,10 @@ The argument is a positive integer. Its value is highly dependent on the algorit
 nature of the images compared, so the best value for your use case can oly be found through 
 experimentation.
 
+Use the `--hash-size` parameter to tune the precision of the hashing algorithms. For the `colorhash`
+algorithm the hash size is interpreted as the number of bin bits and defaults to 3. For all other
+algorithms the hash size defaults to 8. For `whash` it must be a power of 2.
+
 ### Actions for matching image pairs
 
 Use the `--on-equal` option to select what to do to pairs of equal images. The default action is 

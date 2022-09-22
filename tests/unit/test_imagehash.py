@@ -43,6 +43,13 @@ def test_hash_size(image_files: List[Path], algorithm: str) -> None:
     check_results(equals)
 
 
+def test_bad_hash_size_whash(image_files: List[Path]) -> None:
+    with pytest.raises(AssertionError):
+        ImagePairFinder(
+            image_files, IMAGE_HASH_ALGORITHM['whash'], options=PairFinderOptions(hash_size=9)
+        ).get_pairs()
+
+
 @pytest.mark.parametrize('algorithm', list(IMAGE_HASH_ALGORITHM.keys()))
 def test_max_distance_parallel(image_files: List[Path], algorithm: str) -> None:
     equals = ParallelImagePairFinder(

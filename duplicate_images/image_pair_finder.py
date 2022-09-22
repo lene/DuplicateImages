@@ -25,7 +25,7 @@ class PairFinderOptions:
 
     @classmethod
     def from_args(cls, args: Namespace):
-        return cls(args.max_distance, args.progress, args.parallel)
+        return cls(args.max_distance, args.hash_size, args.progress, args.parallel)
 
 
 class ImagePairFinder:

@@ -22,6 +22,10 @@ def parse_command_line() -> Namespace:
         help='Maximum hash distance for images to be considered equal'
     )
     parser.add_argument(
+        '--hash-size', type=int,
+        help='Hash size (or number of bin bits for colorhash)'
+    )
+    parser.add_argument(
         '--on-equal', choices=ACTIONS_ON_EQUALITY.keys(),
         default='print', help='Command to be run on each pair of images found to be equal'
     )

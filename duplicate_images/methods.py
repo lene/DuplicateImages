@@ -12,7 +12,7 @@ import imagehash
 from duplicate_images.common import path_with_parent
 from duplicate_images.function_types import ActionFunction, HashFunction
 
-__all__ = ['call', 'quote', 'IMAGE_HASH_ALGORITHM', 'ACTIONS_ON_EQUALITY']
+__all__ = ['call', 'quote', 'get_hash_size_kwargs', 'IMAGE_HASH_ALGORITHM', 'ACTIONS_ON_EQUALITY']
 
 
 @lru_cache(maxsize=None)
