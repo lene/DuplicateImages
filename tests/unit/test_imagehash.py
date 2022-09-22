@@ -22,7 +22,7 @@ def test_sequential(image_files: List[Path], algorithm: str) -> None:
 def test_parallel(image_files: List[Path], algorithm: str) -> None:
     equals = ParallelImagePairFinder(
         image_files, IMAGE_HASH_ALGORITHM[algorithm],
-        PairFinderOptions(parallel=True)
+        options=PairFinderOptions(parallel=True)
     ).get_pairs()
     check_results(equals)
 
@@ -30,7 +30,15 @@ def test_parallel(image_files: List[Path], algorithm: str) -> None:
 @pytest.mark.parametrize('algorithm', list(IMAGE_HASH_ALGORITHM.keys()))
 def test_max_distance(image_files: List[Path], algorithm: str) -> None:
     equals = ImagePairFinder(
-        image_files, IMAGE_HASH_ALGORITHM[algorithm], PairFinderOptions(max_distance=1)
+        image_files, IMAGE_HASH_ALGORITHM[algorithm], options=PairFinderOptions(max_distance=1)
+    ).get_pairs()
+    check_results(equals)
+
+
+@pytest.mark.parametrize('algorithm', list(IMAGE_HASH_ALGORITHM.keys()))
+def test_hash_size(image_files: List[Path], algorithm: str) -> None:
+    equals = ImagePairFinder(
+        image_files, IMAGE_HASH_ALGORITHM[algorithm], options=PairFinderOptions(hash_size=8)
     ).get_pairs()
     check_results(equals)
 
@@ -39,20 +47,21 @@ def test_max_distance(image_files: List[Path], algorithm: str) -> None:
 def test_max_distance_parallel(image_files: List[Path], algorithm: str) -> None:
     equals = ParallelImagePairFinder(
         image_files, IMAGE_HASH_ALGORITHM[algorithm],
-        PairFinderOptions(parallel=True, max_distance=1)
+        options=PairFinderOptions(parallel=True, max_distance=1)
     ).get_pairs()
     check_results(equals)
 
 
 @pytest.mark.parametrize('parallel', [False, True])
 @pytest.mark.parametrize('max_distance', [0, 1])
+@pytest.mark.parametrize('hash_size', [4, 8])
 @pytest.mark.parametrize('algorithm', list(IMAGE_HASH_ALGORITHM.keys()))
-def test_create(
-        image_files: List[Path], parallel: bool, max_distance: int, algorithm: str
+def test_create_with_all_parameters(
+        image_files: List[Path], parallel: bool, max_distance: int, hash_size: int, algorithm: str
 ) -> None:
     equals = ImagePairFinder.create(
         image_files, IMAGE_HASH_ALGORITHM[algorithm],
-        PairFinderOptions(max_distance=max_distance, parallel=parallel)
+        PairFinderOptions(max_distance=max_distance, hash_size=hash_size, parallel=parallel)
     ).get_pairs()
     check_results(equals)
 

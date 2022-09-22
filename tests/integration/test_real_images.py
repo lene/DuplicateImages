@@ -53,6 +53,19 @@ def test_similar_distance_matches(
 
 
 @pytest.mark.parametrize(
+    'algorithm,hash_size',
+    [('ahash', 4), ('whash', 2), ('colorhash', 4)]
+)
+def test_similar_matches_with_smaller_hash_size(
+        data_dir: Path, algorithm: str, hash_size: int
+) -> None:
+    folder = data_dir / 'similar' / 'pair1'
+    assert len(
+        get_matches([folder], algorithm, PairFinderOptions(hash_size=hash_size))
+    ) == 1
+
+
+@pytest.mark.parametrize(
     'algorithm,expected_pairs',
     [('ahash', 0), ('dhash', 0), ('colorhash', 0), ('phash', 0), ('whash', 0)]
 )

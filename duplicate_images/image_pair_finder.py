@@ -12,12 +12,14 @@ from PIL import Image
 
 from duplicate_images.common import path_with_parent
 from duplicate_images.function_types import Cache, CacheEntry, HashFunction, ImagePair, Results
+from duplicate_images.methods import get_hash_size_kwargs
 from duplicate_images.progress_bar_manager import ProgressBarManager
 
 
 @dataclass(frozen=True)
 class PairFinderOptions:
     max_distance: int = 0
+    hash_size: Optional[int] = None
     show_progress_bars: bool = False
     parallel: bool = False
 
@@ -47,6 +49,7 @@ class ImagePairFinder:
     ) -> None:
         self.files = files
         self.algorithm = hash_algorithm
+        self.hash_size_kwargs = get_hash_size_kwargs(hash_algorithm, options.hash_size)
         self.max_distance = options.max_distance
         self.hash_store = hash_store if hash_store is not None else {}
         self.progress_bars = ProgressBarManager.create(len(files), options.show_progress_bars)
@@ -91,7 +94,7 @@ class ImagePairFinder:
             if cached is not None:
                 return file, cached
 
-            image_hash = self.algorithm(Image.open(file))
+            image_hash = self.algorithm(Image.open(file), **self.hash_size_kwargs)
             self.hash_store[file] = image_hash
             return file, image_hash
         except OSError as err:

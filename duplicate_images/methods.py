@@ -5,12 +5,12 @@ from functools import lru_cache
 from hashlib import sha256
 from pathlib import Path
 from subprocess import call  # noqa: S404
-from typing import Any, Callable, Dict, Tuple, List
+from typing import Any, Callable, Dict, Tuple, List, Optional
 
 import imagehash
 
 from duplicate_images.common import path_with_parent
-from duplicate_images.function_types import ActionFunction
+from duplicate_images.function_types import ActionFunction, HashFunction
 
 __all__ = ['call', 'quote', 'IMAGE_HASH_ALGORITHM', 'ACTIONS_ON_EQUALITY']
 
@@ -53,6 +53,13 @@ def quote_print(pair: Tuple[Path, Path]) -> None:
     print(f'{quote(str(pair[0]))} {quote(str(pair[1]))}')
 
 
+def get_hash_size_kwargs(algorithm: HashFunction, size: Optional[int]) -> Dict[str, int]:
+    if size is None:
+        return ALGORITHM_DEFAULTS.get(algorithm, {'hash_size': 8})
+    kwarg = next(iter(ALGORITHM_DEFAULTS.get(algorithm, {'hash_size': 8})))
+    return {kwarg: size}
+
+
 IMAGE_HASH_ALGORITHM = {
     'ahash': imagehash.average_hash,
     'phash': imagehash.phash,
@@ -64,7 +71,13 @@ IMAGE_HASH_ALGORITHM = {
 }  # type: Dict[str, Callable[[Any], imagehash.ImageHash]]
 
 ALGORITHM_DEFAULTS = {
-
+    imagehash.average_hash: {'hash_size': 8},
+    imagehash.phash: {'hash_size': 8},
+    imagehash.phash_simple: {'hash_size': 8},
+    imagehash.dhash: {'hash_size': 8},
+    imagehash.dhash_vertical: {'hash_size': 8},
+    imagehash.whash: {'hash_size': 8},
+    imagehash.colorhash: {'binbits': 3},
 }
 
 ACTIONS_ON_EQUALITY: Dict[str, ActionFunction] = {

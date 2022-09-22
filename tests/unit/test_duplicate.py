@@ -10,7 +10,7 @@ from duplicate_images.duplicate import files_in_dirs
 from duplicate_images.image_pair_finder import (
     ImagePairFinder, PairFinderOptions, ParallelImagePairFinder
 )
-from duplicate_images.methods import IMAGE_HASH_ALGORITHM
+from duplicate_images.methods import ALGORITHM_DEFAULTS, IMAGE_HASH_ALGORITHM, get_hash_size_kwargs
 from tests.unit.conftest import is_pair_found, copy_image_file, delete_image_file
 
 HASH_ALGORITHM = IMAGE_HASH_ALGORITHM['phash']
@@ -38,7 +38,7 @@ def test_hashes_equal_for_copied_image(
     copied_file = copy_image_file(jpeg_file, image_files)
     equals = ImagePairFinder(
         image_files, IMAGE_HASH_ALGORITHM[algorithm],
-        PairFinderOptions(max_distance=max_distance)
+        options=PairFinderOptions(max_distance=max_distance)
     ).get_pairs()
     try:
         assert is_pair_found(jpeg_file, copied_file, equals)
@@ -54,7 +54,7 @@ def test_hashes_not_equal_for_noisy_image(
     subdir_file = named_file('subdir', image_files)
     equals = ImagePairFinder(
         image_files, IMAGE_HASH_ALGORITHM[algorithm],
-        PairFinderOptions(max_distance=max_distance)
+        options=PairFinderOptions(max_distance=max_distance)
     ).get_pairs()
     assert not element_in_list_of_tuples(subdir_file, equals)
 
@@ -68,7 +68,7 @@ def test_hashes_equal_for_different_image_format(
     png_file = named_file('png', image_files)
     equals = ImagePairFinder(
         image_files, IMAGE_HASH_ALGORITHM[algorithm],
-        PairFinderOptions(max_distance=max_distance)
+        options=PairFinderOptions(max_distance=max_distance)
     ).get_pairs()
     assert (jpeg_file, png_file) in equals
 
@@ -82,7 +82,7 @@ def test_hashes_equal_for_scaled_image(
     half_file = named_file('half', image_files)
     equals = ImagePairFinder(
         image_files, IMAGE_HASH_ALGORITHM[algorithm],
-        PairFinderOptions(max_distance=max_distance)
+        options=PairFinderOptions(max_distance=max_distance)
     ).get_pairs()
     assert (jpeg_file, half_file) in equals
 
@@ -99,7 +99,7 @@ def test_parallel_filtering_gives_same_results(
     subdir_file = named_file('subdir', image_files)
     equals = ParallelImagePairFinder(
         image_files, IMAGE_HASH_ALGORITHM[algorithm],
-        PairFinderOptions(max_distance=max_distance, parallel=True)
+        options=PairFinderOptions(max_distance=max_distance, parallel=True)
     ).get_pairs()
     assert len(equals) == 6
     assert is_pair_found(jpeg_file, png_file, equals)
@@ -112,3 +112,48 @@ def test_parallel_filtering_gives_same_results(
     assert not is_pair_found(png_file, subdir_file, equals)
     assert not is_pair_found(heif_file, subdir_file, equals)
     assert not is_pair_found(half_file, subdir_file, equals)
+
+
+@pytest.mark.parametrize('algorithm', list(IMAGE_HASH_ALGORITHM.keys()))
+@pytest.mark.parametrize('hash_size', [4, 7, 9])
+def test_different_hash_size_sets_options(algorithm: str, hash_size: int) -> None:
+    finder = ImagePairFinder(
+        [], IMAGE_HASH_ALGORITHM[algorithm], options=PairFinderOptions(hash_size=hash_size)
+    )
+    assert isinstance(finder.hash_size_kwargs, dict)
+    assert len(finder.hash_size_kwargs) == 1
+    assert list(finder.hash_size_kwargs.values())[0] == hash_size
+    assert list(finder.hash_size_kwargs.keys())[0] == next(iter(
+        ALGORITHM_DEFAULTS[IMAGE_HASH_ALGORITHM[algorithm]]
+    ))
+    assert finder.hash_size_kwargs == get_hash_size_kwargs(
+        IMAGE_HASH_ALGORITHM[algorithm], hash_size
+    )
+
+
+@pytest.mark.parametrize('algorithm', list(IMAGE_HASH_ALGORITHM.keys()))
+@pytest.mark.parametrize('hash_size', [4, 16])
+def test_different_hash_size_finds_scaled_images(
+        image_files: List[Path], algorithm: str, hash_size: int
+) -> None:
+    jpeg_file = named_file('jpeg', image_files)
+    half_file = named_file('half', image_files)
+    equals = ImagePairFinder(
+        image_files, IMAGE_HASH_ALGORITHM[algorithm],
+        options=PairFinderOptions(hash_size=hash_size)
+    ).get_pairs()
+    assert (jpeg_file, half_file) in equals
+
+
+@pytest.mark.parametrize('algorithm', list(IMAGE_HASH_ALGORITHM.keys()))
+@pytest.mark.parametrize('hash_size', [4, 16])
+def test_smaller_hash_size_finds_similar_images(
+        image_files: List[Path], algorithm: str, hash_size: int
+) -> None:
+    jpeg_file = named_file('jpeg', image_files)
+    half_file = named_file('half', image_files)
+    equals = ImagePairFinder(
+        image_files, IMAGE_HASH_ALGORITHM[algorithm],
+        options=PairFinderOptions(hash_size=hash_size)
+    ).get_pairs()
+    assert (jpeg_file, half_file) in equals
