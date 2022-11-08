@@ -26,7 +26,7 @@ def test_similar(
 
 @pytest.mark.parametrize(
     'algorithm,min_distance',
-    [('ahash', 14), ('dhash', 12), ('phash', 8), ('whash', 16), ('colorhash', 0)]
+    [('ahash', 2), ('dhash', 10), ('phash', 14), ('whash', 2), ('colorhash', 0)]
 )
 def test_hash_distance(
         data_dir: Path, algorithm: str, min_distance: int
@@ -41,7 +41,7 @@ def test_hash_distance(
 
 @pytest.mark.parametrize(
     'algorithm,min_distance',
-    [('ahash', 14), ('dhash', 12), ('phash', 8), ('whash', 16), ('colorhash', 0)]
+    [('ahash', 14), ('dhash', 12), ('phash', 14), ('whash', 16), ('colorhash', 0)]
 )
 def test_similar_distance_matches(
         data_dir: Path, algorithm: str, min_distance: int
@@ -105,28 +105,18 @@ def test_jpeg_artifacts(
     assert len(get_matches([folder], algorithm)) == expected_pairs
 
 
-@pytest.mark.parametrize(
-    'algorithm,expected_pairs',
-    [('ahash', 1), ('dhash', 1), ('colorhash', 1), ('phash', 1), ('whash', 1)]
-)
+@pytest.mark.parametrize('algorithm', ['ahash', 'dhash', 'colorhash', 'phash', 'whash'])
 @pytest.mark.parametrize('image_pair', ['pair1', 'pair2', 'pair3'])
-def test_exactly_equal(
-        data_dir: Path, image_pair: str, algorithm: str, expected_pairs: int
-) -> None:
+def test_exactly_equal(data_dir: Path, image_pair: str, algorithm: str) -> None:
     folder = data_dir / 'exactly_equal' / image_pair
-    assert len(get_matches([folder], algorithm)) == expected_pairs
+    assert len(get_matches([folder], algorithm)) == 1
 
 
-@pytest.mark.parametrize(
-    'algorithm,expected_pairs',
-    [('ahash', 0), ('dhash', 0), ('colorhash', 0), ('phash', 0), ('whash', 0)]
-)
+@pytest.mark.parametrize('algorithm', ['ahash', 'dhash', 'colorhash', 'phash', 'whash'])
 @pytest.mark.parametrize('image_pair', ['pair1'])
-def test_different(
-        data_dir: Path, image_pair: str, algorithm: str, expected_pairs: int
-) -> None:
+def test_different(data_dir: Path, image_pair: str, algorithm: str) -> None:
     folder = data_dir / 'different' / image_pair
-    assert len(get_matches([folder], algorithm)) == expected_pairs
+    assert len(get_matches([folder], algorithm)) == 0
 
 
 @pytest.mark.parametrize(
