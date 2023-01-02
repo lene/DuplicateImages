@@ -45,6 +45,8 @@ class PickleHashStore:
 
     def __exit__(self, _: Any, __: Any, ___: Any) -> None:
         if self.store_path.is_file():
+            if self.store_path.with_suffix('.bak').is_file():
+                self.store_path.with_suffix('.bak').unlink()
             self.store_path.rename(self.store_path.with_suffix('.bak'))
         with self.store_path.open('wb') as file:
             pickle.dump(self.values, file)
