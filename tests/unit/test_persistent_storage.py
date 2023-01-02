@@ -58,10 +58,23 @@ class TestPersistentStorage(SetupImages):
             assert file_name in written_hashes
             assert written_hashes[file_name] == self.MOCK_IMAGE_HASH_VALUE
 
+    def test_backup_file_created(self) -> None:
+        hash_store_path = self.get_hash_store_path()
+        self.create_verified_hash_store(hash_store_path)
+        assert not hash_store_path.with_suffix('.bak').is_file()
+        self.create_verified_hash_store(hash_store_path)
+        assert hash_store_path.with_suffix('.bak').is_file()
+
+    def test_existing_backup_file_does_not_lead_to_error(self) -> None:
+        hash_store_path = self.get_hash_store_path()
+        self.create_verified_hash_store(hash_store_path)
+        self.create_verified_hash_store(hash_store_path)
+        self.create_verified_hash_store(hash_store_path)
+
     @staticmethod
     def get_hash_store_path() -> Path:
         top_directory = Path(tempfile.mkdtemp())
-        return Path(tempfile.mkstemp(dir=top_directory, suffix='.pickle')[1])
+        return Path(tempfile.NamedTemporaryFile(dir=top_directory, suffix='.pickle').name)
 
     def generate_correct_hashes(self, finder: ImagePairFinder) -> None:
         finder.precalculate_hashes(self.get_image_files())
