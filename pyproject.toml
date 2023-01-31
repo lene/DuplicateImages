@@ -24,6 +24,7 @@ tqdm = "^4.64.1"
 pillow-heif = "^0.7.0"
 six = "^1.16.0"
 numpy = "^1.23"
+python-magic = "^0.4.27"
 
 [tool.poetry.dev-dependencies]
 lz4 = "^4.0.2"
