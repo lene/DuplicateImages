@@ -6,11 +6,13 @@ from unittest.mock import Mock, patch
 import pytest
 
 from duplicate_images import duplicate
-from duplicate_images.methods import quote  # pylint:disable=unused-import
+from duplicate_images.methods import quote, shell_exec  # pylint:disable=unused-import
 from duplicate_images.function_types import Results
 from duplicate_images.image_pair_finder import ImagePairFinder
 from duplicate_images.methods import IMAGE_HASH_ALGORITHM
+from duplicate_images.parse_commandline import parse_command_line
 from tests.unit.setup_images import SetupImages
+from argparse import Namespace
 
 HASH_ALGORITHM = IMAGE_HASH_ALGORITHM['phash']
 
@@ -104,16 +106,16 @@ class DLessTest(DeleteSmallerTest):
 class OtherActionsTest(ActionsTest):
     @patch('duplicate_images.methods.call')
     def test_xv(self, mock_call: Mock) -> None:
-        self.check_command_is_called(mock_call, 'xv')
+        self.check_command_is_called(mock_call, parse_command_line(["/", "--on-equal", "xv"]))
 
     @patch('duplicate_images.methods.call')
     def test_eog(self, mock_call: Mock) -> None:
-        self.check_command_is_called(mock_call, 'eog')
+        self.check_command_is_called(mock_call, parse_command_line(["/", "--on-equal", "eog"]))
 
     @patch('builtins.print')
     def test_print(self, mock_print: Mock) -> None:
         equals = self.get_equals()
-        duplicate.execute_actions(equals, 'print')
+        duplicate.execute_actions(equals, parse_command_line(["/", "--on-equal", "print"]))
         assert mock_print.call_count == len(equals)
         for path in equals[0]:
             assert path in mock_print.call_args_list[0].args
@@ -121,21 +123,21 @@ class OtherActionsTest(ActionsTest):
     @patch('builtins.print')
     def test_quote(self, mock_print: Mock) -> None:
         equals = self.get_equals()
-        duplicate.execute_actions(equals, 'quote')
+        duplicate.execute_actions(equals, parse_command_line(["/", "--on-equal", "quote"]))
         assert mock_print.call_count == len(equals)
         for path in equals[0]:
             assert str(path) in mock_print.call_args_list[0].args[0]
             assert quote(str(path)) in mock_print.call_args_list[0].args[0]
 
-    @patch('duplicate_images.methods.call')
+    @patch('duplicate_images.methods.shell_exec')
     def test_shell_exec(self, mock_call: Mock) -> None:
-        self.check_command_is_called(mock_call, 'ls {1} {2}')
+        self.check_command_is_called(mock_call, parse_command_line(["/", "--on-equal", "exec", "--exec", "ls {1} {2}"]))
 
-    def check_command_is_called(self, mock_call: Mock, command: str) -> None:
+    def check_command_is_called(self, mock_call: Mock, args: Namespace) -> None:
         equals = self.get_equals()
-        duplicate.execute_actions(equals, command)
+        duplicate.execute_actions(equals, args)
         mock_call.assert_called_once()
-        assert command in mock_call.call_args_list[0].args[0]
+        assert args.on_equal in mock_call.call_args_list[0].args[0]
 
 
 class UnknownOptionTest(ActionsTest):

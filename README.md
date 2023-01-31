@@ -65,11 +65,19 @@ Use the `--on-equal` option to select what to do to pairs of equal images. The d
 - `delete-second` or `d2`: deletes the second of the two files
 - `delete-bigger` or `d>`: deletes the file with the bigger size
 - `delete-smaller` or `d<`: deletes the file with the smaller size
-- `eog`: launches the `eog` image viewer to compare the two files
-- `xv`: launches the `xv` image viewer to compare the two files
+- `eog`: launches the `eog` image viewer to compare the two files (*deprecated* by `exec`)
+- `xv`: launches the `xv` image viewer to compare the two files (*deprecated* by `exec`)
 - `print`: prints the two files
-- `quote`: prints the two files with quotes around each 
+- `quote`: prints the two files with quotes around each
+- `exec`: executes a command (see `--exec` argument)
 - `none`: does nothing.
+
+The `--exec` argument allows calling another program when the `--on-equal exec` option is given.\
+You can pass a command line string like
+```shell
+--exec "open {1} {2}"
+```
+where `{1}` and `{2}` are replaced by the matching pair files.
   
 ### Parallel execution
 

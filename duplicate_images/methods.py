@@ -1,12 +1,13 @@
 __author__ = 'Lene Preuss <lene.preuss@gmail.com>'
 
 import logging
+import os
 from functools import lru_cache
 from hashlib import sha256
 from pathlib import Path
 from subprocess import call  # noqa: S404
 from typing import Any, Callable, Dict, Tuple, List, Optional
-
+from argparse import Namespace
 import imagehash
 
 from duplicate_images.common import path_with_parent
@@ -39,13 +40,14 @@ def delete_with_log_message(file: Path) -> None:
     logging.info('Deleted %s', path_with_parent(file))
 
 
-def shell_exec(cmd: str, pair: ImagePair) -> None:
+def shell_exec(args: Namespace, pair: ImagePair) -> None:
     num = 0
+    cmd = args.exec
     for path in pair:
         num = num + 1
         cmd = cmd.replace(f"{'{'}{num}{'}'}", f"\"{path}\"")
 
-    call(cmd)
+    os.system(cmd)
 
 
 def quote(string: str) -> str:
@@ -58,7 +60,7 @@ def quote(string: str) -> str:
     return f'{quotes}{string}{quotes}'
 
 
-def quote_print(pair: ImagePair) -> None:
+def quote_print(args: Namespace, pair: ImagePair) -> None:
     print(f'{quote(str(pair[0]))} {quote(str(pair[1]))}')
 
 
@@ -90,17 +92,18 @@ ALGORITHM_DEFAULTS = {
 }
 
 ACTIONS_ON_EQUALITY: Dict[str, ActionFunction] = {
-    'delete-first': lambda pair: delete_with_log_message(pair[0]),
-    'd1': lambda pair: delete_with_log_message(pair[0]),
-    'delete-second': lambda pair: delete_with_log_message(pair[1]),
-    'd2': lambda pair: delete_with_log_message(pair[1]),
-    'delete-bigger': lambda pair: delete_with_log_message(ascending_by_size(pair)[-1]),
-    'd>': lambda pair: delete_with_log_message(ascending_by_size(pair)[-1]),
-    'delete-smaller': lambda pair: delete_with_log_message(ascending_by_size(pair)[0]),
-    'd<': lambda pair: delete_with_log_message(ascending_by_size(pair)[0]),
-    'eog': lambda pair: call(['eog'] + [str(pic) for pic in pair]),  # noqa: S603
-    'xv': lambda pair: call(['xv', '-nolim'] + [str(pic) for pic in pair]),  # noqa: S603
-    'print': lambda pair: print(pair[0], pair[1]),
+    'delete-first': lambda args, pair: delete_with_log_message(pair[0]),
+    'd1': lambda args, pair: delete_with_log_message(pair[0]),
+    'delete-second': lambda args, pair: delete_with_log_message(pair[1]),
+    'd2': lambda args, pair: delete_with_log_message(pair[1]),
+    'delete-bigger': lambda args, pair: delete_with_log_message(ascending_by_size(pair)[-1]),
+    'd>': lambda args, pair: delete_with_log_message(ascending_by_size(pair)[-1]),
+    'delete-smaller': lambda args, pair: delete_with_log_message(ascending_by_size(pair)[0]),
+    'd<': lambda args, pair: delete_with_log_message(ascending_by_size(pair)[0]),
+    'eog': lambda args, pair: call(['eog'] + [str(pic) for pic in pair]),  # noqa: S603
+    'xv': lambda args, pair: call(['xv', '-nolim'] + [str(pic) for pic in pair]),  # noqa: S603
+    'print': lambda args, pair: print(pair[0], pair[1]),
     'quote': quote_print,
+    'exec': lambda args, pair: shell_exec(args, pair),
     'none': lambda pair: None
 }
