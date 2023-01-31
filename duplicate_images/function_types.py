@@ -7,8 +7,8 @@ from imagehash import ImageHash
 
 
 HashFunction = Callable[[Image.Image], ImageHash]
-ActionFunction = Callable[[Tuple[Path, Path]], Any]
-Results = List[Tuple[Path, Path]]
+ImagePair = Tuple[Path, Path]
+ActionFunction = Callable[[ImagePair], Any]
+Results = List[ImagePair]
 CacheEntry = Tuple[Path, Optional[ImageHash]]
 Cache = Dict[Path, ImageHash]
-ImagePair = Tuple[Path, Path]

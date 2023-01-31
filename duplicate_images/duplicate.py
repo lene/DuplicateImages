@@ -10,11 +10,11 @@ from pillow_heif import open_heif, register_heif_opener
 from pillow_heif.error import HeifError
 
 from duplicate_images.common import path_with_parent
-from duplicate_images.function_types import Results
+from duplicate_images.function_types import Results, ImagePair
 from duplicate_images.hash_store import PickleHashStore
 from duplicate_images.image_pair_finder import ImagePairFinder, PairFinderOptions
 from duplicate_images.logging import setup_logging
-from duplicate_images.methods import ACTIONS_ON_EQUALITY, IMAGE_HASH_ALGORITHM
+from duplicate_images.methods import ACTIONS_ON_EQUALITY, IMAGE_HASH_ALGORITHM, shell_exec
 from duplicate_images.parse_commandline import parse_command_line
 
 
@@ -68,7 +68,15 @@ def get_matches(
 
 
 def execute_actions(matches: Results, action_name: str) -> None:
-    action_equal = ACTIONS_ON_EQUALITY[action_name]
+    # If command is not part of the constant's dict, handle as command string
+    if action_name not in ACTIONS_ON_EQUALITY:
+        def shell_exec_wrapper(pair: ImagePair):
+            shell_exec(action_name, pair)
+
+        action_equal = shell_exec_wrapper
+    else:
+        action_equal = ACTIONS_ON_EQUALITY[action_name]
+
     for match in sorted(matches):
         try:
             action_equal(match)
