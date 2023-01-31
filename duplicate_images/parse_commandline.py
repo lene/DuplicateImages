@@ -1,11 +1,11 @@
 __author__ = 'lene'
 
+import logging
 from argparse import ArgumentParser, Namespace
 
 from duplicate_images.methods import ACTIONS_ON_EQUALITY, IMAGE_HASH_ALGORITHM
 
-
-def parse_command_line() -> Namespace:
+def parse_command_line(args: list[str] = None) -> Namespace:
     parser = ArgumentParser(description='Find pairs of equal or similar images.')
 
     parser.add_argument(
@@ -27,8 +27,11 @@ def parse_command_line() -> Namespace:
     )
     parser.add_argument(
         '--on-equal', choices=ACTIONS_ON_EQUALITY.keys(),
-        nargs='?',
         default='print', help='Command to be run on each pair of images found to be equal'
+    )
+    parser.add_argument(
+        '--exec', type=str,
+        help='Command to execute (replaces {1}, {2} with file pathes)'
     )
     parser.add_argument(
         '--parallel', action='store_true', help='Filter using all available cores (Experimental)'
@@ -46,4 +49,7 @@ def parse_command_line() -> Namespace:
         '--hash-db', default=None, help='File storing precomputed hashes'
     )
 
-    return parser.parse_args()
+    namespace = parser.parse_args(args)
+    if namespace.on_equal is "exec":
+        assert namespace.exec is not None and len(namespace.exec) > 0, "--exec argument is required"
+    return namespace

@@ -16,6 +16,7 @@ from duplicate_images.methods import ACTIONS_ON_EQUALITY, IMAGE_HASH_ALGORITHM, 
 from duplicate_images.parse_commandline import parse_command_line
 from pillow_heif import open_heif, register_heif_opener
 from pillow_heif.error import HeifError
+from argparse import Namespace
 
 register_heif_opener()
 
@@ -69,19 +70,12 @@ def get_matches(
         ).get_pairs()
 
 
-def execute_actions(matches: Results, action_name: str) -> None:
-    # If command is not part of the constant's dict, handle as command string
-    if action_name not in ACTIONS_ON_EQUALITY:
-        def shell_exec_wrapper(pair: ImagePair):
-            shell_exec(action_name, pair)
+def execute_actions(matches: Results, args: Namespace) -> None:
+    action_equal = ACTIONS_ON_EQUALITY[args.on_equal]
 
-        action_equal = shell_exec_wrapper
-    else:
-        action_equal = ACTIONS_ON_EQUALITY[action_name]
-
-    for match in sorted(matches):
+    for pair in sorted(matches):
         try:
-            action_equal(match)
+            action_equal(args, pair)
         except FileNotFoundError:
             continue
 
@@ -98,7 +92,7 @@ def main() -> None:
             options=options, hash_store_path=Path(args.hash_db) if args.hash_db else None
         )
         logging.info('%d matches', len(matches))
-        execute_actions(matches, args.on_equal)
+        execute_actions(matches, args)
     except KeyboardInterrupt:
         pass
 
