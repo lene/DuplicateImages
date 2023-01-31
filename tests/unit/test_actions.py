@@ -127,6 +127,10 @@ class OtherActionsTest(ActionsTest):
             assert str(path) in mock_print.call_args_list[0].args[0]
             assert quote(str(path)) in mock_print.call_args_list[0].args[0]
 
+    @patch('duplicate_images.methods.call')
+    def test_shell_exec(self, mock_call: Mock) -> None:
+        self.check_command_is_called(mock_call, 'ls {1} {2}')
+
     def check_command_is_called(self, mock_call: Mock, command: str) -> None:
         equals = self.get_equals()
         duplicate.execute_actions(equals, command)

@@ -10,7 +10,7 @@ from typing import Any, Callable, Dict, Tuple, List, Optional
 import imagehash
 
 from duplicate_images.common import path_with_parent
-from duplicate_images.function_types import ActionFunction, HashFunction
+from duplicate_images.function_types import ActionFunction, HashFunction, ImagePair
 
 __all__ = ['call', 'quote', 'get_hash_size_kwargs', 'IMAGE_HASH_ALGORITHM', 'ACTIONS_ON_EQUALITY']
 
@@ -30,13 +30,22 @@ def compare_exactly(file: Path, other_file: Path) -> bool:
     return get_size(other_file) == get_size(file) and get_hash(file) == get_hash(other_file)
 
 
-def ascending_by_size(pair: Tuple[Path, Path]) -> List[Path]:
+def ascending_by_size(pair: ImagePair) -> List[Path]:
     return sorted(pair, key=lambda path: path.stat().st_size)
 
 
 def delete_with_log_message(file: Path) -> None:
     file.unlink()
     logging.info('Deleted %s', path_with_parent(file))
+
+
+def shell_exec(cmd: str, pair: ImagePair) -> None:
+    num = 0
+    for path in pair:
+        num = num + 1
+        cmd = cmd.replace(f"{'{'}{num}{'}'}", f"\"{path}\"")
+
+    call(cmd)
 
 
 def quote(string: str) -> str:
@@ -49,7 +58,7 @@ def quote(string: str) -> str:
     return f'{quotes}{string}{quotes}'
 
 
-def quote_print(pair: Tuple[Path, Path]) -> None:
+def quote_print(pair: ImagePair) -> None:
     print(f'{quote(str(pair[0]))} {quote(str(pair[1]))}')
 
 

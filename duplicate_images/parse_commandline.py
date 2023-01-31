@@ -27,6 +27,7 @@ def parse_command_line() -> Namespace:
     )
     parser.add_argument(
         '--on-equal', choices=ACTIONS_ON_EQUALITY.keys(),
+        nargs='?',
         default='print', help='Command to be run on each pair of images found to be equal'
     )
     parser.add_argument(
