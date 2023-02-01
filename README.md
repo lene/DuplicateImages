@@ -106,18 +106,6 @@ $ pip3 install poetry
 $ poetry install
 ```
 
-### Depencenies
-
-You need to install *mimemagic* before. See also [python-magic](https://github.com/ahupp/python-magic).
-
-**Debian/Ubuntu**: `sudo apt-get install libmagic1`
-
-**Windows**: `pip install python-magic-bin`
-
-**OSX**\
-When using Homebrew: `brew install libmagic` \
-When using macports: `port install file`
-
 ### Running
 
 ```shell

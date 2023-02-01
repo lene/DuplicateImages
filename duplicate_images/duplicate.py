@@ -16,18 +16,18 @@ from duplicate_images.image_pair_finder import ImagePairFinder, PairFinderOption
 from duplicate_images.logging import setup_logging
 from duplicate_images.methods import ACTIONS_ON_EQUALITY, IMAGE_HASH_ALGORITHM
 from duplicate_images.parse_commandline import parse_command_line
-import magic
+import mimetypes
 
 register_heif_opener()
 
-
 def is_image_file(filename: Path) -> bool:
-    mimetype = magic.from_file(filename, mime=True)
+    mimetype, encoding = mimetypes.guess_type(filename)
 
     """Returns True if filename is a readable image file"""
-    if mimetype.startswith("image/") and not filename.is_symlink():
-        if what(filename) is not None or is_heif_file(filename):
-            return True
+    if mimetype is not None:
+        if mimetype.startswith("image/") and not filename.is_symlink():
+             if what(filename) is not None or is_heif_file(filename):
+                 return True
     return False
 
 
