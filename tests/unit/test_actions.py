@@ -121,6 +121,14 @@ class OtherActionsTest(ActionsTest):
         for path in equals[0]:
             assert path in mock_print.call_args_list[0].args
 
+    @patch('builtins.print')
+    def test_print_inline(self, mock_print: Mock) -> None:
+        equals = self.get_equals()
+        duplicate.execute_actions(equals, parse_command_line(["/", "--on-equal", "print_inline"]))
+        assert mock_print.call_count == len(equals)
+        for path in equals[0]:
+            assert path in mock_print.call_args_list[0].args
+
     def test_quote_string(self):
         quoted = shlex.quote("string with \"quotes\"")
         assert quoted == "'string with \"quotes\"'"
@@ -132,6 +140,15 @@ class OtherActionsTest(ActionsTest):
     def test_quote(self, mock_print: Mock) -> None:
         equals = self.get_equals()
         duplicate.execute_actions(equals, parse_command_line(["/", "--on-equal", "quote"]))
+        assert mock_print.call_count == len(equals)
+        for path in equals[0]:
+            assert str(path) in mock_print.call_args_list[0].args[0]
+            assert quote(str(path)) in mock_print.call_args_list[0].args[0]
+
+    @patch('builtins.print')
+    def test_quote_inline(self, mock_print: Mock) -> None:
+        equals = self.get_equals()
+        duplicate.execute_actions(equals, parse_command_line(["/", "--on-equal", "quote_inline"]))
         assert mock_print.call_count == len(equals)
         for path in equals[0]:
             assert str(path) in mock_print.call_args_list[0].args[0]

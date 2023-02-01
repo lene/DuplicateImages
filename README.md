@@ -68,7 +68,9 @@ Use the `--on-equal` option to select what to do to pairs of equal images. The d
 - `eog`: launches the `eog` image viewer to compare the two files (*deprecated* by `exec`)
 - `xv`: launches the `xv` image viewer to compare the two files (*deprecated* by `exec`)
 - `print`: prints the two files
-- `quote`: prints the two files with quotes around each
+- `print_inline`: like `print` but without newline
+- `quote`: prints the two files quoted for POSIX shells
+- `quote_inline`: like `quote` but without newline
 - `exec`: executes a command (see `--exec` argument)
 - `none`: does nothing.
 
