@@ -9,11 +9,12 @@ from subprocess import call  # noqa: S404
 from typing import Any, Callable, Dict, Tuple, List, Optional
 from argparse import Namespace
 import imagehash
+from shlex import quote
 
 from duplicate_images.common import path_with_parent
 from duplicate_images.function_types import ActionFunction, HashFunction, ImagePair
 
-__all__ = ['call', 'quote', 'get_hash_size_kwargs', 'IMAGE_HASH_ALGORITHM', 'ACTIONS_ON_EQUALITY']
+__all__ = ['call', 'get_hash_size_kwargs', 'IMAGE_HASH_ALGORITHM', 'ACTIONS_ON_EQUALITY']
 
 
 @lru_cache(maxsize=None)
@@ -48,21 +49,6 @@ def shell_exec(args: Namespace, pair: ImagePair) -> None:
         cmd = cmd.replace(f"{'{'}{num}{'}'}", f"\"{path}\"")
 
     os.system(cmd)
-
-
-def quote(string: str) -> str:
-    if '"' in string:
-        if "'" in string:
-            raise ValueError(f'{string} contains both single and double quotes, giving up')
-        quotes = "'"
-    else:
-        quotes = '"'
-    return f'{quotes}{string}{quotes}'
-
-
-def quote_print(args: Namespace, pair: ImagePair) -> None:
-    print(f'{quote(str(pair[0]))} {quote(str(pair[1]))}')
-
 
 def get_hash_size_kwargs(algorithm: HashFunction, size: Optional[int]) -> Dict[str, int]:
     if size is None:
@@ -103,7 +89,9 @@ ACTIONS_ON_EQUALITY: Dict[str, ActionFunction] = {
     'eog': lambda args, pair: call(['eog'] + [str(pic) for pic in pair]),  # noqa: S603
     'xv': lambda args, pair: call(['xv', '-nolim'] + [str(pic) for pic in pair]),  # noqa: S603
     'print': lambda args, pair: print(pair[0], pair[1]),
-    'quote': quote_print,
+    'print_inline': lambda args, pair: print(pair[0], pair[1], end=' '),
+    'quote': lambda args, pair: print(f'{quote(str(pair[0]))} {quote(str(pair[1]))}'),
+    'quote_inline': lambda args, pair: print(f'{quote(str(pair[0]))} {quote(str(pair[1]))}', end=' '),
     'exec': lambda args, pair: shell_exec(args, pair),
     'none': lambda pair: None
 }

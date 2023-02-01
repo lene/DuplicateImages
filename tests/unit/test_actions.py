@@ -1,5 +1,6 @@
 __author__ = 'Lene Preuss <lene.preuss@gmail.com>'
 
+import shlex
 from pathlib import Path
 from unittest.mock import Mock, patch
 
@@ -119,6 +120,13 @@ class OtherActionsTest(ActionsTest):
         assert mock_print.call_count == len(equals)
         for path in equals[0]:
             assert path in mock_print.call_args_list[0].args
+
+    def test_quote_string(self):
+        quoted = shlex.quote("string with \"quotes\"")
+        assert quoted == "'string with \"quotes\"'"
+
+        quoted = shlex.quote("/path/with/one space.jpg")
+        assert quoted == "'/path/with/one space.jpg'"
 
     @patch('builtins.print')
     def test_quote(self, mock_print: Mock) -> None:
