@@ -1,19 +1,18 @@
 __author__ = 'Lene Preuss <lene.preuss@gmail.com>'
 
 import shlex
+from argparse import Namespace
 from pathlib import Path
 from unittest.mock import Mock, patch
 
 import pytest
-
 from duplicate_images import duplicate
-from duplicate_images.methods import quote  # pylint:disable=unused-import
 from duplicate_images.function_types import Results
 from duplicate_images.image_pair_finder import ImagePairFinder
 from duplicate_images.methods import IMAGE_HASH_ALGORITHM
+from duplicate_images.methods import quote  # pylint:disable=unused-import
 from duplicate_images.parse_commandline import parse_command_line
 from tests.unit.setup_images import SetupImages
-from argparse import Namespace
 
 HASH_ALGORITHM = IMAGE_HASH_ALGORITHM['phash']
 
