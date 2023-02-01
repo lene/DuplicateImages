@@ -9,15 +9,14 @@ from pathlib import Path
 from typing import Callable, List, Optional
 
 from duplicate_images.common import path_with_parent
-from duplicate_images.function_types import Results, ImagePair
+from duplicate_images.function_types import Results
 from duplicate_images.hash_store import PickleHashStore
 from duplicate_images.image_pair_finder import ImagePairFinder, PairFinderOptions
 from duplicate_images.logging import setup_logging
-from duplicate_images.methods import ACTIONS_ON_EQUALITY, IMAGE_HASH_ALGORITHM, shell_exec
+from duplicate_images.methods import ACTIONS_ON_EQUALITY, IMAGE_HASH_ALGORITHM
 from duplicate_images.parse_commandline import parse_command_line
 from pillow_heif import open_heif, register_heif_opener
 from pillow_heif.error import HeifError
-from argparse import Namespace
 
 register_heif_opener()
 
