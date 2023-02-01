@@ -9,6 +9,8 @@ include:
 .test:
   stage: test
   image: python:3.9
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "push" || $CI_PIPELINE_SOURCE == "merge_request_event"'
   before_script:
     - pip install -q poetry
     - poetry install
