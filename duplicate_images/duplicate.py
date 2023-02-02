@@ -8,17 +8,19 @@ from os import walk, access, R_OK
 from pathlib import Path
 from typing import Callable, List, Optional
 
+from pillow_heif import open_heif, register_heif_opener
+from pillow_heif.error import HeifError
+
 from duplicate_images.common import path_with_parent
 from duplicate_images.function_types import Results
 from duplicate_images.hash_store import PickleHashStore
 from duplicate_images.image_pair_finder import ImagePairFinder, PairFinderOptions
-from duplicate_images.logging import setup_logging
+from duplicate_images.log import setup_logging
 from duplicate_images.methods import ACTIONS_ON_EQUALITY, IMAGE_HASH_ALGORITHM
 from duplicate_images.parse_commandline import parse_command_line
-from pillow_heif import open_heif, register_heif_opener
-from pillow_heif.error import HeifError
 
 register_heif_opener()
+
 
 def is_image_file(filename: Path) -> bool:
     """Returns True if filename is a readable image file"""
@@ -26,7 +28,7 @@ def is_image_file(filename: Path) -> bool:
 
         mimetype, _ = mimetypes.guess_type(filename)
 
-        if mimetype is not None and mimetype.startswith("image/"):
+        if mimetype is not None and mimetype.startswith('image/'):
             if what(filename) is not None or is_heif_file(filename):
                 return True
     return False
