@@ -14,7 +14,7 @@ from duplicate_images.common import path_with_parent
 from duplicate_images.function_types import Results
 from duplicate_images.hash_store import PickleHashStore
 from duplicate_images.image_pair_finder import ImagePairFinder, PairFinderOptions
-from duplicate_images.logging import setup_logging
+from duplicate_images.log import setup_logging
 from duplicate_images.methods import ACTIONS_ON_EQUALITY, IMAGE_HASH_ALGORITHM
 from duplicate_images.parse_commandline import parse_command_line
 
