@@ -5,7 +5,6 @@ from argparse import Namespace
 from pathlib import Path
 from unittest.mock import Mock, patch
 
-import pytest
 from duplicate_images import duplicate
 from duplicate_images.function_types import Results
 from duplicate_images.image_pair_finder import ImagePairFinder
@@ -129,10 +128,10 @@ class OtherActionsTest(ActionsTest):
             assert path in mock_print.call_args_list[0].args
 
     def test_quote_string(self):
-        quoted = shlex.quote("string with \"quotes\"")
+        quoted = shlex.quote('string with "quotes"')
         assert quoted == "'string with \"quotes\"'"
 
-        quoted = shlex.quote("/path/with/one space.jpg")
+        quoted = shlex.quote('/path/with/one space.jpg')
         assert quoted == "'/path/with/one space.jpg'"
 
     @patch('builtins.print')

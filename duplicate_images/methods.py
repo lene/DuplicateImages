@@ -2,14 +2,15 @@ __author__ = 'Lene Preuss <lene.preuss@gmail.com>'
 
 import logging
 import os
+from argparse import Namespace
 from functools import lru_cache
 from hashlib import sha256
 from pathlib import Path
-from subprocess import call  # noqa: S404
-from typing import Any, Callable, Dict, Tuple, List, Optional
-from argparse import Namespace
-import imagehash
 from shlex import quote
+from subprocess import call  # noqa: S404
+from typing import Any, Callable, Dict, List, Optional
+
+import imagehash
 
 from duplicate_images.common import path_with_parent
 from duplicate_images.function_types import ActionFunction, HashFunction, ImagePair
