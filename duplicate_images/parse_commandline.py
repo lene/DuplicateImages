@@ -1,11 +1,12 @@
 __author__ = 'lene'
 
 from argparse import ArgumentParser, Namespace
+from typing import List, Optional
 
 from duplicate_images.methods import ACTIONS_ON_EQUALITY, IMAGE_HASH_ALGORITHM
 
 
-def parse_command_line(args: list[str] = None) -> Namespace:
+def parse_command_line(args: Optional[List[str]] = None) -> Namespace:
     parser = ArgumentParser(description='Find pairs of equal or similar images.')
 
     parser.add_argument(
