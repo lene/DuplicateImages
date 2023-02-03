@@ -7,8 +7,11 @@ include:
   - template: Security/SAST.gitlab-ci.yml
 
 .test:
+  parallel:
+    matrix:
+      - PY_VERSION: [ "3.7", "3.8", "3.9", "3.10", "3.11" ]
   stage: test
-  image: python:3.9
+  image: python:$PY_VERSION
   rules:
     - if: '$CI_PIPELINE_SOURCE == "push" || $CI_PIPELINE_SOURCE == "merge_request_event"'
   before_script:
