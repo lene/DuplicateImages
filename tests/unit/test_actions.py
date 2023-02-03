@@ -6,6 +6,7 @@ from argparse import Namespace
 from pathlib import Path
 from typing import List
 from unittest import TestCase
+from tempfile import TemporaryDirectory
 from unittest.mock import Mock, patch
 
 import pytest
@@ -89,21 +90,21 @@ class D1Test(DeleteFirstTest):
 
 
 class DeleteSecondTest(ActionsTest):
-    def run_test(self, option: str) -> None:
+    def run_test(self, option: str, top_directory: TemporaryDirectory) -> None:
         equals = self.get_equals()
         first = equals[0][0]
         second = equals[0][1]
-        duplicate.execute_actions(equals, parse_command_line(['/', '--on-equal', option]))
+        duplicate.execute_actions(equals, parse_command_line([top_directory.name, '--on-equal', option]))
         assert first.is_file()
         assert not second.is_file()
 
     def test_delete_second(self) -> None:
-        self.run_test('delete-second')
+        self.run_test('delete-second', TemporaryDirectory())
 
 
 class D2Test(DeleteSecondTest):
     def test_delete_second(self) -> None:
-        self.run_test('d2')
+        self.run_test('d2', TemporaryDirectory())
 
 
 class DeleteBiggerTest(ActionsTest):
