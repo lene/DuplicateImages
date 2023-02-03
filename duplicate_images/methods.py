@@ -47,9 +47,10 @@ def shell_exec(args: Namespace, pair: ImagePair) -> None:
     cmd = args.exec
     for path in pair:
         num = num + 1
-        cmd = cmd.replace(f"{'{'}{num}{'}'}", f"\"{path}\"")
+        cmd = cmd.replace(f"{'{'}{num}{'}'}", f'"{path}"')
 
     os.system(cmd)
+
 
 def get_hash_size_kwargs(algorithm: HashFunction, size: Optional[int]) -> Dict[str, int]:
     if size is None:
@@ -92,7 +93,9 @@ ACTIONS_ON_EQUALITY: Dict[str, ActionFunction] = {
     'print': lambda args, pair: print(pair[0], pair[1]),
     'print_inline': lambda args, pair: print(pair[0], pair[1], end=' '),
     'quote': lambda args, pair: print(f'{quote(str(pair[0]))} {quote(str(pair[1]))}'),
-    'quote_inline': lambda args, pair: print(f'{quote(str(pair[0]))} {quote(str(pair[1]))}', end=' '),
-    'exec': lambda args, pair: shell_exec(args, pair),
-    'none': lambda pair: None
+    'quote_inline': lambda args, pair: print(
+        f'{quote(str(pair[0]))} {quote(str(pair[1]))}', end=' '
+    ),
+    'exec': lambda args, pair: shell_exec(args, pair),  # pylint: disable=unnecessary-lambda
+    'none': lambda pair: None  # type: ignore
 }

@@ -5,6 +5,8 @@ from argparse import Namespace
 from pathlib import Path
 from unittest.mock import Mock, patch
 
+import pytest
+
 from duplicate_images import duplicate
 from duplicate_images.function_types import Results
 from duplicate_images.image_pair_finder import ImagePairFinder
@@ -39,7 +41,7 @@ class DeleteFirstTest(ActionsTest):
         equals = self.get_equals()
         first = equals[0][0]
         second = equals[0][1]
-        duplicate.execute_actions(equals, parse_command_line(["/", "--on-equal", option]))
+        duplicate.execute_actions(equals, parse_command_line(['/', '--on-equal', option]))
         assert not first.is_file()
         assert second.is_file()
 
@@ -57,7 +59,7 @@ class DeleteSecondTest(ActionsTest):
         equals = self.get_equals()
         first = equals[0][0]
         second = equals[0][1]
-        duplicate.execute_actions(equals, parse_command_line(["/", "--on-equal", option]))
+        duplicate.execute_actions(equals, parse_command_line(['/', '--on-equal', option]))
         assert first.is_file()
         assert not second.is_file()
 
@@ -73,7 +75,7 @@ class D2Test(DeleteSecondTest):
 class DeleteBiggerTest(ActionsTest):
     def run_test(self, option: str) -> None:
         equals = self.get_equals()
-        duplicate.execute_actions(equals, parse_command_line(["/", "--on-equal", option]))
+        duplicate.execute_actions(equals, parse_command_line(['/', '--on-equal', option]))
         assert self.get_smaller(equals).is_file()
         assert not self.get_bigger(equals).is_file()
 
@@ -89,7 +91,7 @@ class DGreaterTest(DeleteBiggerTest):
 class DeleteSmallerTest(ActionsTest):
     def run_test(self, option: str) -> None:
         equals = self.get_equals()
-        duplicate.execute_actions(equals, parse_command_line(["/", "--on-equal", option]))
+        duplicate.execute_actions(equals, parse_command_line(['/', '--on-equal', option]))
         assert not self.get_smaller(equals).is_file()
         assert self.get_bigger(equals).is_file()
 
@@ -105,16 +107,16 @@ class DLessTest(DeleteSmallerTest):
 class OtherActionsTest(ActionsTest):
     @patch('duplicate_images.methods.call')
     def test_xv(self, mock_call: Mock) -> None:
-        self.check_command_is_called(mock_call, parse_command_line(["/", "--on-equal", "xv"]))
+        self.check_command_is_called(mock_call, parse_command_line(['/', '--on-equal', 'xv']))
 
     @patch('duplicate_images.methods.call')
     def test_eog(self, mock_call: Mock) -> None:
-        self.check_command_is_called(mock_call, parse_command_line(["/", "--on-equal", "eog"]))
+        self.check_command_is_called(mock_call, parse_command_line(['/', '--on-equal', 'eog']))
 
     @patch('builtins.print')
     def test_print(self, mock_print: Mock) -> None:
         equals = self.get_equals()
-        duplicate.execute_actions(equals, parse_command_line(["/", "--on-equal", "print"]))
+        duplicate.execute_actions(equals, parse_command_line(['/', '--on-equal', 'print']))
         assert mock_print.call_count == len(equals)
         for path in equals[0]:
             assert path in mock_print.call_args_list[0].args
@@ -122,7 +124,7 @@ class OtherActionsTest(ActionsTest):
     @patch('builtins.print')
     def test_print_inline(self, mock_print: Mock) -> None:
         equals = self.get_equals()
-        duplicate.execute_actions(equals, parse_command_line(["/", "--on-equal", "print_inline"]))
+        duplicate.execute_actions(equals, parse_command_line(['/', '--on-equal', 'print_inline']))
         assert mock_print.call_count == len(equals)
         for path in equals[0]:
             assert path in mock_print.call_args_list[0].args
@@ -137,7 +139,7 @@ class OtherActionsTest(ActionsTest):
     @patch('builtins.print')
     def test_quote(self, mock_print: Mock) -> None:
         equals = self.get_equals()
-        duplicate.execute_actions(equals, parse_command_line(["/", "--on-equal", "quote"]))
+        duplicate.execute_actions(equals, parse_command_line(['/', '--on-equal', 'quote']))
         assert mock_print.call_count == len(equals)
         for path in equals[0]:
             assert str(path) in mock_print.call_args_list[0].args[0]
@@ -146,7 +148,7 @@ class OtherActionsTest(ActionsTest):
     @patch('builtins.print')
     def test_quote_inline(self, mock_print: Mock) -> None:
         equals = self.get_equals()
-        duplicate.execute_actions(equals, parse_command_line(["/", "--on-equal", "quote_inline"]))
+        duplicate.execute_actions(equals, parse_command_line(['/', '--on-equal', 'quote_inline']))
         assert mock_print.call_count == len(equals)
         for path in equals[0]:
             assert str(path) in mock_print.call_args_list[0].args[0]
@@ -154,7 +156,9 @@ class OtherActionsTest(ActionsTest):
 
     @patch('duplicate_images.methods.shell_exec')
     def test_shell_exec(self, mock_call: Mock) -> None:
-        self.check_command_is_called(mock_call, parse_command_line(["/", "--on-equal", "exec", "--exec", "ls {1} {2}"]))
+        self.check_command_is_called(
+            mock_call, parse_command_line(['/', '--on-equal', 'exec', '--exec', 'ls {1} {2}'])
+        )
 
     def check_command_is_called(self, mock_call: Mock, args: Namespace) -> None:
         equals = self.get_equals()
@@ -163,9 +167,12 @@ class OtherActionsTest(ActionsTest):
         assert args.on_equal in mock_call.call_args_list[0].args[0]
 
 
-# class UnknownOptionTest(ActionsTest):
-#     UNKNOWN_OPTION = 'unknown-option'
-#
-#     def test_unknown_option(self) -> None:
-#         with pytest.raises(KeyError, match=self.UNKNOWN_OPTION):
-#             duplicate.execute_actions(self.get_equals(), parse_command_line(["/", "--on-equal", self.UNKNOWN_OPTION]))
+class UnknownOptionTest(ActionsTest):
+    UNKNOWN_OPTION = 'unknown-option'
+
+    @pytest.mark.skip('figure out how to test correctly!')
+    def test_unknown_option(self) -> None:
+        with pytest.raises(SystemExit, match=self.UNKNOWN_OPTION):
+            duplicate.execute_actions(
+                self.get_equals(), parse_command_line(['/', '--on-equal', self.UNKNOWN_OPTION])
+            )
