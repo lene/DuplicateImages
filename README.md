@@ -196,3 +196,9 @@ $ poetry run fil-profile run ./duplicate_images/duplicate.py \
 ```
 This will open a browser window showing the functions using the most memory (see 
 https://pypi.org/project/filprofiler for more details).
+
+## Contributors
+
+- Lene Preuss (https://github.com/lene): primary developer
+- Mike Reiche (https://github.com/mreiche): support for arbitrary actions, speedups
+- https://github.com/beijingjazzpanda: bug fix
