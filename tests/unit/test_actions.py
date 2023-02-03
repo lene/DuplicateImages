@@ -170,9 +170,6 @@ class OtherActionsTest(ActionsTest):
 class UnknownOptionTest(ActionsTest):
     UNKNOWN_OPTION = 'unknown-option'
 
-    @pytest.mark.skip('figure out how to test correctly!')
     def test_unknown_option(self) -> None:
-        with pytest.raises(SystemExit, match=self.UNKNOWN_OPTION):
-            duplicate.execute_actions(
-                self.get_equals(), parse_command_line(['/', '--on-equal', self.UNKNOWN_OPTION])
-            )
+        with pytest.raises(SystemExit):
+            parse_command_line(['/', '--on-equal', self.UNKNOWN_OPTION])
