@@ -3,7 +3,7 @@
 import logging
 import mimetypes
 from argparse import Namespace
-from imghdr import what
+from imghdr import what  # pylint:disable=deprecated-module
 from os import walk, access, R_OK
 from pathlib import Path
 from typing import Callable, List, Optional
