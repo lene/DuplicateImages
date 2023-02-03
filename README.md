@@ -75,11 +75,10 @@ Use the `--on-equal` option to select what to do to pairs of equal images. The d
 - `none`: does nothing.
 
 The `--exec` argument allows calling another program when the `--on-equal exec` option is given.\
-You can pass a command line string like
-```shell
---exec "open {1} {2}"
-```
-where `{1}` and `{2}` are replaced by the matching pair files.
+You can pass a command line string like `--exec "program {1} {2}"` where `{1}` and `{2}` are replaced by the matching pair files.
+
+**Examples**\
+`--exec "open -a Preview -W {1} {2}"`: Opens the files in MacOS Preview app and waits for it.
   
 ### Parallel execution
 
