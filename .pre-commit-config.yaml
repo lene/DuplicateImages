@@ -10,10 +10,6 @@ repos:
     -   id: detect-aws-credentials
     -   id: detect-private-key
     -   id: double-quote-string-fixer
--   repo: https://github.com/Lucas-C/pre-commit-hooks-safety
-    rev: v1.3.1
-    hooks:
-    -   id: python-safety-dependencies-check
 -   repo: https://github.com/PyCQA/flake8
     rev: 3.9.2
     hooks:
