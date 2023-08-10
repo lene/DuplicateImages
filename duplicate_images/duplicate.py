@@ -1,13 +1,12 @@
 #!/usr/bin/env /usr/bin/python3
 
 import logging
-import mimetypes
 from argparse import Namespace
-from imghdr import what  # pylint:disable=deprecated-module
 from os import walk, access, R_OK
 from pathlib import Path
 from typing import Callable, List, Optional
 
+from filetype import guess
 from pillow_heif import open_heif, register_heif_opener
 from pillow_heif.error import HeifError
 
@@ -25,12 +24,8 @@ register_heif_opener()
 def is_image_file(filename: Path) -> bool:
     """Returns True if filename is a readable image file"""
     if access(filename, R_OK) and not filename.is_symlink():
-
-        mimetype, _ = mimetypes.guess_type(filename)
-
-        if mimetype is not None and mimetype.startswith('image/'):
-            if what(filename) is not None or is_heif_file(filename):
-                return True
+        kind = guess(filename)
+        return kind is not None and kind.mime.startswith('image/')
     return False
 
 
