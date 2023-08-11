@@ -42,7 +42,7 @@ pylint:
   script:
     - poetry run pylint duplicate_images tests
 
-TestRunScript:
+RunAndCheckResults:
   extends: .test
   variables:
     IMAGE_DIR: tests/integration/data/equal_but_binary_different
@@ -60,6 +60,33 @@ TestRunScript:
     - test $NUM_PAIRS -eq $EXPECTED_PAIRS
     - NUM_PAIRS=$(poetry run find-dups $IMAGE_DIR --hash-size 8 --quiet | wc -l)
     - test $NUM_PAIRS -eq $EXPECTED_PAIRS
+
+RunWithArgs:
+  stage: test
+  image: python:latest
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "push" || $CI_PIPELINE_SOURCE == "merge_request_event"'
+  before_script:
+    - pip install -q poetry
+    - poetry install
+  variables:
+    IMAGE_DIR: tests/integration/data
+    HASH_DB: test.pickle
+  parallel:
+    matrix:
+      - ON_EQUAL: [print, quote_inline, none, d<, exec]
+        ALGORITHM: [ahash, colorhash]
+        MODE: ["", --serial, --parallel]
+  script:
+    # ensure the script runs without any error with the given options
+    - poetry run find-dups 
+        ${IMAGE_DIR} --hash-db ${HASH_DB} --progress --exec "ls -l {1} {2}" 
+        --algorithm ${ALGORITHM} 
+        --on-equal ${ON_EQUAL} 
+        $MODE
+    # ensure the hash cache file is written
+    - test -f ${HASH_DB}
+    - ls -l ${HASH_DB}
 
 TagIsNew:
   stage: test

@@ -131,7 +131,8 @@ class SerialImagePairFinder(ImagePairFinder):
 
 class DictImagePairFinder(ImagePairFinder):
     """
-    Works this way only if max_distance == 0
+    Works this way only if max_distance == 0, otherwise needs to do an O(N^2) comparison between all
+    image hashes
     """
     def __init__(  # pylint: disable = too-many-arguments
             self, files: List[Path], hash_algorithm: HashFunction,
@@ -151,7 +152,6 @@ class DictImagePairFinder(ImagePairFinder):
             for pair in combinations(list(result), 2)
             if len(result) > 1
         ]
-        self.progress_bars.close()
         return results
 
     def get_hashes(self, image_files: List[Path]) -> Dict[ImageHash, Tuple[Path, ...]]:
