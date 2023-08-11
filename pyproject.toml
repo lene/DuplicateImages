@@ -36,7 +36,6 @@ pytest = "^7.1.2"
 pylint = "^2.15.3"
 pytest-xdist = "^2.2.1"
 ptpython = "^3.0.20"
-pre-commit = "^3.2.1"
 
 [tool.poetry.scripts]
 find-dups = "duplicate_images.duplicate:main"

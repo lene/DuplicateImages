@@ -12,7 +12,7 @@ from imagehash import ImageHash
 from numpy import ndarray
 
 from duplicate_images.function_types import Cache
-from duplicate_images.image_pair_finder import ImagePairFinder
+from duplicate_images.image_pair_finder import SerialImagePairFinder
 from duplicate_images.hash_store import PickleHashStore
 from tests.unit.setup_images import SetupImages
 
@@ -83,7 +83,7 @@ class TestPersistentStorage(SetupImages):
         top_directory = Path(tempfile.mkdtemp())
         return Path(tempfile.NamedTemporaryFile(dir=top_directory, suffix='.pickle').name)
 
-    def generate_correct_hashes(self, finder: ImagePairFinder) -> None:
+    def generate_correct_hashes(self, finder: SerialImagePairFinder) -> None:
         finder.precalculate_hashes(self.get_image_files())
         self.check_correct_results(finder)
 
@@ -92,12 +92,12 @@ class TestPersistentStorage(SetupImages):
             finder = self.create_pair_finder(hash_store)
             self.generate_correct_hashes(finder)
 
-    def create_pair_finder(self, hash_store: Optional[Cache]) -> ImagePairFinder:
-        return ImagePairFinder.create(
+    def create_pair_finder(self, hash_store: Optional[Cache]) -> SerialImagePairFinder:
+        return SerialImagePairFinder(
             self.get_image_files(), self.MOCK_ALGORITHM, hash_store=hash_store
         )
 
-    def check_correct_results(self, finder: ImagePairFinder) -> None:
+    def check_correct_results(self, finder: SerialImagePairFinder) -> None:
         pairs = finder.get_pairs()
         for pair in combinations(self.equal_images, 2):
             check_flaky_condition(pair in pairs)

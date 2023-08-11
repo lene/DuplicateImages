@@ -12,7 +12,7 @@ from duplicate_images.methods import IMAGE_HASH_ALGORITHM
 
 @pytest.mark.parametrize('algorithm', list(IMAGE_HASH_ALGORITHM.keys()))
 def test_sequential(image_files: List[Path], algorithm: str) -> None:
-    equals = ImagePairFinder(
+    equals = ImagePairFinder.create(
         image_files, IMAGE_HASH_ALGORITHM[algorithm]
     ).get_pairs()
     check_results(equals)
@@ -29,7 +29,7 @@ def test_parallel(image_files: List[Path], algorithm: str) -> None:
 
 @pytest.mark.parametrize('algorithm', list(IMAGE_HASH_ALGORITHM.keys()))
 def test_max_distance(image_files: List[Path], algorithm: str) -> None:
-    equals = ImagePairFinder(
+    equals = ImagePairFinder.create(
         image_files, IMAGE_HASH_ALGORITHM[algorithm], options=PairFinderOptions(max_distance=1)
     ).get_pairs()
     check_results(equals)
@@ -37,7 +37,7 @@ def test_max_distance(image_files: List[Path], algorithm: str) -> None:
 
 @pytest.mark.parametrize('algorithm', list(IMAGE_HASH_ALGORITHM.keys()))
 def test_hash_size(image_files: List[Path], algorithm: str) -> None:
-    equals = ImagePairFinder(
+    equals = ImagePairFinder.create(
         image_files, IMAGE_HASH_ALGORITHM[algorithm], options=PairFinderOptions(hash_size=8)
     ).get_pairs()
     check_results(equals)
@@ -45,7 +45,7 @@ def test_hash_size(image_files: List[Path], algorithm: str) -> None:
 
 def test_bad_hash_size_whash(image_files: List[Path]) -> None:
     with pytest.raises(AssertionError):
-        ImagePairFinder(
+        ImagePairFinder.create(
             image_files, IMAGE_HASH_ALGORITHM['whash'], options=PairFinderOptions(hash_size=9)
         ).get_pairs()
 
