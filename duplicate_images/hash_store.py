@@ -1,11 +1,12 @@
 __author__ = 'Lene Preuss <lene.preuss@gmail.com>'
 
+import json
 import logging
 import pickle  # noqa: S403
 from pathlib import Path
-from typing import Any, BinaryIO, Optional, Union
+from typing import Any, BinaryIO, Dict, Optional, Union
 
-from imagehash import ImageHash
+from imagehash import ImageHash, hex_to_hash
 
 from duplicate_images.function_types import Cache
 
@@ -50,6 +51,15 @@ class PickleHashStore:
             self.store_path.rename(self.store_path.with_suffix('.bak'))
         with self.store_path.open('wb') as file:
             pickle.dump(self.values, file)
+
+
+class JSONHashStore:
+
+    def dump(self, to_dump: Dict[Path, ImageHash]):
+        json.dumps({str(k): str(v) for k, v in to_dump.items()})
+
+    def restore(self, dumped: str) -> Dict[Path, ImageHash]:
+        return {Path(k): hex_to_hash(v) for k, v in json.loads(dumped).items()}
 
 
 def checked_load(file: BinaryIO) -> Cache:

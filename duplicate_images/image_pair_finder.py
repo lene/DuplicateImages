@@ -24,10 +24,11 @@ class PairFinderOptions:
     hash_size: Optional[int] = None
     show_progress_bars: bool = False
     parallel: bool = False
+    serial: bool = False
 
     @classmethod
     def from_args(cls, args: Namespace):
-        return cls(args.max_distance, args.hash_size, args.progress, args.parallel)
+        return cls(args.max_distance, args.hash_size, args.progress, args.parallel, args.serial)
 
 
 class ImagePairFinder:
@@ -42,7 +43,7 @@ class ImagePairFinder:
             return ParallelImagePairFinder(
                 files, hash_algorithm, options=options, hash_store=hash_store
             )
-        if options.max_distance == 0:
+        if options.max_distance == 0 and not options.serial:
             return DictImagePairFinder(
                 files, hash_algorithm, options=options, hash_store=hash_store
             )
@@ -53,6 +54,7 @@ class ImagePairFinder:
             options: PairFinderOptions = PairFinderOptions(),
             hash_store: Optional[Cache] = None
     ) -> None:
+        logging.info('Using %s', self.__class__.__name__)
         self.files = files
         self.algorithm = hash_algorithm
         self.hash_size_kwargs = get_hash_size_kwargs(hash_algorithm, options.hash_size)
@@ -143,12 +145,14 @@ class DictImagePairFinder(ImagePairFinder):
         self.progress_bars.close_reader()
 
     def get_pairs(self) -> Results:
-        return [
+        results = [
             pair
             for result in self.precalculated_hashes.values()
             for pair in combinations(list(result), 2)
             if len(result) > 1
         ]
+        self.progress_bars.close()
+        return results
 
     def get_hashes(self, image_files: List[Path]) -> Dict[ImageHash, Tuple[Path, ...]]:
         hash_dict: Dict[ImageHash, Tuple[Path, ...]] = defaultdict(tuple)

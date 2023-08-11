@@ -38,6 +38,9 @@ def parse_command_line(args: Optional[List[str]] = None) -> Namespace:
         '--parallel', action='store_true', help='Filter using all available cores (Experimental)'
     )
     parser.add_argument(
+        '--serial', action='store_true', help='Use serial algorithm'
+    )
+    parser.add_argument(
         '--progress', action='store_true', help='Show progress bars during processing'
     )
     parser.add_argument(

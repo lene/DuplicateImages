@@ -79,10 +79,15 @@ You can pass a command line string like `--exec "program {1} {2}"` where `{1}` a
 
 **Examples**\
 `--exec "open -a Preview -W {1} {2}"`: Opens the files in MacOS Preview app and waits for it.
-  
+
 ### Parallel execution
 
 Use the `--parallel` option to utilize all free cores on your system. 
+
+### Serial execution
+
+`find-dups` can also use an alternative algorithm which is O(N<sup>2</sup>) in the number of images.
+Use the `--serial` option to use this alternative algorithm. 
 
 ### Progress and verbosity control
 
@@ -147,9 +152,10 @@ $ ln -s ../../.git_hooks/pre-push .
 
 ### Publishing
 
-There is a job in GitLab CI for publishing to `pypi.org` that runs as soon as a new tag is added. 
-The tag needs to be the same as the `version` in the `pyproject.toml` file or else the job will 
-fail.
+There is a job in GitLab CI for publishing to `pypi.org` that runs as soon as a new tag is added, 
+which happens automatically whenever a MR is merged. The tag is the same as the `version` in the 
+`pyproject.toml` file. For every MR it needs to be ensured that the `version` is not the same as an 
+already existing tag.
 
 To publish the package on PyPI manually:
 ```shell
@@ -158,7 +164,7 @@ $ poetry build
 $ poetry publish --username $PYPI_USER --password $PYPI_PASSWORD --repository testpypi && \
   poetry publish --username $PYPI_USER --password $PYPI_PASSWORD
 ```
-(obviously assuming that username and password are the same on PyPI and TestPyPI)
+(obviously assuming here that username and password are the same on PyPI and TestPyPI)
 
 #### Updating GitHub mirror
 

@@ -97,5 +97,5 @@ ACTIONS_ON_EQUALITY: Dict[str, ActionFunction] = {
         f'{quote(str(pair[0]))} {quote(str(pair[1]))}', end=' '
     ),
     'exec': lambda args, pair: shell_exec(args, pair),  # pylint: disable=unnecessary-lambda
-    'none': lambda pair: None  # type: ignore
+    'none': lambda args, pair: None
 }
