@@ -106,7 +106,7 @@ def test_jpeg_artifacts(
 
 
 @pytest.mark.parametrize('algorithm', ['ahash', 'dhash', 'colorhash', 'phash', 'whash'])
-@pytest.mark.parametrize('image_pair', ['pair1', 'pair2', 'pair3'])
+@pytest.mark.parametrize('image_pair', ['pair1', 'pair2', 'pair3', 'webp', 'heif'])
 def test_exactly_equal(data_dir: Path, image_pair: str, algorithm: str) -> None:
     folder = data_dir / 'exactly_equal' / image_pair
     assert len(get_matches([folder], algorithm)) == 1
