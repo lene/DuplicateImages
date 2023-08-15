@@ -4,7 +4,7 @@ import json
 import logging
 import pickle  # noqa: S403
 from pathlib import Path
-from typing import Any, BinaryIO, Dict, Optional, Union
+from typing import Any, BinaryIO, Callable, Optional, Union
 
 from imagehash import ImageHash, hex_to_hash
 
@@ -23,18 +23,21 @@ class NullHashStore:
         pass
 
 
-class PickleHashStore:
+class FileHashStore:
 
     @classmethod
-    def create(cls, store_path: Optional[Path]) -> Union['PickleHashStore', NullHashStore]:
-        return PickleHashStore(store_path) if store_path is not None else NullHashStore()
+    def create(cls, store_path: Optional[Path]) -> Union['FileHashStore', NullHashStore]:
+        if store_path is None:
+            return NullHashStore()
+        if store_path.suffix == '.pickle':
+            return PickleHashStore(store_path)
+        return JSONHashStore(store_path)
 
     def __init__(self, store_path: Path) -> None:
         self.store_path = store_path
         self.values: Cache = {}
         try:
-            with store_path.open('rb') as file:
-                self.values = checked_load(file)
+            self.load()
             logging.info(
                 'Opened persistent storage %s with %d entries', store_path, len(self.values)
             )
@@ -49,21 +52,39 @@ class PickleHashStore:
             if self.store_path.with_suffix('.bak').is_file():
                 self.store_path.with_suffix('.bak').unlink()
             self.store_path.rename(self.store_path.with_suffix('.bak'))
+        self.dump()
+
+    def load(self) -> None:
+        raise NotImplementedError()
+
+    def dump(self) -> None:
+        raise NotImplementedError()
+
+
+class PickleHashStore(FileHashStore):
+
+    def load(self) -> None:
+        with self.store_path.open('rb') as file:
+            self.values = checked_load(file, pickle.load)
+
+    def dump(self) -> None:
         with self.store_path.open('wb') as file:
             pickle.dump(self.values, file)
 
 
-class JSONHashStore:
+class JSONHashStore(FileHashStore):
 
-    def dump(self, to_dump: Dict[Path, ImageHash]):
-        json.dumps({str(k): str(v) for k, v in to_dump.items()})
+    def load(self) -> None:
+        with self.store_path.open('r') as file:
+            self.values = {Path(k): hex_to_hash(v) for k, v in json.load(file).items()}
 
-    def restore(self, dumped: str) -> Dict[Path, ImageHash]:
-        return {Path(k): hex_to_hash(v) for k, v in json.loads(dumped).items()}
+    def dump(self) -> None:
+        with self.store_path.open('w') as file:
+            json.dump({str(k): str(v) for k, v in self.values.items()}, file)
 
 
-def checked_load(file: BinaryIO) -> Cache:
-    values = pickle.load(file)  # noqa: S301
+def checked_load(file: BinaryIO, load: Callable[[BinaryIO], Cache]) -> Cache:
+    values = load(file)  # noqa: S301
     if not isinstance(values, dict):
         raise ValueError(f'Not a dict: {values}')
     bad_keys = [key for key in values.keys() if not isinstance(key, Path)]
@@ -75,4 +96,4 @@ def checked_load(file: BinaryIO) -> Cache:
     return values
 
 
-HashStore = Union[NullHashStore, PickleHashStore]
+HashStore = Union[NullHashStore, PickleHashStore, JSONHashStore]
