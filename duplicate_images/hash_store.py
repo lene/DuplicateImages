@@ -4,7 +4,7 @@ import json
 import logging
 import pickle  # noqa: S403
 from pathlib import Path
-from typing import Any, BinaryIO, Callable, Optional, Union
+from typing import Any, IO, Callable, Optional, Union
 
 from imagehash import ImageHash, hex_to_hash
 
@@ -68,6 +68,7 @@ class PickleHashStore(FileHashStore):
             self.values = checked_load(file, pickle.load)
 
     def dump(self) -> None:
+        print(self.values)
         with self.store_path.open('wb') as file:
             pickle.dump(self.values, file)
 
@@ -76,14 +77,17 @@ class JSONHashStore(FileHashStore):
 
     def load(self) -> None:
         with self.store_path.open('r') as file:
-            self.values = {Path(k): hex_to_hash(v) for k, v in json.load(file).items()}
+            self.values = checked_load(
+                file,
+                lambda f: {Path(k): hex_to_hash(v) for k, v in json.load(f).items()}
+            )
 
     def dump(self) -> None:
         with self.store_path.open('w') as file:
-            json.dump({str(k): str(v) for k, v in self.values.items()}, file)
+            json.dump({str(k.resolve()): str(v) for k, v in self.values.items()}, file)
 
 
-def checked_load(file: BinaryIO, load: Callable[[BinaryIO], Cache]) -> Cache:
+def checked_load(file: IO, load: Callable[[IO], Cache]) -> Cache:
     values = load(file)  # noqa: S301
     if not isinstance(values, dict):
         raise ValueError(f'Not a dict: {values}')
