@@ -4,9 +4,9 @@ import shlex
 import tempfile
 from argparse import Namespace
 from pathlib import Path
+from tempfile import TemporaryDirectory
 from typing import List
 from unittest import TestCase
-from tempfile import TemporaryDirectory
 from unittest.mock import Mock, patch
 
 import pytest
@@ -94,7 +94,9 @@ class DeleteSecondTest(ActionsTest):
         equals = self.get_equals()
         first = equals[0][0]
         second = equals[0][1]
-        duplicate.execute_actions(equals, parse_command_line([top_directory.name, '--on-equal', option]))
+        duplicate.execute_actions(
+            equals, parse_command_line([top_directory.name, '--on-equal', option])
+        )
         assert first.is_file()
         assert not second.is_file()
 

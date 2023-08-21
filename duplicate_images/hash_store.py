@@ -68,7 +68,6 @@ class PickleHashStore(FileHashStore):
             self.values = checked_load(file, pickle.load)
 
     def dump(self) -> None:
-        print(self.values)
         with self.store_path.open('wb') as file:
             pickle.dump(self.values, file)
 
