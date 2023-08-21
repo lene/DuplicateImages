@@ -86,14 +86,14 @@ Use the `--on-equal` option to select what to do to pairs of equal images. The d
 - `print_inline`: like `print` but without newline
 - `quote`: prints the two files quoted for POSIX shells
 - `quote_inline`: like `quote` but without newline
-- `exec`: executes a command (see `--exec` argument)
-- `none`: does nothing.
+- `exec`: executes a command (see `--exec` argument below)
+- `none`: does nothing; may be useful for benchmarking and testing
 
 The `--exec` argument allows calling another program when the `--on-equal exec` option is given.
 You can pass a command line string like `--exec "program {1} {2}"` where `{1}` and `{2}` are 
 replaced by the matching pair files.
 
-**Examples:**
+#### Examples:
 * `--exec "open -a Preview -W {1} {2}"`: Opens the files in MacOS Preview app and waits for it.
 
 ### Parallel execution
