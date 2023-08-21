@@ -35,20 +35,19 @@ def test_filled_hash_store_does_not_calculate_hash_values(
 
 
 def test_empty_hash_store_is_filled(
-        top_directory: TemporaryDirectory, image_files: List[Path],
-        reset_call_count  # pylint: disable=unused-argument
+        top_directory: TemporaryDirectory, reset_call_count  # pylint: disable=unused-argument
 ) -> None:
     finder = generate_pair_finder(top_directory, None)
     original_call_number = mock_algorithm.call_count
-    finder.precalculate_hashes(image_files)
+    finder.get_pairs()
     assert mock_algorithm.call_count == original_call_number
 
 
 @pytest.mark.parametrize('file_type', ['pickle', 'json'])
 def test_hash_store_is_written(
-        top_directory: TemporaryDirectory, image_files: List[Path], hash_store_path: Path
+        top_directory: TemporaryDirectory, hash_store_path: Path
 ) -> None:
-    create_verified_hash_store(top_directory, image_files, hash_store_path)
+    create_verified_hash_store(top_directory, hash_store_path)
     assert hash_store_path.is_file()
 
 
@@ -56,7 +55,7 @@ def test_hash_store_is_written(
 def test_pickle_file_contains_correct_hashes(
         top_directory: TemporaryDirectory, image_files: List[Path], hash_store_path
 ) -> None:
-    create_verified_hash_store(top_directory, image_files, hash_store_path)
+    create_verified_hash_store(top_directory, hash_store_path)
     with hash_store_path.open('rb') as pickle_file:
         written_hashes = pickle.load(pickle_file)
     for file_name in image_files:
@@ -68,7 +67,7 @@ def test_pickle_file_contains_correct_hashes(
 def test_json_file_contains_correct_hashes(
         top_directory: TemporaryDirectory, image_files: List[Path], hash_store_path
 ) -> None:
-    create_verified_hash_store(top_directory, image_files, hash_store_path)
+    create_verified_hash_store(top_directory, hash_store_path)
     with hash_store_path.open('r') as json_file:
         written_hashes = json.load(json_file)
     for file_name in image_files:
@@ -78,21 +77,21 @@ def test_json_file_contains_correct_hashes(
 
 @pytest.mark.parametrize('file_type', ['pickle', 'json'])
 def test_backup_file_created(
-        top_directory: TemporaryDirectory, image_files: List[Path], hash_store_path: Path
+        top_directory: TemporaryDirectory, hash_store_path: Path
 ) -> None:
-    create_verified_hash_store(top_directory, image_files, hash_store_path)
+    create_verified_hash_store(top_directory, hash_store_path)
     assert not hash_store_path.with_suffix('.bak').is_file()
-    create_verified_hash_store(top_directory, image_files, hash_store_path)
+    create_verified_hash_store(top_directory, hash_store_path)
     assert hash_store_path.with_suffix('.bak').is_file()
 
 
 @pytest.mark.parametrize('file_type', ['pickle', 'json'])
 def test_existing_backup_file_does_not_lead_to_error(
-        top_directory: TemporaryDirectory, image_files: List[Path], hash_store_path: Path
+        top_directory: TemporaryDirectory, hash_store_path: Path
 ) -> None:
-    create_verified_hash_store(top_directory, image_files, hash_store_path)  # create hash store
-    create_verified_hash_store(top_directory, image_files, hash_store_path)  # create backup file
-    create_verified_hash_store(top_directory, image_files, hash_store_path)  # check it works still
+    create_verified_hash_store(top_directory, hash_store_path)  # create hash store
+    create_verified_hash_store(top_directory, hash_store_path)  # create backup file
+    create_verified_hash_store(top_directory, hash_store_path)  # check it works still
 
 
 def image_list(top_directory: TemporaryDirectory) -> List[Path]:
@@ -108,12 +107,10 @@ def generate_pair_finder(
     )
 
 
-def create_verified_hash_store(
-        top_directory: TemporaryDirectory, image_files: List[Path], store_path: Path
-) -> None:
+def create_verified_hash_store(top_directory: TemporaryDirectory, store_path: Path) -> None:
     with PickleHashStore.create(store_path) as hash_store:
         finder = generate_pair_finder(top_directory, hash_store)
-        finder.precalculate_hashes(image_files)
+        finder.get_pairs()
 
 
 def check_correct_results(finder: ImagePairFinder, images: List[Path]) -> None:
