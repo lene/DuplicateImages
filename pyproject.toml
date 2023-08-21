@@ -15,27 +15,26 @@ classifiers = [
 ]
 
 [tool.poetry.dependencies]
-python = "^3.8.5"
-Wand = "^0.6.5"
+python = "^3.8"
+Wand = "^0.6"
 pillow = "^10.0"
-imagehash = "^4.3.0"
+imagehash = "^4.3"
 coloredlogs = "^15.0"
-tqdm = "^4.64.1"
+tqdm = "^4.64"
 pillow-heif = "^0.13"
-six = "^1.16.0"
+six = "^1.16"
 numpy = "^1.23"
-filetype = "^1.2.0"
+filetype = "^1.2"
 
 [tool.poetry.dev-dependencies]
-lz4 = "^4.0.2"
+lz4 = "^4.0"
 mypy = "^0.981"
-flake8 = "^5.0.4"
-flake8-quotes = "^3.3.1"
-Wand = "^0.6.5"
-pytest = "^7.1.2"
-pylint = "^2.15.3"
-pytest-xdist = "^2.2.1"
-ptpython = "^3.0.20"
+flake8 = "^5.0"
+flake8-quotes = "^3.3"
+pytest = "^7.1"
+pylint = "^2.15"
+pytest-xdist = "^2.2"
+ptpython = "^3.0"
 
 [tool.poetry.scripts]
 find-dups = "duplicate_images.duplicate:main"
