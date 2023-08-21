@@ -7,7 +7,7 @@ from dataclasses import dataclass
 from itertools import combinations
 from multiprocessing.pool import ThreadPool as Pool
 from pathlib import Path
-from typing import Dict, List, Iterator, Optional, Tuple
+from typing import Dict, List, Iterator, Optional, Tuple, Set
 
 from imagehash import ImageHash
 from PIL import Image
@@ -154,12 +154,10 @@ class DictImagePairFinder(ImagePairFinder):
         ]
         return results
 
-    def get_hashes(self, image_files: List[Path]) -> Dict[ImageHash, Tuple[Path, ...]]:
-        hash_dict: Dict[ImageHash, Tuple[Path, ...]] = defaultdict(tuple)
-        for file in image_files:
-            image_hash = self.get_hash(file)
-            if len(image_hash) > 1 and image_hash[1] is not None:
-                hash_dict[image_hash[1]] = hash_dict[image_hash[1]] + (file,)
+    def get_hashes(self, image_files: List[Path]) -> Dict[ImageHash, List[Path]]:
+        hash_dict: Dict[ImageHash, List[Path]] = {}
+        for file, image_hash in self.precalculate_hashes(image_files):
+            hash_dict.setdefault(image_hash, []).append(file)
         return hash_dict
 
 
