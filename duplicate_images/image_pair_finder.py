@@ -3,6 +3,7 @@ __author__ = 'Lene Preuss <lene.preuss@gmail.com>'
 import logging
 from itertools import combinations
 from pathlib import Path
+from time import time
 from typing import Dict, List, Iterator, Optional
 
 from imagehash import ImageHash
@@ -39,12 +40,20 @@ class ImagePairFinder(ImageHashScanner):
             options: PairFinderOptions = PairFinderOptions(),
             hash_store: Optional[Cache] = None
     ) -> None:
-        super().__init__(files, hash_algorithm, options, hash_store)
         logging.info('Using %s', self.__class__.__name__)
+        self.precalculated_hashes: Dict = {}
+        super().__init__(files, hash_algorithm, options, hash_store)
         self.files = files
+        self.scan_start_time = time()
 
     def get_pairs(self) -> Results:
         raise NotImplementedError()
+
+    def log_scan_finished(self) -> None:
+        logging.info(
+            '%d hashes calculated in %.2fs',
+            len(self.precalculated_hashes), time() - self.scan_start_time
+        )
 
 
 class SlowImagePairFinder(ImagePairFinder, ImageHashScanner):
@@ -63,8 +72,8 @@ class SlowImagePairFinder(ImagePairFinder, ImageHashScanner):
         self.progress_bars.close_reader()
 
     def get_pairs(self) -> Results:
+        self.log_scan_finished()
         image_files = list(self.precalculated_hashes.keys())
-        logging.info('%d hashes calculated', len(self.precalculated_hashes))
         all_pairs = (
             (file, other_file)
             for file in image_files
@@ -114,6 +123,8 @@ class DictImagePairFinder(ImagePairFinder, ImageHashScanner):
         self.progress_bars.close_reader()
 
     def get_pairs(self) -> Results:
+        self.progress_bars.close()
+        self.log_scan_finished()
         results = [
             pair
             for result in self.precalculated_hashes.values()
