@@ -1,11 +1,15 @@
 __author__ = 'Lene Preuss <lene.preuss@gmail.com>'
 
 import shlex
+import tempfile
 from argparse import Namespace
 from pathlib import Path
+from typing import List
+from unittest import TestCase
 from unittest.mock import Mock, patch
 
 import pytest
+from wand.image import Image
 
 from duplicate_images import duplicate
 from duplicate_images.function_types import Results
@@ -13,14 +17,44 @@ from duplicate_images.image_pair_finder import ImagePairFinder
 from duplicate_images.methods import IMAGE_HASH_ALGORITHM
 from duplicate_images.methods import quote  # pylint:disable=unused-import
 from duplicate_images.parse_commandline import parse_command_line
-from tests.unit.setup_images import SetupImages
+from .conftest import create_image, save
 
 HASH_ALGORITHM = IMAGE_HASH_ALGORITHM['phash']
+WIDTH = 40
 
 
-class ActionsTest(SetupImages):
-    tolerate_deleted_files = True
-    to_create = {'jpeg', 'half'}
+class ActionsTest(TestCase):
+
+    top_directory = Path()
+    image_files: List[Path] = []
+    jpeg_file = Path()
+    half_file = Path()
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        """create a number of temporary image files"""
+        cls.top_directory = Path(tempfile.mkdtemp())
+        cls.jpeg_file = create_image(
+            Path(tempfile.mkstemp(dir=cls.top_directory, prefix='jpeg_', suffix='.jpg')[1]), WIDTH
+        )
+        cls.image_files.append(cls.jpeg_file)
+        cls.half_file = create_image(
+            Path(tempfile.mkstemp(dir=cls.top_directory, prefix='half_', suffix='.jpg')[1]), WIDTH
+        )
+        image = Image(filename=cls.half_file)
+        image.transform(f'{int(WIDTH / 2)}x{int(WIDTH * 3 / 8)}')
+        save(image, cls.half_file)
+        cls.image_files.append(cls.half_file)
+
+    @classmethod
+    def tearDownClass(cls) -> None:
+        """remove all the files created by setUp"""
+        for file in cls.image_files:
+            file.unlink(missing_ok=True)
+        cls.top_directory.rmdir()
+
+    def get_image_files(self) -> List[Path]:
+        return sorted(duplicate.files_in_dirs([self.top_directory]))
 
     def get_equals(self) -> Results:
         equals = ImagePairFinder.create(self.get_image_files(), HASH_ALGORITHM).get_pairs()
