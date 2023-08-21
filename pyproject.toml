@@ -17,11 +17,11 @@ classifiers = [
 [tool.poetry.dependencies]
 python = "^3.8.5"
 Wand = "^0.6.5"
-pillow = "^9.0.1"
+pillow = "^10.0"
 imagehash = "^4.3.0"
 coloredlogs = "^15.0"
 tqdm = "^4.64.1"
-pillow-heif = "^0.7.0"
+pillow-heif = "^0.13"
 six = "^1.16.0"
 numpy = "^1.23"
 filetype = "^1.2.0"

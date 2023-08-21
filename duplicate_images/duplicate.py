@@ -7,8 +7,7 @@ from pathlib import Path
 from typing import Callable, List, Optional
 
 from filetype import guess
-from pillow_heif import open_heif, register_heif_opener
-from pillow_heif.error import HeifError
+from pillow_heif import register_heif_opener
 
 from duplicate_images.common import path_with_parent
 from duplicate_images.function_types import Results
@@ -27,14 +26,6 @@ def is_image_file(filename: Path) -> bool:
         kind = guess(filename)
         return kind is not None and kind.mime.startswith('image/')
     return False
-
-
-def is_heif_file(filename: Path) -> bool:
-    try:
-        open_heif(filename)
-        return True
-    except HeifError:
-        return False
 
 
 def files_in_dirs(
