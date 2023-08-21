@@ -27,13 +27,16 @@ $ find-dups $IMAGE_ROOT
 
 Typical usage:
 ```shell
-$ find-dups $IMAGE_ROOT --parallel --progress --hash-db hashes.pickle
+$ find-dups $IMAGE_ROOT --parallel --progress --hash-db hashes.json
 ```
 
 ### Supported image formats
 
 * JPEG and PNG (tested quite thoroughly)
 * HEIC (experimental support, tested cursorily only)
+* All other 
+  [formats supported](https://pillow.readthedocs.io/en/latest/handbook/image-file-formats.html) by 
+  the `pillow` Python Imaging Library should work, but are not specifically tested. 
 
 ### Image comparison algorithms
 
@@ -48,14 +51,26 @@ in your use case.
 
 ### Image similarity threshold configuration
 
+Use the `--hash-size` parameter to tune the precision of the hashing algorithms. For the `colorhash`
+algorithm the hash size is interpreted as the number of bin bits and defaults to 3. For all other
+algorithms the hash size defaults to 8. For `whash` it must be a power of 2.
+
 Use the `--max-distance` parameter to tune how close images should be to be considered duplicates.
 The argument is a positive integer. Its value is highly dependent on the algorithm used and the 
 nature of the images compared, so the best value for your use case can oly be found through 
 experimentation.
 
-Use the `--hash-size` parameter to tune the precision of the hashing algorithms. For the `colorhash`
-algorithm the hash size is interpreted as the number of bin bits and defaults to 3. For all other
-algorithms the hash size defaults to 8. For `whash` it must be a power of 2.
+**NOTE:** using the `--max-distance` parameter slows down the comparison considerably with large
+image collections, making the runtime complexity go from O(N) to O(N<sup>2</sup>). If you want to 
+scan collections with at least thousands of images, it is highly recommended to tune the desired 
+similarity threshold with the `--hash-size` parameter alone, if that is at all possible.
+
+### Pre-storing and using image hashes to speed up computation
+
+Use the `--hash-db ${FILE}.json` or `--hash-db ${FILE}.pickle` option to store image hashes in the 
+file `$FILE` in JSON or Pickle format and read image hashes from that file if they are already 
+present there. This avoids having to compute the image hashes anew at every run and can 
+significantly speed up run times.
 
 ### Actions for matching image pairs
 
@@ -74,34 +89,29 @@ Use the `--on-equal` option to select what to do to pairs of equal images. The d
 - `exec`: executes a command (see `--exec` argument)
 - `none`: does nothing.
 
-The `--exec` argument allows calling another program when the `--on-equal exec` option is given.\
-You can pass a command line string like `--exec "program {1} {2}"` where `{1}` and `{2}` are replaced by the matching pair files.
+The `--exec` argument allows calling another program when the `--on-equal exec` option is given.
+You can pass a command line string like `--exec "program {1} {2}"` where `{1}` and `{2}` are 
+replaced by the matching pair files.
 
-**Examples**\
-`--exec "open -a Preview -W {1} {2}"`: Opens the files in MacOS Preview app and waits for it.
+**Examples:**
+* `--exec "open -a Preview -W {1} {2}"`: Opens the files in MacOS Preview app and waits for it.
 
 ### Parallel execution
 
-Use the `--parallel` option to utilize all free cores on your system. 
+Use the `--parallel` option to utilize all free cores on your system for calculating image hashes. 
 
 ### Serial execution
 
 `find-dups` can also use an alternative algorithm which is O(N<sup>2</sup>) in the number of images.
 Use the `--serial` option to use this alternative algorithm. 
 
-### Progress and verbosity control
+### Progress bar and verbosity control
 
 - `--progress` prints a progress bar each for the process of reading the images, and the process of 
   finding duplicates among the scanned image
 - `--debug` prints debugging output
 - `--quiet` decreases the log level by 1 for each time it is called; `--debug` and `--quiet` cancel
   each other out
-
-### Pre-storing and using image hashes to speed up computation
-
-Use the `--hash-db $PICKLE_FILE` option to store image hashes in the file `$PICKLE_FILE` and read
-image hashes from that file if they are already present there. This avoids having to compute the 
-image hashes anew at every run and can significantly speed up run times.
 
 ## Development notes
 
