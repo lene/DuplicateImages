@@ -33,7 +33,7 @@ flake8 = "^6.0"
 flake8-quotes = "^3.3"
 pytest = "^7.1"
 pylint = "^2.15"
-pytest-xdist = "^2.2"
+pytest-xdist = "^3.3"
 ptpython = "^3.0"
 
 [tool.poetry.scripts]
