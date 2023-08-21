@@ -11,7 +11,8 @@ import pytest
 
 from duplicate_images import duplicate
 from duplicate_images.function_types import Cache
-from duplicate_images.image_pair_finder import ImagePairFinder, PairFinderOptions
+from duplicate_images.image_pair_finder import ImagePairFinder
+from duplicate_images.pair_finder_options import PairFinderOptions
 from duplicate_images.hash_store import PickleHashStore
 from .conftest import MOCK_IMAGE_HASH_VALUE, mock_algorithm
 
