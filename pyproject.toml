@@ -15,7 +15,7 @@ classifiers = [
 ]
 
 [tool.poetry.dependencies]
-python = "^3.8"
+python = ">=3.8.1"
 Wand = "^0.6"
 pillow = "^10.0"
 imagehash = "^4.3"
@@ -29,7 +29,7 @@ filetype = "^1.2"
 [tool.poetry.dev-dependencies]
 lz4 = "^4.0"
 mypy = "^1.5"
-flake8 = "^5.0"
+flake8 = "^6.0"
 flake8-quotes = "^3.3"
 pytest = "^7.1"
 pylint = "^2.15"
