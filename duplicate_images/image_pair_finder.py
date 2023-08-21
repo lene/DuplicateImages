@@ -2,12 +2,11 @@ __author__ = 'Lene Preuss <lene.preuss@gmail.com>'
 
 import logging
 from argparse import Namespace
-from collections import defaultdict
 from dataclasses import dataclass
 from itertools import combinations
 from multiprocessing.pool import ThreadPool as Pool
 from pathlib import Path
-from typing import Dict, List, Iterator, Optional, Tuple, Set
+from typing import Dict, List, Iterator, Optional
 
 from imagehash import ImageHash
 from PIL import Image
@@ -24,11 +23,13 @@ class PairFinderOptions:
     hash_size: Optional[int] = None
     show_progress_bars: bool = False
     parallel: bool = False
-    serial: bool = False
+    slow: bool = False
 
     @classmethod
     def from_args(cls, args: Namespace):
-        return cls(args.max_distance, args.hash_size, args.progress, args.parallel, args.serial)
+        return cls(
+            args.max_distance, args.hash_size, args.progress, args.parallel, args.slow
+        )
 
 
 class ImagePairFinder:
@@ -39,15 +40,19 @@ class ImagePairFinder:
             options: PairFinderOptions = PairFinderOptions(),
             hash_store: Optional[Cache] = None
     ) -> 'ImagePairFinder':
+        if options.max_distance == 0 and not options.slow:
+            if not options.parallel:
+                return DictImagePairFinder(
+                    files, hash_algorithm, options=options, hash_store=hash_store
+                )
+            return ParallelDictImagePairFinder(
+                files, hash_algorithm, options=options, hash_store=hash_store
+            )
         if options.parallel:
-            return ParallelImagePairFinder(
+            return ParallelSlowImagePairFinder(
                 files, hash_algorithm, options=options, hash_store=hash_store
             )
-        if options.max_distance == 0 and not options.serial:
-            return DictImagePairFinder(
-                files, hash_algorithm, options=options, hash_store=hash_store
-            )
-        return SerialImagePairFinder(files, hash_algorithm, options=options, hash_store=hash_store)
+        return SlowImagePairFinder(files, hash_algorithm, options=options, hash_store=hash_store)
 
     def __init__(  # pylint: disable = too-many-arguments
             self, files: List[Path], hash_algorithm: HashFunction,
@@ -83,7 +88,11 @@ class ImagePairFinder:
         return [self.get_hash(file) for file in image_files]
 
 
-class SerialImagePairFinder(ImagePairFinder):
+class SlowImagePairFinder(ImagePairFinder):
+    """
+    Searches by comparing the image hashes of each image to every other, giving O(N^2) performance.
+    The only option if max_distance != 0.
+    """
 
     def __init__(  # pylint: disable = too-many-arguments
             self, files: List[Path], hash_algorithm: HashFunction,
@@ -131,8 +140,8 @@ class SerialImagePairFinder(ImagePairFinder):
 
 class DictImagePairFinder(ImagePairFinder):
     """
-    Works this way only if max_distance == 0, otherwise needs to do an O(N^2) comparison between all
-    image hashes
+    Searches by storing the image hashes as keys to a dict.
+    Works only if max_distance == 0.
     """
     def __init__(  # pylint: disable = too-many-arguments
             self, files: List[Path], hash_algorithm: HashFunction,
@@ -157,17 +166,24 @@ class DictImagePairFinder(ImagePairFinder):
     def get_hashes(self, image_files: List[Path]) -> Dict[ImageHash, List[Path]]:
         hash_dict: Dict[ImageHash, List[Path]] = {}
         for file, image_hash in self.precalculate_hashes(image_files):
-            hash_dict.setdefault(image_hash, []).append(file)
+            if image_hash is not None:
+                hash_dict.setdefault(image_hash, []).append(file)
         return hash_dict
 
 
-class ParallelImagePairFinder(SerialImagePairFinder):
+class ParallelDictImagePairFinder(DictImagePairFinder):
     def precalculate_hashes(self, image_files: List[Path]) -> List[CacheEntry]:
         with Pool() as pool:
             return pool.map(self.get_hash, image_files)
 
 
-class ParallelFilteringImagePairFinder(ParallelImagePairFinder):
+class ParallelSlowImagePairFinder(SlowImagePairFinder):
+    def precalculate_hashes(self, image_files: List[Path]) -> List[CacheEntry]:
+        with Pool() as pool:
+            return pool.map(self.get_hash, image_files)
+
+
+class ParallelFilteringImagePairFinder(ParallelSlowImagePairFinder):
     """
     Not using this class at the moment since it seems too much trouble to get it to work correctly.
     See https://stackoverflow.com/a/44186168 for the reasons why.

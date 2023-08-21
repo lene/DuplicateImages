@@ -35,10 +35,10 @@ def parse_command_line(args: Optional[List[str]] = None) -> Namespace:
         help='Command to execute (replaces {1}, {2} with file pathes)'
     )
     parser.add_argument(
-        '--parallel', action='store_true', help='Filter using all available cores (Experimental)'
+        '--parallel', action='store_true', help='Calculate hashes using all available cores'
     )
     parser.add_argument(
-        '--serial', action='store_true', help='Use serial algorithm'
+        '--slow', action='store_true', help='Use slow (O(N^2)) algorithm'
     )
     parser.add_argument(
         '--progress', action='store_true', help='Show progress bars during processing'

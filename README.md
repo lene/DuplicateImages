@@ -100,10 +100,12 @@ replaced by the matching pair files.
 
 Use the `--parallel` option to utilize all free cores on your system for calculating image hashes. 
 
-### Serial execution
+### Slow execution
 
 `find-dups` can also use an alternative algorithm which is O(N<sup>2</sup>) in the number of images.
-Use the `--serial` option to use this alternative algorithm. 
+Use the `--slow` option to use this alternative algorithm. 
+
+This algorithm is selected automatically if `--max-distance` is not 0.
 
 ### Progress bar and verbosity control
 

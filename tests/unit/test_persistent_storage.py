@@ -103,7 +103,7 @@ def generate_pair_finder(
         top_directory: TemporaryDirectory, hash_store: Optional[Cache]
 ) -> ImagePairFinder:
     return ImagePairFinder.create(
-        image_list(top_directory), mock_algorithm, PairFinderOptions(serial=True),
+        image_list(top_directory), mock_algorithm, PairFinderOptions(slow=True),
         hash_store=hash_store
     )
 
