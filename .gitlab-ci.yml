@@ -76,7 +76,7 @@ RunWithArgs:
     matrix:
       - ON_EQUAL: [print, quote_inline, none, d<, exec]
         ALGORITHM: [ahash, colorhash]
-        MODE: ["", --serial, --parallel]
+        MODE: ["", --slow, --parallel]
   script:
     # ensure the script runs without any error with the given options
     - poetry run find-dups 

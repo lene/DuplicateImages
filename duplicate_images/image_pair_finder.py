@@ -181,22 +181,3 @@ class ParallelSlowImagePairFinder(SlowImagePairFinder):
     def precalculate_hashes(self, image_files: List[Path]) -> List[CacheEntry]:
         with Pool() as pool:
             return pool.map(self.get_hash, image_files)
-
-
-class ParallelFilteringImagePairFinder(ParallelSlowImagePairFinder):
-    """
-    Not using this class at the moment since it seems too much trouble to get it to work correctly.
-    See https://stackoverflow.com/a/44186168 for the reasons why.
-    Keeping the code around anyway in case I want to tackle the problem of running the filtering in
-    parallel one day. In that case ImagePairFinder.create() needs to return a
-    ParallelFilteringImagePairFinder to utilize it.
-    """
-    CHUNK_SIZE = 100
-
-    def filter_matches(self, all_pairs: Iterator[ImagePair]) -> Results:
-        pairs = list(all_pairs)
-        with Pool() as pool:
-            to_keep = pool.starmap(
-                self.are_images_equal, pairs, chunksize=self.CHUNK_SIZE
-            )
-        return [c for c, keep in zip(pairs, to_keep) if keep]
