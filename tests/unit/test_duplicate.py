@@ -12,7 +12,7 @@ from duplicate_images.image_pair_finder import (
     SerialImagePairFinder
 )
 from duplicate_images.methods import ALGORITHM_DEFAULTS, IMAGE_HASH_ALGORITHM, get_hash_size_kwargs
-from tests.unit.conftest import is_pair_found, copy_image_file, delete_image_file
+from .conftest import is_pair_found, copy_image_file, delete_image_file
 
 HASH_ALGORITHM = IMAGE_HASH_ALGORITHM['phash']
 

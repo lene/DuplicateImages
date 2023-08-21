@@ -28,7 +28,7 @@ filetype = "^1.2"
 
 [tool.poetry.dev-dependencies]
 lz4 = "^4.0"
-mypy = "^0.981"
+mypy = "^1.5"
 flake8 = "^5.0"
 flake8-quotes = "^3.3"
 pytest = "^7.1"
