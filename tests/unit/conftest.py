@@ -3,16 +3,21 @@ __author__ = 'Lene Preuss <lene.preuss@gmail.com>'
 import random
 import shutil
 from pathlib import Path
-from tempfile import NamedTemporaryFile, TemporaryDirectory
+from tempfile import NamedTemporaryFile, TemporaryDirectory, mkdtemp
 from typing import Generator, List, Tuple
+from unittest.mock import Mock
 
 import pillow_heif
 import pytest
+from imagehash import ImageHash
+from numpy import array
 from wand.color import Color
 from wand.drawing import Drawing
 from wand.image import Image
 
-WIDTH = 100
+IMAGE_WIDTH = 40
+MOCK_IMAGE_HASH_VALUE = ImageHash(array([[True, True], [True, True]]))  # just some random value
+mock_algorithm = Mock(return_value=MOCK_IMAGE_HASH_VALUE)
 
 
 def create_image(file: Path, width: int) -> Path:
@@ -99,22 +104,22 @@ def image_files(
     images = []
     jpeg_file = create_image(
         Path(NamedTemporaryFile(dir=top_directory.name, prefix='jpeg_', suffix='.jpg').name),
-        WIDTH
+        IMAGE_WIDTH
     )
     images.append(jpeg_file)
     png_file = create_image(
         Path(NamedTemporaryFile(dir=top_directory.name, prefix='png_', suffix='.png').name),
-        WIDTH
+        IMAGE_WIDTH
     )
     images.append(png_file)
     heif_file = create_heif_image(
         Path(NamedTemporaryFile(dir=top_directory.name, prefix='heif_', suffix='.heif').name),
-        WIDTH
+        IMAGE_WIDTH
     )
     images.append(heif_file)
     subdir_file = create_image(
         Path(NamedTemporaryFile(dir=sub_directory.name, prefix='subdir_', suffix='.jpg').name),
-        WIDTH
+        IMAGE_WIDTH
     )
     fill_image_with_random_pixels(subdir_file)
     images.append(subdir_file)
@@ -122,12 +127,24 @@ def image_files(
         Path(
             NamedTemporaryFile(dir=top_directory.name, prefix='test_half_', suffix='.jpg').name
         ),
-        WIDTH
+        IMAGE_WIDTH
     )
     image = Image(filename=half_file)
-    image.transform(f'{int(WIDTH / 2)}x{int(WIDTH * 3 / 8)}')
+    image.transform(f'{int(IMAGE_WIDTH / 2)}x{int(IMAGE_WIDTH * 3 / 8)}')
     save(image, half_file)
     images.append(half_file)
     yield images
     for file in images:
         file.unlink(missing_ok=False)
+
+
+@pytest.fixture
+def reset_call_count():
+    mock_algorithm.call_count = 0
+
+
+@pytest.fixture
+@pytest.mark.parametrize('file_type', ['pickle', 'json'])
+def hash_store_path(file_type: str) -> Path:
+    top_directory = Path(mkdtemp())
+    return Path(NamedTemporaryFile(dir=top_directory, suffix=f'.{file_type}').name)

@@ -79,6 +79,9 @@ class ImagePairFinder:
             logging.warning('%s: %s', path_with_parent(file), err)
             return file, None
 
+    def precalculate_hashes(self, image_files: List[Path]) -> List[CacheEntry]:
+        return [self.get_hash(file) for file in image_files]
+
 
 class SerialImagePairFinder(ImagePairFinder):
 
@@ -104,8 +107,11 @@ class SerialImagePairFinder(ImagePairFinder):
         self.progress_bars.close()
         return matches
 
-    def precalculate_hashes(self, image_files: List[Path]) -> List[CacheEntry]:
-        return [self.get_hash(file) for file in image_files]
+    def get_hashes(self, image_files: List[Path]) -> Dict[Path, ImageHash]:
+        return {
+            file: image_hash for file, image_hash in self.precalculate_hashes(image_files)
+            if image_hash is not None
+        }
 
     def filter_matches(self, all_pairs: Iterator[ImagePair]) -> Results:
         self.progress_bars.create_filter_bar(len(self.precalculated_hashes))
@@ -121,12 +127,6 @@ class SerialImagePairFinder(ImagePairFinder):
             '%-30s - %-30s = %d', file.stem, other_file.stem, hash_distance
         )
         return hash_distance <= self.max_distance
-
-    def get_hashes(self, image_files: List[Path]) -> Dict[Path, ImageHash]:
-        return {
-            file: image_hash for file, image_hash in self.precalculate_hashes(image_files)
-            if image_hash is not None
-        }
 
 
 class DictImagePairFinder(ImagePairFinder):
