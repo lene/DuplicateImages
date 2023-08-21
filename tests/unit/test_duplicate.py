@@ -9,7 +9,7 @@ import pytest
 from duplicate_images.duplicate import files_in_dirs
 from duplicate_images.image_pair_finder import (
     DictImagePairFinder, ImagePairFinder, PairFinderOptions, ParallelImagePairFinder,
-    SerialImagePairFinder
+    SerialImagePairFinder, ParallelDictImagePairFinder
 )
 from duplicate_images.methods import ALGORITHM_DEFAULTS, IMAGE_HASH_ALGORITHM, get_hash_size_kwargs
 from .conftest import is_pair_found, copy_image_file, delete_image_file
@@ -111,8 +111,11 @@ def test_hashes_equal_for_scaled_image(
 @pytest.mark.parametrize('algorithm', list(IMAGE_HASH_ALGORITHM.keys()))
 @pytest.mark.parametrize(
     'finder,max_distance', [
+        (ImagePairFinder.create, 0), (ImagePairFinder.create, 1),
+        (SerialImagePairFinder, 0), (SerialImagePairFinder, 1),
         (ParallelImagePairFinder, 0), (ParallelImagePairFinder, 1),
-        (ImagePairFinder.create, 0), (ImagePairFinder.create, 1)
+        (DictImagePairFinder, 0),
+        (ParallelDictImagePairFinder, 0)
     ]
 )
 def test_parallel_filtering_gives_same_results(
