@@ -8,6 +8,7 @@ from typing import Dict, List, Iterator, Optional
 
 from imagehash import ImageHash
 
+from duplicate_images.common import log_execution_time
 from duplicate_images.function_types import Cache, HashFunction, ImagePair, Results
 from duplicate_images.hash_scanner import ImageHashScanner, ParallelImageHashScanner
 from duplicate_images.pair_finder_options import PairFinderOptions
@@ -56,6 +57,46 @@ class ImagePairFinder(ImageHashScanner):
         )
 
 
+class DictImagePairFinder(ImagePairFinder, ImageHashScanner):
+    """
+    Searches by storing the image hashes as keys to a dict.
+    Works only if max_distance == 0.
+    """
+    def __init__(  # pylint: disable = too-many-arguments
+            self, files: List[Path], hash_algorithm: HashFunction,
+            options: PairFinderOptions = PairFinderOptions(),
+            hash_store: Optional[Cache] = None
+    ) -> None:
+        super().__init__(files, hash_algorithm, options, hash_store)
+        if options.max_distance != 0:
+            raise ValueError('DictImagePairFinder only works if max_distance == 0!')
+        self.precalculated_hashes = self.get_hashes(files)
+        self.progress_bars.close_reader()
+
+    @log_execution_time()
+    def get_pairs(self) -> Results:
+        self.progress_bars.close()
+        self.log_scan_finished()
+        results = [
+            pair
+            for result in self.precalculated_hashes.values()
+            for pair in combinations(list(result), 2)
+            if len(result) > 1
+        ]
+        return results
+
+    def get_hashes(self, image_files: List[Path]) -> Dict[ImageHash, List[Path]]:
+        hash_dict: Dict[ImageHash, List[Path]] = {}
+        for file, image_hash in self.precalculate_hashes(image_files):
+            if image_hash is not None:
+                hash_dict.setdefault(image_hash, []).append(file)
+        return hash_dict
+
+
+class ParallelDictImagePairFinder(DictImagePairFinder, ParallelImageHashScanner):
+    pass
+
+
 class SlowImagePairFinder(ImagePairFinder, ImageHashScanner):
     """
     Searches by comparing the image hashes of each image to every other, giving O(N^2) performance.
@@ -67,20 +108,22 @@ class SlowImagePairFinder(ImagePairFinder, ImageHashScanner):
             options: PairFinderOptions = PairFinderOptions(),
             hash_store: Optional[Cache] = None
     ) -> None:
+        if len(files) > 1000:
+            logging.warning(
+                'Using %s with a big number of images. Expect slow performance.',
+                self.__class__.__name__
+            )
+            logging.warning('Consider using [Parallel]DictImagePairFinder instead.')
         super().__init__(files, hash_algorithm, options, hash_store)
         self.precalculated_hashes = self.get_hashes(files)
         self.progress_bars.close_reader()
 
+    @log_execution_time()
     def get_pairs(self) -> Results:
         self.log_scan_finished()
         image_files = list(self.precalculated_hashes.keys())
-        all_pairs = (
-            (file, other_file)
-            for file in image_files
-            for other_file in image_files[image_files.index(file) + 1:]
-        )
         logging.info('Filtering duplicates')
-        matches = self.filter_matches(all_pairs)
+        matches = self.filter_matches(combinations(image_files, 2))
         self.progress_bars.close()
         return matches
 
@@ -104,45 +147,6 @@ class SlowImagePairFinder(ImagePairFinder, ImageHashScanner):
             '%-30s - %-30s = %d', file.stem, other_file.stem, hash_distance
         )
         return hash_distance <= self.max_distance
-
-
-class DictImagePairFinder(ImagePairFinder, ImageHashScanner):
-    """
-    Searches by storing the image hashes as keys to a dict.
-    Works only if max_distance == 0.
-    """
-    def __init__(  # pylint: disable = too-many-arguments
-            self, files: List[Path], hash_algorithm: HashFunction,
-            options: PairFinderOptions = PairFinderOptions(),
-            hash_store: Optional[Cache] = None
-    ) -> None:
-        super().__init__(files, hash_algorithm, options, hash_store)
-        if options.max_distance != 0:
-            raise ValueError('DictImagePairFinder only works if max_distance == 0!')
-        self.precalculated_hashes = self.get_hashes(files)
-        self.progress_bars.close_reader()
-
-    def get_pairs(self) -> Results:
-        self.progress_bars.close()
-        self.log_scan_finished()
-        results = [
-            pair
-            for result in self.precalculated_hashes.values()
-            for pair in combinations(list(result), 2)
-            if len(result) > 1
-        ]
-        return results
-
-    def get_hashes(self, image_files: List[Path]) -> Dict[ImageHash, List[Path]]:
-        hash_dict: Dict[ImageHash, List[Path]] = {}
-        for file, image_hash in self.precalculate_hashes(image_files):
-            if image_hash is not None:
-                hash_dict.setdefault(image_hash, []).append(file)
-        return hash_dict
-
-
-class ParallelDictImagePairFinder(DictImagePairFinder, ParallelImageHashScanner):
-    pass
 
 
 class ParallelSlowImagePairFinder(SlowImagePairFinder, ParallelImageHashScanner):

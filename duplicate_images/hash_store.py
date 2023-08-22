@@ -8,6 +8,7 @@ from typing import Any, IO, Callable, Optional, Union
 
 from imagehash import ImageHash, hex_to_hash
 
+from duplicate_images.common import log_execution_time
 from duplicate_images.function_types import Cache
 
 
@@ -63,10 +64,12 @@ class FileHashStore:
 
 class PickleHashStore(FileHashStore):
 
+    @log_execution_time()
     def load(self) -> None:
         with self.store_path.open('rb') as file:
             self.values = checked_load(file, pickle.load)
 
+    @log_execution_time()
     def dump(self) -> None:
         with self.store_path.open('wb') as file:
             pickle.dump(self.values, file)  # nosec
@@ -74,6 +77,7 @@ class PickleHashStore(FileHashStore):
 
 class JSONHashStore(FileHashStore):
 
+    @log_execution_time()
     def load(self) -> None:
         with self.store_path.open('r') as file:
             self.values = checked_load(
@@ -81,6 +85,7 @@ class JSONHashStore(FileHashStore):
                 lambda f: {Path(k): hex_to_hash(v) for k, v in json.load(f).items()}
             )
 
+    @log_execution_time()
     def dump(self) -> None:
         with self.store_path.open('w') as file:
             json.dump({str(k.resolve()): str(v) for k, v in self.values.items()}, file)
