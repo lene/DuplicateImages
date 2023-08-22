@@ -2,7 +2,7 @@ __author__ = 'Lene Preuss <lene.preuss@gmail.com>'
 
 import json
 import logging
-import pickle  # noqa: S403
+import pickle  # nosec
 from pathlib import Path
 from typing import Any, IO, Callable, Optional, Union
 

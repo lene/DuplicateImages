@@ -1,13 +1,12 @@
 __author__ = 'Lene Preuss <lene.preuss@gmail.com>'
 
 import logging
-import os
 from argparse import Namespace
 from functools import lru_cache
 from hashlib import sha256
 from pathlib import Path
 from shlex import quote
-from subprocess import call  # noqa: S404
+from subprocess import call  # nosec
 from typing import Any, Callable, Dict, List, Optional
 
 import imagehash
@@ -43,13 +42,10 @@ def delete_with_log_message(file: Path) -> None:
 
 
 def shell_exec(args: Namespace, pair: ImagePair) -> None:
-    num = 0
     cmd = args.exec
-    for path in pair:
-        num = num + 1
-        cmd = cmd.replace(f"{'{'}{num}{'}'}", f'"{path}"')
-
-    os.system(cmd)
+    for num, path in enumerate(pair):
+        cmd = cmd.replace(f"{'{'}{num+1}{'}'}", f'"{path}"')
+    call(cmd, shell=True)  # nosec
 
 
 def get_hash_size_kwargs(algorithm: HashFunction, size: Optional[int]) -> Dict[str, int]:
@@ -88,8 +84,8 @@ ACTIONS_ON_EQUALITY: Dict[str, ActionFunction] = {
     'd>': lambda args, pair: delete_with_log_message(ascending_by_size(pair)[-1]),
     'delete-smaller': lambda args, pair: delete_with_log_message(ascending_by_size(pair)[0]),
     'd<': lambda args, pair: delete_with_log_message(ascending_by_size(pair)[0]),
-    'eog': lambda args, pair: call(['eog'] + [str(pic) for pic in pair]),  # noqa: S603
-    'xv': lambda args, pair: call(['xv', '-nolim'] + [str(pic) for pic in pair]),  # noqa: S603
+    'eog': lambda args, pair: call(['eog'] + [str(pic) for pic in pair]),  # nosec
+    'xv': lambda args, pair: call(['xv', '-nolim'] + [str(pic) for pic in pair]),  # nosec
     'print': lambda args, pair: print(pair[0], pair[1]),
     'print_inline': lambda args, pair: print(pair[0], pair[1], end=' '),
     'quote': lambda args, pair: print(f'{quote(str(pair[0]))} {quote(str(pair[1]))}'),

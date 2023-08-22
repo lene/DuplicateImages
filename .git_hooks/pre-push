@@ -19,6 +19,7 @@ poetry run pytest -n auto tests || STATUS=1
 poetry run mypy duplicate_images tests || STATUS=1
 poetry run flake8 duplicate_images tests || STATUS=1
 poetry run pylint duplicate_images tests || STATUS=1
+poetry run bandit -r duplicate_images -q || STATUS=1
 
 # lint GitLab CI (nod to https://stackoverflow.com/questions/49090675/how-can-i-test-gitlab-ci-yml#68723161 )
 if [ "$GITLAB_ACCESS_TOKEN" != "" ]; then

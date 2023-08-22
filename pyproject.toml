@@ -39,6 +39,9 @@ ptpython = "^3.0"
 [tool.poetry.scripts]
 find-dups = "duplicate_images.duplicate:main"
 
+[tool.poetry.group.dev.dependencies]
+bandit = "^1.7.5"
+
 [build-system]
 requires = ["poetry-core>=1.6"]
 build-backend = "poetry.core.masonry.api"
