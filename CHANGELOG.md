@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.8.8] - 2023-08-23
+
+### Added 
+- more info in log about runtime and warn about bad decisions
+
 ## [0.8.7] - 2023-08-22
 
 ### Added 
@@ -189,6 +194,7 @@
 - actions if equal: delete one of the pics, view with `xv` or print
 
 
+[0.8.7]: https://gitlab.com/duplicateimages/DuplicateImages/-/compare/0.8.6...0.8.7
 [0.8.6]: https://gitlab.com/duplicateimages/DuplicateImages/-/compare/0.8.5...0.8.6
 [0.8.5]: https://gitlab.com/duplicateimages/DuplicateImages/-/compare/0.8.4...0.8.5
 [0.8.4]: https://gitlab.com/duplicateimages/DuplicateImages/-/compare/0.8.3...0.8.4
