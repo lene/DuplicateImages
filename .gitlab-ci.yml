@@ -42,6 +42,17 @@ pylint:
   script:
     - poetry run pylint duplicate_images tests
 
+ChangelogIsUpdated:
+  stage: test
+  image: alpine:latest
+  rules:
+    - if: "$CI_MERGE_REQUEST_ID"
+    - if: $CI_COMMIT_BRANCH == "master"
+  script:
+    - VERSION=$(egrep 'version = ".*"' pyproject.toml | cut -d \" -f 2)
+    - test -n "$VERSION"
+    - grep "$VERSION" CHANGELOG.md
+
 RunAndCheckResults:
   extends: .test
   variables:

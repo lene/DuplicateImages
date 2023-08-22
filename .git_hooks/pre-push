@@ -38,6 +38,14 @@ else
     echo "\$GITLAB_ACCESS_TOKEN not set"
 fi
 
+# check Changelog is updated
+VERSION=$(egrep 'version = ".*"' pyproject.toml | cut -d \" -f 2)
+if test -z "$VERSION"; then echo 'version not found in pyproject.toml'; STATUS=1; fi
+if ! grep -q "$VERSION" CHANGELOG.md
+then echo 'version not found in changelog'; STATUS=1
+else echo "$VERSION found in CHANGELOG.md, thanks"
+fi
+
 if [ $STATUS -gt 0 ]; then
   commitmsg=$(git log --oneline | head -n 1 | cut -d' ' -f 2-)
   if echo "$commitmsg" | grep '^WIP:'; then

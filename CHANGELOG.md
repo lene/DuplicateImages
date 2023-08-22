@@ -1,5 +1,7 @@
 # Changelog
 
+## Unreleased: [0.8.6]
+
 ## [0.8.5] - 2023-08-21
 
 ## [0.8.4] - 2023-08-21
@@ -52,6 +54,9 @@
 
 ## [0.3.0] - 2021-01-16
 
+### Added 
+- actions to delete bigger/smaller image and view with `eog`
+
 ## [0.2.1] - 2021-01-15
 
 ### Added 
@@ -70,6 +75,7 @@
 - actions if equal: delete one of the pics, view with `xv` or print
 
 
+[0.8.6]: https://gitlab.com/duplicateimages/DuplicateImages/-/compare/0.8.5...0.8.6
 [0.8.5]: https://gitlab.com/duplicateimages/DuplicateImages/-/compare/0.8.4...0.8.5
 [0.8.4]: https://gitlab.com/duplicateimages/DuplicateImages/-/compare/0.8.3...0.8.4
 [0.8.3]: https://gitlab.com/duplicateimages/DuplicateImages/-/compare/0.8.2...0.8.3
