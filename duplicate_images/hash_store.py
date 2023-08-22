@@ -69,7 +69,7 @@ class PickleHashStore(FileHashStore):
 
     def dump(self) -> None:
         with self.store_path.open('wb') as file:
-            pickle.dump(self.values, file)
+            pickle.dump(self.values, file)  # nosec
 
 
 class JSONHashStore(FileHashStore):
@@ -87,7 +87,7 @@ class JSONHashStore(FileHashStore):
 
 
 def checked_load(file: IO, load: Callable[[IO], Cache]) -> Cache:
-    values = load(file)  # noqa: S301
+    values = load(file)  # nosec
     if not isinstance(values, dict):
         raise ValueError(f'Not a dict: {values}')
     bad_keys = [key for key in values.keys() if not isinstance(key, Path)]
