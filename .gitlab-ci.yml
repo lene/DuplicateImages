@@ -42,6 +42,14 @@ pylint:
   script:
     - poetry run pylint duplicate_images tests
 
+bandit:
+  extends: .test
+  parallel:
+    matrix:
+      - PY_VERSION: [ "latest" ]
+  script:
+    - poetry run bandit -r duplicate_images
+
 ChangelogIsUpdated:
   stage: test
   image: alpine:latest
