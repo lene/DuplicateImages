@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.8.7] - Unreleased
+
+### Added 
+- run dependency scan in GitHub CI on every merge to master and weekly
+
 ## [0.8.6] - 2023-08-22
 
 ### Added 
@@ -8,11 +13,11 @@
 ## [0.8.5] - 2023-08-21
 
 ### Added 
-- log execution tomes for scanning and comparing
+- log execution times for scanning and comparing
 - code reorganization
 
 ### Changed
-- removed `--serial` option to `--slow`
+- renamed `--serial` option to `--slow`
 
 ## [0.8.4] - 2023-08-21
 
