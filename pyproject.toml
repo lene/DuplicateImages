@@ -26,7 +26,8 @@ six = "^1.16"
 numpy = "^1.23"
 filetype = "^1.2"
 
-[tool.poetry.dev-dependencies]
+[tool.poetry.group.dev.dependencies]
+bandit = "^1.7.5"
 lz4 = "^4.0"
 mypy = "^1.5"
 flake8 = "^6.0"
@@ -39,8 +40,6 @@ ptpython = "^3.0"
 [tool.poetry.scripts]
 find-dups = "duplicate_images.duplicate:main"
 
-[tool.poetry.group.dev.dependencies]
-bandit = "^1.7.5"
 
 [build-system]
 requires = ["poetry-core>=1.6"]
