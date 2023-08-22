@@ -1,9 +1,11 @@
 # Changelog
 
-## [0.8.7] - Unreleased
+## [0.8.7] - 2023-08-22
 
 ### Added 
-- run dependency scan in GitHub CI on every merge to master and weekly
+- run bandit SAST scanner in CI and on every push
+- fixed some security warnings, intentionally ignored others
+- run GitHub dependency scan in GitHub CI on every merge to master and weekly
 
 ## [0.8.6] - 2023-08-22
 
