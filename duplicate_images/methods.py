@@ -12,7 +12,7 @@ from typing import Any, Callable, Dict, List, Optional
 import imagehash
 
 from duplicate_images.common import path_with_parent
-from duplicate_images.function_types import ActionFunction, HashFunction, ImagePair
+from duplicate_images.function_types import ActionFunction, HashFunction, ImageGroup
 
 __all__ = ['call', 'get_hash_size_kwargs', 'IMAGE_HASH_ALGORITHM', 'ACTIONS_ON_EQUALITY']
 
@@ -32,7 +32,7 @@ def compare_exactly(file: Path, other_file: Path) -> bool:
     return get_size(other_file) == get_size(file) and get_hash(file) == get_hash(other_file)
 
 
-def ascending_by_size(pair: ImagePair) -> List[Path]:
+def ascending_by_size(pair: ImageGroup) -> List[Path]:
     return sorted(pair, key=lambda path: path.stat().st_size)
 
 
@@ -41,7 +41,7 @@ def delete_with_log_message(file: Path) -> None:
     logging.info('Deleted %s', path_with_parent(file))
 
 
-def shell_exec(args: Namespace, pair: ImagePair) -> None:
+def shell_exec(args: Namespace, pair: ImageGroup) -> None:
     cmd = args.exec
     for num, path in enumerate(pair):
         cmd = cmd.replace(f"{'{'}{num+1}{'}'}", f'"{path}"')

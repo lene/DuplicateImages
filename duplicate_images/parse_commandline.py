@@ -37,8 +37,13 @@ def parse_command_line(args: Optional[List[str]] = None) -> Namespace:
     parser.add_argument(
         '--parallel', action='store_true', help='Calculate hashes using all available cores'
     )
-    parser.add_argument(
+    group = parser.add_mutually_exclusive_group()
+    group.add_argument(
         '--slow', action='store_true', help='Use slow (O(N^2)) algorithm'
+    )
+    group.add_argument(
+        '--group', action='store_true',
+        help='Handle equal images in a group instead of multiple pairs'
     )
     parser.add_argument(
         '--progress', action='store_true', help='Show progress bars during processing'

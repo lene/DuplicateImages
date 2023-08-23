@@ -12,9 +12,10 @@ class PairFinderOptions:
     show_progress_bars: bool = False
     parallel: bool = False
     slow: bool = False
+    group: bool = False
 
     @classmethod
     def from_args(cls, args: Namespace):
         return cls(
-            args.max_distance, args.hash_size, args.progress, args.parallel, args.slow
+            args.max_distance, args.hash_size, args.progress, args.parallel, args.slow, args.group
         )

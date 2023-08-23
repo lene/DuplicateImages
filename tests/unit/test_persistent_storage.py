@@ -40,7 +40,7 @@ def test_empty_hash_store_is_filled(
 ) -> None:
     finder = generate_pair_finder(top_directory, None)
     original_call_number = mock_algorithm.call_count
-    finder.get_pairs()
+    finder.get_equal_groups()
     assert mock_algorithm.call_count == original_call_number
 
 
@@ -111,11 +111,11 @@ def generate_pair_finder(
 def create_verified_hash_store(top_directory: TemporaryDirectory, store_path: Path) -> None:
     with PickleHashStore.create(store_path) as hash_store:
         finder = generate_pair_finder(top_directory, hash_store)
-        finder.get_pairs()
+        finder.get_equal_groups()
 
 
 def check_correct_results(finder: ImagePairFinder, images: List[Path]) -> None:
-    pairs = finder.get_pairs()
+    pairs = finder.get_equal_groups()
     expected_pairs = combinations(images, 2)
     expected_pairs_string = f'{[(p[0].name, p[1].name) for p in pairs]}'
     for pair in expected_pairs:

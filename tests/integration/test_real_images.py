@@ -1,6 +1,7 @@
 __author__ = 'Lene Preuss <lene.preuss@gmail.com>'
 
 from pathlib import Path
+from typing import List
 
 import pytest
 
@@ -142,3 +143,31 @@ def test_inconsistent_results_for_different_algorithms(
 def test_broken_image_files_do_not_raise_os_error(data_dir: Path, algorithm: str) -> None:
     folder = data_dir / 'broken'
     get_matches([folder], algorithm)
+
+
+@pytest.mark.parametrize(
+    'algorithm', ['ahash', 'dhash', 'colorhash', 'phash', 'whash']
+)
+@pytest.mark.parametrize(
+    'folders', [
+        ['heic_bit_depth'],  # images in this folder appear different to those in the following
+        ['heic_lossless_vs_lossy', 'jpeg_quality', 'jpeg_vs_heic', 'shrunk10%']
+    ]
+)
+def test_multiple_images_appear_as_group(
+        data_dir: Path, folders: List[Path], algorithm: str
+) -> None:
+    folders = [data_dir / 'equal_but_binary_different' / folder for folder in folders]
+    matches = get_matches(folders, algorithm, PairFinderOptions(group=True))
+    assert len(matches) == 1
+    assert len(matches[0]) == len(files_in_dirs(folders))
+
+
+@pytest.mark.parametrize('algorithm', ['ahash'])  # only one of each is needed, it works the same
+@pytest.mark.parametrize('folders', [['heic_bit_depth']])  # in all cases
+def test_slow_image_finder_fails_with_group_option(
+        data_dir: Path, folders: List[Path], algorithm: str
+) -> None:
+    folders = [data_dir / 'equal_but_binary_different' / folder for folder in folders]
+    with pytest.raises(ValueError):
+        get_matches(folders, algorithm, PairFinderOptions(slow=True, group=True))

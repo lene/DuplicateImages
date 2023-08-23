@@ -58,7 +58,7 @@ class ActionsTest(TestCase):
         return sorted(duplicate.files_in_dirs([self.top_directory]))
 
     def get_equals(self) -> Results:
-        equals = ImagePairFinder.create(self.get_image_files(), HASH_ALGORITHM).get_pairs()
+        equals = ImagePairFinder.create(self.get_image_files(), HASH_ALGORITHM).get_equal_groups()
         assert len(equals) == 1
         return equals
 

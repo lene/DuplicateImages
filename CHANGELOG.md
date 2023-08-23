@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.8.10] - Unreleased
+
+### Added 
+- CLI option --group: instead of pairs, treat similar images as groups of arbitrary size
+
 ## [0.8.9] - 2023-08-23
 
 ### Added 

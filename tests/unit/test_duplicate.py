@@ -45,7 +45,7 @@ def test_hashes_equal_for_copied_image(
     equals = finder(
         image_files, IMAGE_HASH_ALGORITHM[algorithm],
         options=PairFinderOptions(max_distance=max_distance)
-    ).get_pairs()
+    ).get_equal_groups()
     try:
         assert is_pair_found(jpeg_file, copied_file, equals)
     finally:
@@ -66,7 +66,7 @@ def test_hashes_not_equal_for_noisy_image(
     equals = finder(
         image_files, IMAGE_HASH_ALGORITHM[algorithm],
         options=PairFinderOptions(max_distance=max_distance)
-    ).get_pairs()
+    ).get_equal_groups()
     assert not element_in_list_of_tuples(subdir_file, equals)
 
 
@@ -85,7 +85,7 @@ def test_hashes_equal_for_different_image_format(
     equals = finder(
         image_files, IMAGE_HASH_ALGORITHM[algorithm],
         options=PairFinderOptions(max_distance=max_distance)
-    ).get_pairs()
+    ).get_equal_groups()
     assert (jpeg_file, png_file) in equals
 
 
@@ -104,7 +104,7 @@ def test_hashes_equal_for_scaled_image(
     equals = finder(
         image_files, IMAGE_HASH_ALGORITHM[algorithm],
         options=PairFinderOptions(max_distance=max_distance)
-    ).get_pairs()
+    ).get_equal_groups()
     assert (jpeg_file, half_file) in equals
 
 
@@ -129,7 +129,7 @@ def test_parallel_filtering_gives_same_results(
     equals = finder(
         image_files, IMAGE_HASH_ALGORITHM[algorithm],
         options=PairFinderOptions(max_distance=max_distance, parallel=True)
-    ).get_pairs()
+    ).get_equal_groups()
     assert len(equals) == 6
     assert is_pair_found(jpeg_file, png_file, equals)
     assert is_pair_found(jpeg_file, heif_file, equals)
@@ -170,7 +170,7 @@ def test_different_hash_size_finds_scaled_images(
     equals = SlowImagePairFinder(
         image_files, IMAGE_HASH_ALGORITHM[algorithm],
         options=PairFinderOptions(hash_size=hash_size)
-    ).get_pairs()
+    ).get_equal_groups()
     assert (jpeg_file, half_file) in equals
 
 
@@ -184,7 +184,7 @@ def test_smaller_hash_size_finds_similar_images(
     equals = SlowImagePairFinder(
         image_files, IMAGE_HASH_ALGORITHM[algorithm],
         options=PairFinderOptions(hash_size=hash_size)
-    ).get_pairs()
+    ).get_equal_groups()
     assert (jpeg_file, half_file) in equals
 
 

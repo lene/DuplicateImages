@@ -14,7 +14,7 @@ from duplicate_images.methods import IMAGE_HASH_ALGORITHM
 def test_sequential(image_files: List[Path], algorithm: str) -> None:
     equals = ImagePairFinder.create(
         image_files, IMAGE_HASH_ALGORITHM[algorithm]
-    ).get_pairs()
+    ).get_equal_groups()
     check_results(equals)
 
 
@@ -23,7 +23,7 @@ def test_parallel(image_files: List[Path], algorithm: str) -> None:
     equals = ParallelSlowImagePairFinder(
         image_files, IMAGE_HASH_ALGORITHM[algorithm],
         options=PairFinderOptions(parallel=True)
-    ).get_pairs()
+    ).get_equal_groups()
     check_results(equals)
 
 
@@ -31,7 +31,7 @@ def test_parallel(image_files: List[Path], algorithm: str) -> None:
 def test_max_distance(image_files: List[Path], algorithm: str) -> None:
     equals = ImagePairFinder.create(
         image_files, IMAGE_HASH_ALGORITHM[algorithm], options=PairFinderOptions(max_distance=1)
-    ).get_pairs()
+    ).get_equal_groups()
     check_results(equals)
 
 
@@ -39,7 +39,7 @@ def test_max_distance(image_files: List[Path], algorithm: str) -> None:
 def test_hash_size(image_files: List[Path], algorithm: str) -> None:
     equals = ImagePairFinder.create(
         image_files, IMAGE_HASH_ALGORITHM[algorithm], options=PairFinderOptions(hash_size=8)
-    ).get_pairs()
+    ).get_equal_groups()
     check_results(equals)
 
 
@@ -47,7 +47,7 @@ def test_bad_hash_size_whash(image_files: List[Path]) -> None:
     with pytest.raises(AssertionError):
         ImagePairFinder.create(
             image_files, IMAGE_HASH_ALGORITHM['whash'], options=PairFinderOptions(hash_size=9)
-        ).get_pairs()
+        ).get_equal_groups()
 
 
 @pytest.mark.parametrize('algorithm', list(IMAGE_HASH_ALGORITHM.keys()))
@@ -55,7 +55,7 @@ def test_max_distance_parallel(image_files: List[Path], algorithm: str) -> None:
     equals = ParallelSlowImagePairFinder(
         image_files, IMAGE_HASH_ALGORITHM[algorithm],
         options=PairFinderOptions(parallel=True, max_distance=1)
-    ).get_pairs()
+    ).get_equal_groups()
     check_results(equals)
 
 
@@ -69,7 +69,7 @@ def test_create_with_all_parameters(
     equals = ImagePairFinder.create(
         image_files, IMAGE_HASH_ALGORITHM[algorithm],
         PairFinderOptions(max_distance=max_distance, hash_size=hash_size, parallel=parallel)
-    ).get_pairs()
+    ).get_equal_groups()
     check_results(equals)
 
 
