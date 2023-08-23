@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.8.9] - 2023-08-23
+
+### Added 
+- create GitHub release automatically for each new tag
+- updated and completed developer documentation
+
 ## [0.8.8] - 2023-08-23
 
 ### Added 
