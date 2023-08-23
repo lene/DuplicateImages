@@ -164,6 +164,17 @@ $ ln -s ../../.git_hooks/pre-push .
 
 ### Publishing
 
+A tag is created and the new version is published automatically by GitLab CI on every successful
+merge to `master`.
+
+#### Prerequisites
+
+For every Merge Request to `master` it is checked that:
+- the `version` number in `pyproject.toml` is not an already existing git tag
+- the `CHANGELOG.md` contains an entry for the current version number
+
+#### PyPI
+
 There is a job in GitLab CI for publishing to `pypi.org` that runs as soon as a new tag is added, 
 which happens automatically whenever a MR is merged. The tag is the same as the `version` in the 
 `pyproject.toml` file. For every MR it needs to be ensured that the `version` is not the same as an 
@@ -180,11 +191,11 @@ $ poetry publish --username $PYPI_USER --password $PYPI_PASSWORD --repository te
 
 #### Updating GitHub mirror
 
-GitHub is set up as a push mirror in GitLab CI, but mirroring is flaky at the time and may not
-succeed. 
+The GitHub repo `git@github.com:lene/DuplicateImages.git` is set up as a push mirror in GitLab CI, 
+but mirroring is flaky at the time and may or may not succeed. The CI job `PushToGithub` should take
+care of mirroring to GitHub after every merge to `master`.
 
-To push to the GitHub repository manually (assuming the GitHub repository is set up as remote 
-`github`):
+To push to the GitHub repository manually (assuming the GitHub repo is set up as remote `github`):
 ```shell
 $ git checkout master
 $ git fetch
@@ -192,6 +203,11 @@ $ git pull --rebase
 $ git tag  # to check that the latest tag is present
 $ git push --tags github master 
 ```
+
+#### Creating Releases on GitHub
+
+The CI job `CreateGithubRelease` creates a Release on GitHub, which can then be found under
+https://github.com/lene/DuplicateImages/releases
 
 ### Profiling
 

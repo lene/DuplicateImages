@@ -187,3 +187,30 @@ PushToGithub:
     - git checkout $BRANCH
     - git push github $BRANCH
     - git push github $CI_COMMIT_TAG
+
+CreateGithubRelease:
+  stage: publish
+  image: alpine:latest
+  rules:
+    - if: "$CI_COMMIT_TAG"
+      when: on_success
+  before_script:
+    - apk update
+    - apk add curl
+  variables:
+    ACCEPT: "Accept: application/vnd.github+json"
+    AUTH: "Authorization: Bearer ${GITHUB_API_TOKEN}"
+    X_API: "X-GitHub-Api-Version: 2022-11-28"
+    API_URL: "https://api.github.com/repos/lene/DuplicateImages/releases"
+    DESCRIPTION: "Full Changelog: https://github.com/lene/DuplicateImages/blob/${CI_COMMIT_TAG}/CHANGELOG.md"
+  script:
+     - POST_DATA='{
+        "tag_name":"${CI_COMMIT_TAG}",
+        "target_commitish":"master",
+        "name":"${CI_COMMIT_TAG}",
+        "body":"${DESCRIPTION}",
+        "draft":false,
+        "prerelease":false,
+        "generate_release_notes":false
+      }'
+     - curl -L -X POST -H "${ACCEPT}" -H "${AUTH}" -H "${X_API}" ${API_URL} -d $POST_DATA
