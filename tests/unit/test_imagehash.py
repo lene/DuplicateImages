@@ -4,9 +4,7 @@ from typing import List
 import pytest
 
 from duplicate_images.function_types import Results
-from duplicate_images.image_pair_finder import (
-    ImagePairFinder, PairFinderOptions, ParallelSlowImagePairFinder
-)
+from duplicate_images.image_pair_finder import ImagePairFinder, PairFinderOptions
 from duplicate_images.methods import IMAGE_HASH_ALGORITHM
 
 
@@ -20,7 +18,7 @@ def test_sequential(image_files: List[Path], algorithm: str) -> None:
 
 @pytest.mark.parametrize('algorithm', list(IMAGE_HASH_ALGORITHM.keys()))
 def test_parallel(image_files: List[Path], algorithm: str) -> None:
-    equals = ParallelSlowImagePairFinder(
+    equals = ImagePairFinder.create(
         image_files, IMAGE_HASH_ALGORITHM[algorithm],
         options=PairFinderOptions(parallel=True)
     ).get_equal_groups()
@@ -52,7 +50,7 @@ def test_bad_hash_size_whash(image_files: List[Path]) -> None:
 
 @pytest.mark.parametrize('algorithm', list(IMAGE_HASH_ALGORITHM.keys()))
 def test_max_distance_parallel(image_files: List[Path], algorithm: str) -> None:
-    equals = ParallelSlowImagePairFinder(
+    equals = ImagePairFinder.create(
         image_files, IMAGE_HASH_ALGORITHM[algorithm],
         options=PairFinderOptions(parallel=True, max_distance=1)
     ).get_equal_groups()

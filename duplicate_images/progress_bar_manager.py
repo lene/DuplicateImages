@@ -1,43 +1,21 @@
 __author__ = 'Lene Preuss <lene.preuss@gmail.com>'
 
-from typing import Optional, Union
+from typing import Optional
 
 from tqdm import tqdm
-
-
-class NullProgressBarManager:
-
-    def __init__(self) -> None:
-        pass
-
-    def create_filter_bar(self, hashes_length: int) -> None:
-        pass
-
-    def update_reader(self) -> None:
-        pass
-
-    def update_filter(self) -> None:
-        pass
-
-    def close_reader(self) -> None:
-        pass
-
-    def close(self) -> None:
-        pass
 
 
 class ProgressBarManager:
 
     @classmethod
-    def create(
-            cls, files_length: int, active: bool = False
-    ) -> Union['ProgressBarManager', NullProgressBarManager]:
+    def create(cls, files_length: int, active: bool = False) -> 'ProgressBarManager':
         return ProgressBarManager(files_length) if active else NullProgressBarManager()
 
     def __init__(self, files_length: int) -> None:
         self.reader_progress: Optional[tqdm] = tqdm(
-            total=files_length, miniters=max(files_length / 100, 5), smoothing=0.1, unit=''
-        )
+            total=files_length, miniters=max(files_length / 100, 5), smoothing=0.1, unit='',
+            delay=0.1
+        ) if files_length else None
         self.filter_progress: Optional[tqdm] = None
 
     def create_filter_bar(self, hashes_length: int) -> None:
@@ -63,3 +41,24 @@ class ProgressBarManager:
     def close(self) -> None:
         if self.filter_progress is not None:
             self.filter_progress.close()
+
+
+class NullProgressBarManager(ProgressBarManager):
+
+    def __init__(self) -> None:
+        super().__init__(0)
+
+    def create_filter_bar(self, hashes_length: int) -> None:
+        pass
+
+    def update_reader(self) -> None:
+        pass
+
+    def update_filter(self) -> None:
+        pass
+
+    def close_reader(self) -> None:
+        pass
+
+    def close(self) -> None:
+        pass

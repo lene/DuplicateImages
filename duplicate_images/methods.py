@@ -14,7 +14,10 @@ import imagehash
 from duplicate_images.common import path_with_parent
 from duplicate_images.function_types import ActionFunction, HashFunction, ImageGroup
 
-__all__ = ['call', 'get_hash_size_kwargs', 'IMAGE_HASH_ALGORITHM', 'ACTIONS_ON_EQUALITY']
+__all__ = [
+    'call', 'get_hash_size_kwargs', 'IMAGE_HASH_ALGORITHM', 'ALGORITHM_DEFAULTS',
+    'ACTIONS_ON_EQUALITY'
+]
 
 
 @lru_cache(maxsize=None)
@@ -86,8 +89,8 @@ ACTIONS_ON_EQUALITY: Dict[str, ActionFunction] = {
     'd<': lambda args, pair: delete_with_log_message(ascending_by_size(pair)[0]),
     'eog': lambda args, pair: call(['eog'] + [str(pic) for pic in pair]),  # nosec
     'xv': lambda args, pair: call(['xv', '-nolim'] + [str(pic) for pic in pair]),  # nosec
-    'print': lambda args, pair: print(pair[0], pair[1]),
-    'print_inline': lambda args, pair: print(pair[0], pair[1], end=' '),
+    'print': lambda args, pair: print(*pair),
+    'print_inline': lambda args, pair: print(*pair, end=' '),
     'quote': lambda args, pair: print(f'{quote(str(pair[0]))} {quote(str(pair[1]))}'),
     'quote_inline': lambda args, pair: print(
         f'{quote(str(pair[0]))} {quote(str(pair[1]))}', end=' '

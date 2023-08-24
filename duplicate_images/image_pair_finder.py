@@ -14,6 +14,7 @@ from duplicate_images.function_types import (
 )
 from duplicate_images.hash_scanner import ImageHashScanner, ParallelImageHashScanner
 from duplicate_images.pair_finder_options import PairFinderOptions
+from duplicate_images.progress_bar_manager import ProgressBarManager, NullProgressBarManager
 
 
 def group_results_as_pairs(results: ResultsGenerator) -> Results:
@@ -28,7 +29,7 @@ def group_results_as_tuples(results: ResultsGenerator) -> Results:
     return [tuple(result) for result in results]
 
 
-class ImagePairFinder(ImageHashScanner):
+class ImagePairFinder:
 
     @classmethod
     def create(
@@ -37,38 +38,34 @@ class ImagePairFinder(ImageHashScanner):
             hash_store: Optional[Cache] = None
     ) -> 'ImagePairFinder':
         group_results = group_results_as_tuples if options.group else group_results_as_pairs
+        progress_bars = ProgressBarManager.create(len(files), options.show_progress_bars)
+        if not options.parallel:
+            scanner = ImageHashScanner(files, hash_algorithm, options, hash_store, progress_bars)
+        else:
+            scanner = ParallelImageHashScanner(
+                files, hash_algorithm, options, hash_store, progress_bars
+            )
         if options.max_distance == 0 and not options.slow:
-            if not options.parallel:
-                return DictImagePairFinder(
-                    files, hash_algorithm, options=options, hash_store=hash_store,
-                    group_results=group_results
-                )
-            return ParallelDictImagePairFinder(
-                files, hash_algorithm, options=options, hash_store=hash_store,
-                group_results=group_results
+            return DictImagePairFinder(scanner, group_results, options, progress_bars)
+        if len(files) > 1000:
+            logging.warning(
+                'Using %s with a big number of images. Expect slow performance.',
+                SlowImagePairFinder.__name__
             )
-        if options.parallel:
-            return ParallelSlowImagePairFinder(
-                files, hash_algorithm, options=options, hash_store=hash_store,
-                group_results=group_results
-            )
-        return SlowImagePairFinder(
-            files, hash_algorithm, options=options, hash_store=hash_store,
-            group_results=group_results
-        )
+            logging.warning('Consider using [Parallel]DictImagePairFinder instead.')
+        return SlowImagePairFinder(scanner, group_results, options, progress_bars)
 
     def __init__(  # pylint: disable = too-many-arguments
-            self, files: List[Path], hash_algorithm: HashFunction,
-            options: PairFinderOptions = PairFinderOptions(),
-            hash_store: Optional[Cache] = None,
-            group_results: ResultsGrouper = group_results_as_pairs
+            self, scanner: ImageHashScanner,
+            group_results: ResultsGrouper,
+            progress_bars: ProgressBarManager = NullProgressBarManager()
     ) -> None:
-        logging.info('Using %s', self.__class__.__name__)
         self.precalculated_hashes: Dict = {}
-        super().__init__(files, hash_algorithm, options, hash_store)
         self.group_results = group_results
-        self.files = files
+        self.scanner = scanner
+        self.progress_bars = progress_bars
         self.scan_start_time = time()
+        logging.info('Using %s', self.__class__.__name__)
 
     def get_equal_groups(self) -> Results:
         raise NotImplementedError()
@@ -80,21 +77,21 @@ class ImagePairFinder(ImageHashScanner):
         )
 
 
-class DictImagePairFinder(ImagePairFinder, ImageHashScanner):
+class DictImagePairFinder(ImagePairFinder):
     """
     Searches by storing the image hashes as keys to a dict.
     Works only if max_distance == 0.
     """
     def __init__(  # pylint: disable = too-many-arguments
-            self, files: List[Path], hash_algorithm: HashFunction,
+            self, scanner: ImageHashScanner,
+            group_results: ResultsGrouper,
             options: PairFinderOptions = PairFinderOptions(),
-            hash_store: Optional[Cache] = None,
-            group_results: ResultsGrouper = group_results_as_pairs
+            progress_bars: ProgressBarManager = NullProgressBarManager()
     ) -> None:
-        super().__init__(files, hash_algorithm, options, hash_store, group_results)
+        super().__init__(scanner, group_results, progress_bars)
         if options.max_distance != 0:
             raise ValueError('DictImagePairFinder only works if max_distance == 0!')
-        self.precalculated_hashes = self.get_hashes(files)
+        self.precalculated_hashes = self.get_hashes()
         self.progress_bars.close_reader()
 
     @log_execution_time()
@@ -105,19 +102,15 @@ class DictImagePairFinder(ImagePairFinder, ImageHashScanner):
             (result for result in self.precalculated_hashes.values() if len(result) > 1)
         )
 
-    def get_hashes(self, image_files: List[Path]) -> Dict[ImageHash, List[Path]]:
+    def get_hashes(self) -> Dict[ImageHash, List[Path]]:
         hash_dict: Dict[ImageHash, List[Path]] = {}
-        for file, image_hash in self.precalculate_hashes(image_files):
+        for file, image_hash in self.scanner.precalculate_hashes():
             if image_hash is not None:
                 hash_dict.setdefault(image_hash, []).append(file)
         return hash_dict
 
 
-class ParallelDictImagePairFinder(DictImagePairFinder, ParallelImageHashScanner):
-    pass
-
-
-class SlowImagePairFinder(ImagePairFinder, ImageHashScanner):
+class SlowImagePairFinder(ImagePairFinder):
     """
     Searches by comparing the image hashes of each image to every other, giving O(N^2) performance.
     Does not allow returning the results in groups, only pairs.
@@ -125,21 +118,16 @@ class SlowImagePairFinder(ImagePairFinder, ImageHashScanner):
     """
 
     def __init__(  # pylint: disable = too-many-arguments
-            self, files: List[Path], hash_algorithm: HashFunction,
+            self, scanner: ImageHashScanner,
+            group_results: ResultsGrouper,
             options: PairFinderOptions = PairFinderOptions(),
-            hash_store: Optional[Cache] = None,
-            group_results: ResultsGrouper = group_results_as_pairs
+            progress_bars: ProgressBarManager = NullProgressBarManager()
     ) -> None:
-        if len(files) > 1000:
-            logging.warning(
-                'Using %s with a big number of images. Expect slow performance.',
-                self.__class__.__name__
-            )
-            logging.warning('Consider using [Parallel]DictImagePairFinder instead.')
         if group_results is group_results_as_tuples:
             raise ValueError(f'{self.__class__.__name__} only works with pairs, not groups')
-        super().__init__(files, hash_algorithm, options, hash_store, group_results)
-        self.precalculated_hashes = self.get_hashes(files)
+        super().__init__(scanner, group_results, progress_bars)
+        self.max_distance = options.max_distance or 0
+        self.precalculated_hashes = self.get_hashes()
         self.progress_bars.close_reader()
 
     @log_execution_time()
@@ -151,9 +139,9 @@ class SlowImagePairFinder(ImagePairFinder, ImageHashScanner):
         self.progress_bars.close()
         return matches
 
-    def get_hashes(self, image_files: List[Path]) -> Dict[Path, ImageHash]:
+    def get_hashes(self) -> Dict[Path, ImageHash]:
         return {
-            file: image_hash for file, image_hash in self.precalculate_hashes(image_files)
+            file: image_hash for file, image_hash in self.scanner.precalculate_hashes()
             if image_hash is not None
         }
 
@@ -171,7 +159,3 @@ class SlowImagePairFinder(ImagePairFinder, ImageHashScanner):
             '%-30s - %-30s = %d', file.stem, other_file.stem, hash_distance
         )
         return hash_distance <= self.max_distance
-
-
-class ParallelSlowImagePairFinder(SlowImagePairFinder, ParallelImageHashScanner):
-    pass

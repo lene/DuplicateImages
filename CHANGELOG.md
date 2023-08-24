@@ -1,9 +1,11 @@
 # Changelog
 
-## [0.8.10] - Unreleased
+## [0.9.0] - Unreleased
 
 ### Added 
 - CLI option --group: instead of pairs, treat similar images as groups of arbitrary size
+- refactor ImagePairFinder to easier deal with combinations of options
+- integration test coverage for all supported combinations of --group/--parallel
 
 ## [0.8.9] - 2023-08-23
 

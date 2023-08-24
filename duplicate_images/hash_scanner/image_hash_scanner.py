@@ -12,7 +12,7 @@ from duplicate_images.common import path_with_parent
 from duplicate_images.function_types import Cache, CacheEntry, HashFunction
 from duplicate_images.methods import get_hash_size_kwargs
 from duplicate_images.pair_finder_options import PairFinderOptions
-from duplicate_images.progress_bar_manager import ProgressBarManager
+from duplicate_images.progress_bar_manager import ProgressBarManager, NullProgressBarManager
 
 
 class ImageHashScanner:
@@ -20,16 +20,18 @@ class ImageHashScanner:
     def __init__(  # pylint: disable = too-many-arguments
             self, files: List[Path], hash_algorithm: HashFunction,
             options: PairFinderOptions = PairFinderOptions(),
-            hash_store: Optional[Cache] = None
+            hash_store: Optional[Cache] = None,
+            progress_bars: ProgressBarManager = NullProgressBarManager()
     ) -> None:
+        self.files = files
         self.algorithm = hash_algorithm
         self.hash_size_kwargs = get_hash_size_kwargs(hash_algorithm, options.hash_size)
         self.max_distance = options.max_distance
         self.hash_store = hash_store if hash_store is not None else {}
-        self.progress_bars = ProgressBarManager.create(len(files), options.show_progress_bars)
+        self.progress_bars = progress_bars
 
-    def precalculate_hashes(self, image_files: List[Path]) -> List[CacheEntry]:
-        return [self.get_hash(file) for file in image_files]
+    def precalculate_hashes(self) -> List[CacheEntry]:
+        return [self.get_hash(file) for file in self.files]
 
     def get_hash(self, file: Path) -> CacheEntry:
         self.progress_bars.update_reader()
@@ -48,6 +50,6 @@ class ImageHashScanner:
 
 class ParallelImageHashScanner(ImageHashScanner):
 
-    def precalculate_hashes(self, image_files: List[Path]) -> List[CacheEntry]:
+    def precalculate_hashes(self) -> List[CacheEntry]:
         with Pool() as pool:
-            return pool.map(self.get_hash, image_files)
+            return pool.map(self.get_hash, self.files)
