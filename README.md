@@ -72,29 +72,50 @@ file `$FILE` in JSON or Pickle format and read image hashes from that file if th
 present there. This avoids having to compute the image hashes anew at every run and can 
 significantly speed up run times.
 
-### Actions for matching image pairs
+### Handling matching images either as pairs or as groups
+
+By default, matching images are presented as pairs. With the `--group` CLI option, they are handled
+as a group containing all matching images.
+
+Example: `1.jpg`, `2.jpg` and `3.jpg` in the current folder `.` are equal.
+
+```shell
+$ find-dups .
+1.jpg 2.jpg
+1.jpg 3.jpg
+2.jpg 3.jpg
+$ find-dups . --group
+1.jpg 2.jpg 3.jpg
+```
+
+### Actions for matching image groups
 
 Use the `--on-equal` option to select what to do to pairs of equal images. The default action is 
 `print`.
-- `delete-first` or `d1`: deletes the first of the two files
-- `delete-second` or `d2`: deletes the second of the two files
-- `delete-bigger` or `d>`: deletes the file with the bigger size
-- `delete-smaller` or `d<`: deletes the file with the smaller size
-- `eog`: launches the `eog` image viewer to compare the two files (*deprecated* by `exec`)
-- `xv`: launches the `xv` image viewer to compare the two files (*deprecated* by `exec`)
-- `print`: prints the two files
+- `delete-first` or `d1`: deletes the first of the files in the group
+- `delete-last` or `dl`: deletes the last of the files in the group
+- `delete-bigger` or `d>`: deletes the file with the biggest size
+- `delete-smaller` or `d<`: deletes the file with the smallest size
+- `eog`: launches the `eog` image viewer to compare the files in the group (*deprecated* by `exec`)
+- `xv`: launches the `xv` image viewer to compare the files in the group (*deprecated* by `exec`)
+- `print`: prints the files in the group
 - `print_inline`: like `print` but without newline
-- `quote`: prints the two files quoted for POSIX shells
+- `quote`: prints the files in the group quoted for POSIX shells
 - `quote_inline`: like `quote` but without newline
 - `exec`: executes a command (see `--exec` argument below)
 - `none`: does nothing; may be useful for benchmarking and testing
 
 The `--exec` argument allows calling another program when the `--on-equal exec` option is given.
-You can pass a command line string like `--exec "program {1} {2}"` where `{1}` and `{2}` are 
-replaced by the matching pair files.
+You can pass a command line string like `--exec "program {1} {2}"` where `{1}` and `{2}` are
+replaced by the matching pair files (or first two files in a group), quoted so the shell recognizes
+the files properly. The wildcard `{*}` expands to all files in a matching group, which when called
+with the `--group` argument may be more than two images considered equal.
 
 #### Examples:
 * `--exec "open -a Preview -W {1} {2}"`: Opens the files in MacOS Preview app and waits for it.
+* `--exec "ls -s {*}"`: Prints the size (in blocks) next to all files.
+* `--exec 'for i in {*}; do dirname $i; basename $i; done'`: Shows the directory and the filename
+  separately for all files.
 
 ### Parallel execution
 
@@ -102,10 +123,12 @@ Use the `--parallel` option to utilize all free cores on your system for calcula
 
 ### Slow execution
 
-`find-dups` can also use an alternative algorithm which is O(N<sup>2</sup>) in the number of images.
-Use the `--slow` option to use this alternative algorithm. 
+`find-dups` can also use an alternative algorithm which exhaustively compares all images to each
+other, being O(N<sup>2</sup>) in the number of images. This algorithm is selected automatically if
+`--max-distance` is not 0.
 
-This algorithm is selected automatically if `--max-distance` is not 0.
+You can use the `--slow` option to use this alternative algorithm specifically. The `--slow` switch
+is mutually exclusive with the `--group` switch.
 
 ### Progress bar and verbosity control
 
@@ -151,6 +174,7 @@ $ poetry run pytest
 $ poetry run mypy duplicate_images tests
 $ poetry run flake8
 $ poetry run pylint duplicate_images tests
+$ poetry run bandit -r duplicate_images
 ```
 or simply 
 ```shell
@@ -207,7 +231,7 @@ $ git push --tags github master
 #### Creating Releases on GitHub
 
 The CI job `CreateGithubRelease` creates a Release on GitHub, which can then be found under
-https://github.com/lene/DuplicateImages/releases
+https://github.com/lene/DuplicateImages/releases.
 
 ### Profiling
 
