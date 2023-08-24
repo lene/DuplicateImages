@@ -161,6 +161,21 @@ def test_shell_exec(
     )
 
 
+@patch('duplicate_images.methods.call')
+@pytest.mark.parametrize('option', ['exec'])
+@pytest.mark.parametrize('exec_cmd', ['ls {*}'])
+@pytest.mark.parametrize('group', [True, False])
+def test_wildcard_exec_parameter(
+        mock_call: Mock, equal_images: List[Path], option: str, exec_cmd: str, group: bool
+) -> None:
+    equals = get_equals(equal_images, group)
+    args = parse_command_line(['/', '--on-equal', option, '--exec', exec_cmd])
+    duplicate.execute_actions(equals, args)
+    mock_call.assert_called_once()
+    for path in (str(path) for path in equal_images):
+        assert path in mock_call.call_args.args[0]
+
+
 @pytest.mark.parametrize('option', ['unknown-option'])
 def test_unknown_option(option: str) -> None:
     with pytest.raises(SystemExit):

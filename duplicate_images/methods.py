@@ -42,7 +42,6 @@ def ascending_by_size(group: ImageGroup) -> List[Path]:
 def delete_with_log_message(file: Path) -> None:
     file.unlink()
     logging.info('Deleted %s', path_with_parent(file))
-    print('Deleted ', path_with_parent(file))
 
 
 def shell_exec(args: Namespace, group: ImageGroup) -> None:

@@ -60,7 +60,6 @@ def get_matches(
 
 def execute_actions(matches: Results, args: Namespace) -> None:
     action_equal = ACTIONS_ON_EQUALITY[args.on_equal]
-
     for group in sorted(matches):
         try:
             action_equal(args, group)
