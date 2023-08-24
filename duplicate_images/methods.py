@@ -15,7 +15,7 @@ from duplicate_images.common import path_with_parent
 from duplicate_images.function_types import ActionFunction, HashFunction, ImageGroup
 
 __all__ = [
-    'call', 'get_hash_size_kwargs', 'IMAGE_HASH_ALGORITHM', 'ALGORITHM_DEFAULTS',
+    'call', 'quote', 'get_hash_size_kwargs', 'IMAGE_HASH_ALGORITHM', 'ALGORITHM_DEFAULTS',
     'ACTIONS_ON_EQUALITY'
 ]
 
@@ -35,19 +35,21 @@ def compare_exactly(file: Path, other_file: Path) -> bool:
     return get_size(other_file) == get_size(file) and get_hash(file) == get_hash(other_file)
 
 
-def ascending_by_size(pair: ImageGroup) -> List[Path]:
-    return sorted(pair, key=lambda path: path.stat().st_size)
+def ascending_by_size(group: ImageGroup) -> List[Path]:
+    return sorted(group, key=lambda path: path.stat().st_size)
 
 
 def delete_with_log_message(file: Path) -> None:
     file.unlink()
     logging.info('Deleted %s', path_with_parent(file))
+    print('Deleted ', path_with_parent(file))
 
 
-def shell_exec(args: Namespace, pair: ImageGroup) -> None:
+def shell_exec(args: Namespace, group: ImageGroup) -> None:
     cmd = args.exec
-    for num, path in enumerate(pair):
-        cmd = cmd.replace(f"{'{'}{num+1}{'}'}", f'"{path}"')
+    for num, path in enumerate(group):
+        cmd = cmd.replace(f"{'{'}{num+1}{'}'}", f'{quote(str(path))}')
+    cmd = cmd.replace('{*}', ' '.join([quote(str(path)) for path in group]))
     call(cmd, shell=True)  # nosec
 
 
@@ -79,22 +81,22 @@ ALGORITHM_DEFAULTS = {
 }
 
 ACTIONS_ON_EQUALITY: Dict[str, ActionFunction] = {
-    'delete-first': lambda args, pair: delete_with_log_message(pair[0]),
-    'd1': lambda args, pair: delete_with_log_message(pair[0]),
-    'delete-second': lambda args, pair: delete_with_log_message(pair[1]),
-    'd2': lambda args, pair: delete_with_log_message(pair[1]),
-    'delete-bigger': lambda args, pair: delete_with_log_message(ascending_by_size(pair)[-1]),
-    'd>': lambda args, pair: delete_with_log_message(ascending_by_size(pair)[-1]),
-    'delete-smaller': lambda args, pair: delete_with_log_message(ascending_by_size(pair)[0]),
-    'd<': lambda args, pair: delete_with_log_message(ascending_by_size(pair)[0]),
-    'eog': lambda args, pair: call(['eog'] + [str(pic) for pic in pair]),  # nosec
-    'xv': lambda args, pair: call(['xv', '-nolim'] + [str(pic) for pic in pair]),  # nosec
-    'print': lambda args, pair: print(*pair),
-    'print_inline': lambda args, pair: print(*pair, end=' '),
-    'quote': lambda args, pair: print(f'{quote(str(pair[0]))} {quote(str(pair[1]))}'),
-    'quote_inline': lambda args, pair: print(
-        f'{quote(str(pair[0]))} {quote(str(pair[1]))}', end=' '
+    'delete-first': lambda args, group: delete_with_log_message(group[0]),
+    'd1': lambda args, group: delete_with_log_message(group[0]),
+    'delete-last': lambda args, group: delete_with_log_message(group[-1]),
+    'dl': lambda args, group: delete_with_log_message(group[-1]),
+    'delete-bigger': lambda args, group: delete_with_log_message(ascending_by_size(group)[-1]),
+    'd>': lambda args, group: delete_with_log_message(ascending_by_size(group)[-1]),
+    'delete-smaller': lambda args, group: delete_with_log_message(ascending_by_size(group)[0]),
+    'd<': lambda args, group: delete_with_log_message(ascending_by_size(group)[0]),
+    'eog': lambda args, group: call(['eog'] + [str(pic) for pic in group]),  # nosec
+    'xv': lambda args, group: call(['xv', '-nolim'] + [str(pic) for pic in group]),  # nosec
+    'print': lambda args, group: print(*group),
+    'print_inline': lambda args, group: print(*group, end=' '),
+    'quote': lambda args, group: print(' '.join([quote(str(pic)) for pic in group])),
+    'quote_inline': lambda args, group: print(
+        ' '.join([quote(str(pic)) for pic in group]), end=' '
     ),
-    'exec': lambda args, pair: shell_exec(args, pair),  # pylint: disable=unnecessary-lambda
-    'none': lambda args, pair: None
+    'exec': lambda args, group: shell_exec(args, group),  # pylint: disable=unnecessary-lambda
+    'none': lambda args, group: None
 }

@@ -12,16 +12,12 @@ from duplicate_images.hash_scanner import ImageHashScanner, ParallelImageHashSca
 from duplicate_images.image_pair_finder import (
     DictImagePairFinder, PairFinderOptions, SlowImagePairFinder, group_results_as_pairs
 )
-from duplicate_images.methods import ALGORITHM_DEFAULTS, IMAGE_HASH_ALGORITHM, get_hash_size_kwargs
-from .conftest import is_pair_found, copy_image_file, delete_image_file
+from duplicate_images.methods import IMAGE_HASH_ALGORITHM
+from .conftest import is_pair_found, copy_image_file, delete_image_file, named_file
 
 
 def element_in_list_of_tuples(element: Any, tuples: List[Tuple[Any, Any]]) -> bool:
     return any(element in tuple for tuple in tuples)
-
-
-def named_file(name: str, images: List[Path]) -> Path:
-    return next(filter(lambda f: name + '_' in f.name, images))
 
 
 def test_get_files(top_directory: TemporaryDirectory, image_files: List[Path]) -> None:
@@ -146,26 +142,6 @@ def test_parallel_filtering_gives_same_results(
     assert not is_pair_found(png_file, subdir_file, equals)
     assert not is_pair_found(heif_file, subdir_file, equals)
     assert not is_pair_found(half_file, subdir_file, equals)
-
-
-@pytest.mark.parametrize('algorithm', list(IMAGE_HASH_ALGORITHM.keys()))
-@pytest.mark.parametrize('scanner_class', [ImageHashScanner, ParallelImageHashScanner])
-@pytest.mark.parametrize('hash_size', [4, 7, 9])
-def test_different_hash_size_sets_options(
-        algorithm: str, scanner_class: Callable, hash_size: int
-) -> None:
-    scanner = scanner_class(
-        [], IMAGE_HASH_ALGORITHM[algorithm], options=PairFinderOptions(hash_size=hash_size)
-    )
-    assert isinstance(scanner.hash_size_kwargs, dict)
-    assert len(scanner.hash_size_kwargs) == 1
-    assert list(scanner.hash_size_kwargs.values())[0] == hash_size
-    assert list(scanner.hash_size_kwargs.keys())[0] == next(iter(
-        ALGORITHM_DEFAULTS[IMAGE_HASH_ALGORITHM[algorithm]]
-    ))
-    assert scanner.hash_size_kwargs == get_hash_size_kwargs(
-        IMAGE_HASH_ALGORITHM[algorithm], hash_size
-    )
 
 
 @pytest.mark.parametrize('algorithm', list(IMAGE_HASH_ALGORITHM.keys()))

@@ -61,9 +61,9 @@ def get_matches(
 def execute_actions(matches: Results, args: Namespace) -> None:
     action_equal = ACTIONS_ON_EQUALITY[args.on_equal]
 
-    for pair in sorted(matches):
+    for group in sorted(matches):
         try:
-            action_equal(args, pair)
+            action_equal(args, group)
         except FileNotFoundError:
             continue
 

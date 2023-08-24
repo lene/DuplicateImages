@@ -15,7 +15,8 @@
 
 CI_LINT_OUTPUT=/tmp/gitlab-ci-lint.json
 STATUS=0
-poetry run pytest -n auto tests || STATUS=1
+poetry run pytest -n auto tests/unit || STATUS=1
+poetry run pytest -n auto tests/integration || STATUS=1
 poetry run mypy duplicate_images tests || STATUS=1
 poetry run flake8 duplicate_images tests || STATUS=1
 poetry run pylint duplicate_images tests || STATUS=1

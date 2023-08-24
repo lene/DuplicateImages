@@ -53,6 +53,10 @@ def fill_image_with_random_pixels(file: Path, seed: int = 0) -> None:
     image.save(filename=file)
 
 
+def named_file(name: str, images: List[Path]) -> Path:
+    return next(filter(lambda f: name + '_' in f.name, images))
+
+
 def random_short() -> int:
     return random.randrange(65535)  # noqa: S311
 
@@ -97,10 +101,7 @@ def fixture_sub_directory(top_directory: TemporaryDirectory) -> TemporaryDirecto
     return TemporaryDirectory(dir=top_directory.name)
 
 
-@pytest.fixture(scope='session')
-def image_files(
-        top_directory: TemporaryDirectory, sub_directory: TemporaryDirectory
-) -> Generator[List[Path], None, None]:
+def create_jpg_and_png(top_directory: TemporaryDirectory) -> List[Path]:
     images = []
     jpeg_file = create_image(
         Path(NamedTemporaryFile(dir=top_directory.name, prefix='jpeg_', suffix='.jpg').name),
@@ -112,6 +113,27 @@ def image_files(
         IMAGE_WIDTH
     )
     images.append(png_file)
+    return images
+
+
+def create_half_jpg(top_directory: TemporaryDirectory) -> Path:
+    half_file = create_image(
+        Path(
+            NamedTemporaryFile(dir=top_directory.name, prefix='test_half_', suffix='.jpg').name
+        ),
+        IMAGE_WIDTH
+    )
+    image = Image(filename=half_file)
+    image.transform(f'{int(IMAGE_WIDTH / 2)}x{int(IMAGE_WIDTH * 3 / 8)}')
+    save(image, half_file)
+    return half_file
+
+
+@pytest.fixture(scope='session')
+def image_files(
+        top_directory: TemporaryDirectory, sub_directory: TemporaryDirectory
+) -> Generator[List[Path], None, None]:
+    images = create_jpg_and_png(top_directory)
     heif_file = create_heif_image(
         Path(NamedTemporaryFile(dir=top_directory.name, prefix='heif_', suffix='.heif').name),
         IMAGE_WIDTH
@@ -123,15 +145,7 @@ def image_files(
     )
     fill_image_with_random_pixels(subdir_file)
     images.append(subdir_file)
-    half_file = create_image(
-        Path(
-            NamedTemporaryFile(dir=top_directory.name, prefix='test_half_', suffix='.jpg').name
-        ),
-        IMAGE_WIDTH
-    )
-    image = Image(filename=half_file)
-    image.transform(f'{int(IMAGE_WIDTH / 2)}x{int(IMAGE_WIDTH * 3 / 8)}')
-    save(image, half_file)
+    half_file = create_half_jpg(top_directory)
     images.append(half_file)
     yield images
     for file in images:

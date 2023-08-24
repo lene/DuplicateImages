@@ -18,10 +18,19 @@ include:
     - pip install -q poetry
     - poetry install
 
-pytest:
+unit tests:
   extends: .test
   script:
-    - poetry run pytest --junitxml=pytest.xml
+    - poetry run pytest --junitxml=pytest.xml tests/unit
+  artifacts:
+    reports:
+      junit:
+        - pytest.xml
+
+integration tests:
+  extends: .test
+  script:
+    - poetry run pytest --junitxml=pytest.xml tests/integration
   artifacts:
     reports:
       junit:
