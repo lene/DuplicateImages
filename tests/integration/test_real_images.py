@@ -13,16 +13,20 @@ from duplicate_images.duplicate import files_in_dirs, is_image_file
 from duplicate_images.duplicate import get_matches
 
 
+@pytest.mark.parametrize('parallel', [True, False])
+@pytest.mark.parametrize('slow', [True, False])
 @pytest.mark.parametrize(
     'algorithm,expected_pairs',
     [('ahash', 0), ('dhash', 0), ('phash', 0), ('whash', 0)]
 )
 @pytest.mark.parametrize('image_pair', ['pair1', 'pair2'])
-def test_similar(
-        data_dir: Path, image_pair: str, algorithm: str, expected_pairs: int
+def test_similar(  # pylint:disable=too-many-arguments
+        data_dir: Path, image_pair: str, algorithm: str, expected_pairs: int,
+        slow: bool, parallel: bool
 ) -> None:
     folder = data_dir / 'similar' / image_pair
-    assert len(get_matches([folder], algorithm)) == expected_pairs
+    matches = get_matches([folder], algorithm, PairFinderOptions(slow=slow, parallel=parallel))
+    assert len(matches) == expected_pairs
 
 
 @pytest.mark.parametrize(
@@ -40,44 +44,58 @@ def test_hash_distance(
     assert hashes[0] - hashes[1] == min_distance, str(hashes[0] - hashes[1])
 
 
+@pytest.mark.parametrize('parallel', [True, False])
+@pytest.mark.parametrize('slow', [True, False])
 @pytest.mark.parametrize(
-    'algorithm,min_distance',
+    'algorithm,max_distance',
     [('ahash', 14), ('dhash', 12), ('phash', 14), ('whash', 16), ('colorhash', 0)]
 )
 def test_similar_distance_matches(
-        data_dir: Path, algorithm: str, min_distance: int
+        data_dir: Path, algorithm: str, max_distance: int, slow: bool, parallel: bool
 ) -> None:
     folder = data_dir / 'similar' / 'pair1'
-    assert len(
-        get_matches([folder], algorithm, PairFinderOptions(max_distance=min_distance))
-    ) == 1
+    matches = get_matches(
+        [folder], algorithm, PairFinderOptions(
+            slow=slow, parallel=parallel, max_distance=max_distance
+        )
+    )
+    assert len(matches) == 1
 
 
+@pytest.mark.parametrize('parallel', [True, False])
+@pytest.mark.parametrize('slow', [True, False])
 @pytest.mark.parametrize(
     'algorithm,hash_size',
     [('ahash', 4), ('whash', 2), ('colorhash', 4)]
 )
 def test_similar_matches_with_smaller_hash_size(
-        data_dir: Path, algorithm: str, hash_size: int
+        data_dir: Path, algorithm: str, hash_size: int, slow: bool, parallel: bool
 ) -> None:
     folder = data_dir / 'similar' / 'pair1'
-    assert len(
-        get_matches([folder], algorithm, PairFinderOptions(hash_size=hash_size))
-    ) == 1
+    matches = get_matches(
+        [folder], algorithm, PairFinderOptions(slow=slow, parallel=parallel, hash_size=hash_size)
+    )
+    assert len(matches) == 1
 
 
+@pytest.mark.parametrize('parallel', [True, False])
+@pytest.mark.parametrize('slow', [True, False])
 @pytest.mark.parametrize(
     'algorithm,expected_pairs',
     [('ahash', 0), ('dhash', 0), ('colorhash', 0), ('phash', 0), ('whash', 0)]
 )
 @pytest.mark.parametrize('image_pair', ['many'])
-def test_similar_many(
-        data_dir: Path, image_pair: str, algorithm: str, expected_pairs: int
+def test_similar_many(  # pylint:disable=too-many-arguments
+        data_dir: Path, image_pair: str, algorithm: str, expected_pairs: int,
+        slow: bool, parallel: bool
 ) -> None:
     folder = data_dir / 'similar' / image_pair
-    assert len(get_matches([folder], algorithm)) == expected_pairs
+    matches = get_matches([folder], algorithm, PairFinderOptions(slow=slow, parallel=parallel))
+    assert len(matches) == expected_pairs
 
 
+@pytest.mark.parametrize('parallel', [True, False])
+@pytest.mark.parametrize('slow', [True, False])
 @pytest.mark.parametrize(
     'algorithm,expected_pairs',
     [('ahash', 1), ('dhash', 1), ('colorhash', 1), ('phash', 1), ('whash', 1)]
@@ -87,39 +105,57 @@ def test_similar_many(
         'jpeg_quality', 'jpeg_vs_heic', 'heic_bit_depth', 'heic_lossless_vs_lossy', 'shrunk10%'
     ]
 )
-def test_equal_but_binary_different(
-        data_dir: Path, image_pair: str, algorithm: str, expected_pairs: int
+def test_equal_but_binary_different(  # pylint:disable=too-many-arguments
+        data_dir: Path, image_pair: str, algorithm: str, expected_pairs: int,
+        slow: bool, parallel: bool
 ) -> None:
     folder = data_dir / 'equal_but_binary_different' / image_pair
-    assert len(get_matches([folder], algorithm)) == expected_pairs
+    matches = get_matches([folder], algorithm, PairFinderOptions(slow=slow, parallel=parallel))
+    assert len(matches) == expected_pairs
 
 
+@pytest.mark.parametrize('parallel', [True, False])
+@pytest.mark.parametrize('slow', [True, False])
 @pytest.mark.parametrize(
     'algorithm,expected_pairs',
     [('ahash', 0), ('dhash', 0), ('colorhash', 0), ('phash', 0), ('whash', 0)]
 )
 @pytest.mark.parametrize('image_pair', ['jpeg_75', 'jpeg_50', 'jpeg_25', 'jpeg_10'])
-def test_jpeg_artifacts(
-        data_dir: Path, image_pair: str, algorithm: str, expected_pairs: int
+def test_jpeg_artifacts(  # pylint:disable=too-many-arguments
+        data_dir: Path, image_pair: str, algorithm: str, expected_pairs: int,
+        slow: bool, parallel: bool
 ) -> None:
     folder = data_dir / 'equal_but_binary_different' / image_pair
-    assert len(get_matches([folder], algorithm)) == expected_pairs
+    matches = get_matches([folder], algorithm, PairFinderOptions(slow=slow, parallel=parallel))
+    assert len(matches) == expected_pairs
 
 
+@pytest.mark.parametrize('parallel', [True, False])
+@pytest.mark.parametrize('slow', [True, False])
 @pytest.mark.parametrize('algorithm', ['ahash', 'dhash', 'colorhash', 'phash', 'whash'])
 @pytest.mark.parametrize('image_pair', ['pair1', 'pair2', 'pair3', 'webp', 'heif'])
-def test_exactly_equal(data_dir: Path, image_pair: str, algorithm: str) -> None:
+def test_exactly_equal(
+        data_dir: Path, image_pair: str, algorithm: str, slow: bool, parallel: bool
+) -> None:
     folder = data_dir / 'exactly_equal' / image_pair
-    assert len(get_matches([folder], algorithm)) == 1
+    matches = get_matches([folder], algorithm, PairFinderOptions(slow=slow, parallel=parallel))
+    assert len(matches) == 1
 
 
+@pytest.mark.parametrize('parallel', [True, False])
+@pytest.mark.parametrize('slow', [True, False])
 @pytest.mark.parametrize('algorithm', ['ahash', 'dhash', 'colorhash', 'phash', 'whash'])
 @pytest.mark.parametrize('image_pair', ['pair1'])
-def test_different(data_dir: Path, image_pair: str, algorithm: str) -> None:
+def test_different(
+        data_dir: Path, image_pair: str, algorithm: str, slow: bool, parallel: bool
+) -> None:
     folder = data_dir / 'different' / image_pair
-    assert len(get_matches([folder], algorithm)) == 0
+    matches = get_matches([folder], algorithm, PairFinderOptions(slow=slow, parallel=parallel))
+    assert len(matches) == 0
 
 
+@pytest.mark.parametrize('parallel', [True, False])
+@pytest.mark.parametrize('slow', [True, False])
 @pytest.mark.parametrize(
     'test_case,image_pair,algorithm,expected_pairs',
     [
@@ -130,24 +166,27 @@ def test_different(data_dir: Path, image_pair: str, algorithm: str) -> None:
         ('similar', 'pair2', 'whash', 0),
     ]
 )
-def test_inconsistent_results_for_different_algorithms(
-        data_dir: Path, test_case: str, image_pair: str, algorithm: str, expected_pairs: int
+def test_inconsistent_results_for_different_algorithms(  # pylint:disable=too-many-arguments
+        data_dir: Path, test_case: str, image_pair: str, algorithm: str, expected_pairs: int,
+        slow: bool, parallel: bool
 ) -> None:
     folder = data_dir / test_case / image_pair
-    assert len(get_matches([folder], algorithm)) == expected_pairs
+    matches = get_matches([folder], algorithm, PairFinderOptions(slow=slow, parallel=parallel))
+    assert len(matches) == expected_pairs
 
 
-@pytest.mark.parametrize(
-    'algorithm', ['ahash', 'dhash', 'colorhash', 'phash', 'whash']
-)
-def test_broken_image_files_do_not_raise_os_error(data_dir: Path, algorithm: str) -> None:
+@pytest.mark.parametrize('parallel', [True, False])
+@pytest.mark.parametrize('slow', [True, False])
+@pytest.mark.parametrize('algorithm', ['ahash', 'dhash', 'colorhash', 'phash', 'whash'])
+def test_broken_image_files_do_not_raise_os_error(
+        data_dir: Path, algorithm: str, slow: bool, parallel: bool
+) -> None:
     folder = data_dir / 'broken'
-    get_matches([folder], algorithm)
+    get_matches([folder], algorithm, PairFinderOptions(slow=slow, parallel=parallel))
 
 
-@pytest.mark.parametrize(
-    'algorithm', ['ahash', 'dhash', 'colorhash', 'phash', 'whash']
-)
+@pytest.mark.parametrize('parallel', [True, False])
+@pytest.mark.parametrize('algorithm', ['ahash', 'dhash', 'colorhash', 'phash', 'whash'])
 @pytest.mark.parametrize(
     'folders', [
         ['heic_bit_depth'],  # images in this folder appear different to those in the following
@@ -155,10 +194,10 @@ def test_broken_image_files_do_not_raise_os_error(data_dir: Path, algorithm: str
     ]
 )
 def test_multiple_images_appear_as_group(
-        data_dir: Path, folders: List[Path], algorithm: str
+        data_dir: Path, folders: List[Path], algorithm: str, parallel: bool
 ) -> None:
     folders = [data_dir / 'equal_but_binary_different' / folder for folder in folders]
-    matches = get_matches(folders, algorithm, PairFinderOptions(group=True))
+    matches = get_matches(folders, algorithm, PairFinderOptions(group=True, parallel=parallel))
     assert len(matches) == 1
     assert len(matches[0]) == len(files_in_dirs(folders))
 

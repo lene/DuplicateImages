@@ -14,8 +14,6 @@ from duplicate_images.image_pair_finder import (
 from duplicate_images.methods import ALGORITHM_DEFAULTS, IMAGE_HASH_ALGORITHM, get_hash_size_kwargs
 from .conftest import is_pair_found, copy_image_file, delete_image_file
 
-HASH_ALGORITHM = IMAGE_HASH_ALGORITHM['phash']
-
 
 def element_in_list_of_tuples(element: Any, tuples: List[Tuple[Any, Any]]) -> bool:
     return any(element in tuple for tuple in tuples)
