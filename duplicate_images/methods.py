@@ -2,12 +2,10 @@ __author__ = 'Lene Preuss <lene.preuss@gmail.com>'
 
 import logging
 from argparse import Namespace
-from functools import lru_cache
-from hashlib import sha256
 from pathlib import Path
 from shlex import quote
 from subprocess import call  # nosec
-from typing import Any, Callable, Dict, List, Optional, Tuple
+from typing import Any, Callable, Dict, List, Optional
 
 import imagehash
 
@@ -20,23 +18,8 @@ __all__ = [
 ]
 
 
-@lru_cache(maxsize=None)
-def get_size(file: Path) -> int:
-    return file.stat().st_size
-
-
-@lru_cache(maxsize=None)
-def get_hash(file: Path) -> str:
-    return sha256(file.open('rb').read()).hexdigest()
-
-
-def compare_exactly(file: Path, other_file: Path) -> bool:
-    """Returns True if file and other_file are exactly exactly_equal"""
-    return get_size(other_file) == get_size(file) and get_hash(file) == get_hash(other_file)
-
-
 def ascending_by_size(group: ImageGroup) -> List[Path]:
-    return sorted(group, key=lambda path: path.stat().st_size)
+    return sorted(group, key=lambda path: (path.stat().st_size, str(path)))
 
 
 def delete_with_log_message(file: Path) -> None:
@@ -45,7 +28,11 @@ def delete_with_log_message(file: Path) -> None:
 
 
 def symlink_to_biggest_file(group: ImageGroup):
-    pass
+    biggest = ascending_by_size(group)[-1]
+    others = set(group) - {biggest}
+    for file in others:
+        delete_with_log_message(file)
+        file.symlink_to(biggest)
 
 
 def shell_exec(args: Namespace, group: ImageGroup) -> None:
@@ -92,7 +79,7 @@ ACTIONS_ON_EQUALITY: Dict[str, ActionFunction] = {
     'd>': lambda args, group: delete_with_log_message(ascending_by_size(group)[-1]),
     'delete-smaller': lambda args, group: delete_with_log_message(ascending_by_size(group)[0]),
     'd<': lambda args, group: delete_with_log_message(ascending_by_size(group)[0]),
-    'symlink-smaller': lambda args, group: delete_with_log_message(ascending_by_size(group)[0]),
+    'symlink-smaller': lambda args, group: symlink_to_biggest_file(group),
     'eog': lambda args, group: call(['eog'] + [str(pic) for pic in group]),  # nosec
     'xv': lambda args, group: call(['xv', '-nolim'] + [str(pic) for pic in group]),  # nosec
     'print': lambda args, group: print(*group),

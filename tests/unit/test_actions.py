@@ -42,16 +42,20 @@ def get_equals(equal_images: List[Path], group: bool) -> List[Tuple[Path, ...]]:
     return equals
 
 
+def paths_ascending_by_size(equals: Results):
+    return sorted(sum(equals, ()), key=lambda path: (path.stat().st_size, str(path)))
+
+
 def get_biggest(equals: Results) -> Path:
-    return [path for path in equals[0] if 'half' not in path.stem][0]
+    return paths_ascending_by_size(equals)[-1]
 
 
 def get_smallest(equals: Results) -> Path:
-    return [path for path in equals[0] if 'png' in path.stem][0]  # png is smaller than jpeg here
+    return paths_ascending_by_size(equals)[0]
 
 
 def check_relevant_is_deleted_and_others_are_present(
-        equals: List[Tuple[Path, ...]], option: str, relevant: Path
+        equals: Results, option: str, relevant: Path
 ) -> None:
     others = set(path[0] for path in equals) - {relevant}
     duplicate.execute_actions(equals, parse_command_line(['/', '--on-equal', option]))
@@ -176,8 +180,18 @@ def test_wildcard_exec_parameter(
         assert path in mock_call.call_args.args[0]
 
 
-def test_symlink():
-    pass
+@pytest.mark.parametrize('option', ['symlink-smaller'])
+@pytest.mark.parametrize('group', [True, False])
+def test_symlink(equal_images: List[Path], option: str, group: bool):
+    equals = get_equals(equal_images, group)
+    relevant = get_biggest(equals)
+    args = parse_command_line(['/', '--on-equal', option])
+    duplicate.execute_actions(equals, args)
+    assert relevant.is_file()
+    others = set(equal_images) - {relevant}
+    for path in others:
+        assert path.is_symlink()
+        assert path.resolve() == relevant
 
 
 @pytest.mark.parametrize('option', ['unknown-option'])
