@@ -7,7 +7,7 @@ from hashlib import sha256
 from pathlib import Path
 from shlex import quote
 from subprocess import call  # nosec
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any, Callable, Dict, List, Optional, Tuple
 
 import imagehash
 
@@ -42,6 +42,10 @@ def ascending_by_size(group: ImageGroup) -> List[Path]:
 def delete_with_log_message(file: Path) -> None:
     file.unlink()
     logging.info('Deleted %s', path_with_parent(file))
+
+
+def symlink_to_biggest_file(group: ImageGroup):
+    pass
 
 
 def shell_exec(args: Namespace, group: ImageGroup) -> None:
@@ -88,6 +92,7 @@ ACTIONS_ON_EQUALITY: Dict[str, ActionFunction] = {
     'd>': lambda args, group: delete_with_log_message(ascending_by_size(group)[-1]),
     'delete-smaller': lambda args, group: delete_with_log_message(ascending_by_size(group)[0]),
     'd<': lambda args, group: delete_with_log_message(ascending_by_size(group)[0]),
+    'symlink-smaller': lambda args, group: delete_with_log_message(ascending_by_size(group)[0]),
     'eog': lambda args, group: call(['eog'] + [str(pic) for pic in group]),  # nosec
     'xv': lambda args, group: call(['xv', '-nolim'] + [str(pic) for pic in group]),  # nosec
     'print': lambda args, group: print(*group),

@@ -176,6 +176,10 @@ def test_wildcard_exec_parameter(
         assert path in mock_call.call_args.args[0]
 
 
+def test_symlink():
+    pass
+
+
 @pytest.mark.parametrize('option', ['unknown-option'])
 def test_unknown_option(option: str) -> None:
     with pytest.raises(SystemExit):
