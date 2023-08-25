@@ -80,17 +80,17 @@ def test_delete_last(equal_images: List[Path], option: str, group: bool) -> None
     check_relevant_is_deleted_and_others_are_present(equals, option, relevant)
 
 
-@pytest.mark.parametrize('option', ['delete-bigger', 'd>'])
+@pytest.mark.parametrize('option', ['delete-biggest', 'd>'])
 @pytest.mark.parametrize('group', [True, False])
-def test_delete_bigger(equal_images: List[Path], option: str, group: bool) -> None:
+def test_delete_biggest(equal_images: List[Path], option: str, group: bool) -> None:
     equals = get_equals(equal_images, group)
     relevant = get_biggest(equals)
     check_relevant_is_deleted_and_others_are_present(equals, option, relevant)
 
 
-@pytest.mark.parametrize('option', ['delete-smaller', 'd<'])
+@pytest.mark.parametrize('option', ['delete-smallest', 'd<'])
 @pytest.mark.parametrize('group', [True, False])
-def test_delete_smaller(equal_images: List[Path], option: str, group: bool) -> None:
+def test_delete_smallest(equal_images: List[Path], option: str, group: bool) -> None:
     equals = get_equals(equal_images, group)
     relevant = get_smallest(equals)
     check_relevant_is_deleted_and_others_are_present(equals, option, relevant)

@@ -3,7 +3,10 @@
 ## [0.9.2] - Unreleased
 
 ### Added
-- add `symlink-smaller` action
+- `symlink-smaller` action to replace the smaller files of a group with a symlink to the biggest one
+
+### Changed
+- `delete-smaller` and `delete-bigger` actions to `delete-smallest` and `delete-biggest`
 
 ## [0.9.1] - 2023-08-23
 

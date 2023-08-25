@@ -75,9 +75,9 @@ ACTIONS_ON_EQUALITY: Dict[str, ActionFunction] = {
     'd1': lambda args, group: delete_with_log_message(group[0]),
     'delete-last': lambda args, group: delete_with_log_message(group[-1]),
     'dl': lambda args, group: delete_with_log_message(group[-1]),
-    'delete-bigger': lambda args, group: delete_with_log_message(ascending_by_size(group)[-1]),
+    'delete-biggest': lambda args, group: delete_with_log_message(ascending_by_size(group)[-1]),
     'd>': lambda args, group: delete_with_log_message(ascending_by_size(group)[-1]),
-    'delete-smaller': lambda args, group: delete_with_log_message(ascending_by_size(group)[0]),
+    'delete-smallest': lambda args, group: delete_with_log_message(ascending_by_size(group)[0]),
     'd<': lambda args, group: delete_with_log_message(ascending_by_size(group)[0]),
     'symlink-smaller': lambda args, group: symlink_to_biggest_file(group),
     'eog': lambda args, group: call(['eog'] + [str(pic) for pic in group]),  # nosec

@@ -94,8 +94,9 @@ Use the `--on-equal` option to select what to do to pairs of equal images. The d
 `print`.
 - `delete-first` or `d1`: deletes the first of the files in the group
 - `delete-last` or `dl`: deletes the last of the files in the group
-- `delete-bigger` or `d>`: deletes the file with the biggest size
-- `delete-smaller` or `d<`: deletes the file with the smallest size
+- `delete-biggest` or `d>`: deletes the file with the biggest size
+- `delete-smallest` or `d<`: deletes the file with the smallest size
+- `symlink-smaller`: delete the smaller files and replace them to a symlink to the biggest file
 - `eog`: launches the `eog` image viewer to compare the files in the group (*deprecated* by `exec`)
 - `xv`: launches the `xv` image viewer to compare the files in the group (*deprecated* by `exec`)
 - `print`: prints the files in the group
