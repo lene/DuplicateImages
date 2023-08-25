@@ -68,8 +68,11 @@ ChangelogIsUpdated:
   script:
     - VERSION=$(egrep 'version = ".*"' pyproject.toml | cut -d \" -f 2)
     - test -n "$VERSION"
-    - grep "$VERSION" CHANGELOG.md
-    - fgrep -q "...$VERSION" CHANGELOG.md
+    - fgrep "## [$VERSION]" CHANGELOG.md
+    - fgrep "...$VERSION" CHANGELOG.md
+    - echo $CI_MERGE_REQUEST_TITLE | grep '^Draft:\|^WIP:' ||
+        fgrep "## [$VERSION] - $(date +%Y-%m-%d)" CHANGELOG.md
+
 
 RunAndCheckResults:
   extends: .test

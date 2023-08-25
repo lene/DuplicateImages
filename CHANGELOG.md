@@ -1,6 +1,6 @@
 # Changelog
 
-## [0.9.2] - Unreleased
+## [0.9.2] - 2023-08-26
 
 ### Added
 - `symlink-smaller` action to replace the smaller files of a group with a symlink to the biggest one
