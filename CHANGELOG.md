@@ -1,16 +1,21 @@
 # Changelog
 
+## [0.9.2] - Unreleased
+
+### Added
+- add `symlink-smaller` action
+
 ## [0.9.1] - 2023-08-23
 
 ### Added
-- add documentation for new --group option
+- add documentation for new `--group` option
 
 ## [0.9.0] - 2023-08-23
 
 ### Added 
-- CLI option --group: instead of pairs, treat similar images as groups of arbitrary size
-- refactor ImagePairFinder to easier deal with combinations of options
-- test coverage for all supported combinations of --group/--parallel
+- CLI option `--group`: instead of pairs, treat similar images as groups of arbitrary size
+- refactor `ImagePairFinder` to easier deal with combinations of options
+- test coverage for all supported combinations of `--group`/`--parallel`
 
 ## [0.8.9] - 2023-08-23
 
@@ -212,6 +217,11 @@
 - actions if equal: delete one of the pics, view with `xv` or print
 
 
+[0.9.2]: https://gitlab.com/duplicateimages/DuplicateImages/-/compare/0.9.1...0.9.2
+[0.9.1]: https://gitlab.com/duplicateimages/DuplicateImages/-/compare/0.9.0...0.9.1
+[0.9.0]: https://gitlab.com/duplicateimages/DuplicateImages/-/compare/0.8.9...0.9.0
+[0.8.9]: https://gitlab.com/duplicateimages/DuplicateImages/-/compare/0.8.8...0.8.9
+[0.8.8]: https://gitlab.com/duplicateimages/DuplicateImages/-/compare/0.8.7...0.8.8
 [0.8.7]: https://gitlab.com/duplicateimages/DuplicateImages/-/compare/0.8.6...0.8.7
 [0.8.6]: https://gitlab.com/duplicateimages/DuplicateImages/-/compare/0.8.5...0.8.6
 [0.8.5]: https://gitlab.com/duplicateimages/DuplicateImages/-/compare/0.8.4...0.8.5
