@@ -69,6 +69,7 @@ ChangelogIsUpdated:
     - VERSION=$(egrep 'version = ".*"' pyproject.toml | cut -d \" -f 2)
     - test -n "$VERSION"
     - grep "$VERSION" CHANGELOG.md
+    - fgrep -q "...$VERSION" CHANGELOG.md
 
 RunAndCheckResults:
   extends: .test
