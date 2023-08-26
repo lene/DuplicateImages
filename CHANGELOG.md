@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.9.3] - Unreleased
+
+### Added
+- `symlink-smaller` action to replace the smaller files of a group with a symlink to the biggest one
+
 ## [0.9.2] - 2023-08-26
 
 ### Added
@@ -82,7 +87,7 @@
 - change algorithm to run in O(N) instead of O(N^2) by using the image hashes as dict keys
   - old algorithm still runs if using `--max-distance` switch
 - add `--serial` CLI switch to explicitly select old algorithm
-- test run script in CI with most relevand CLI parameter combinations
+- test run script in CI with most relevant CLI parameter combinations
 
 ### Removed
 - `pre-commit` since it causes more trouble than it's worth
@@ -220,6 +225,7 @@
 - actions if equal: delete one of the pics, view with `xv` or print
 
 
+[0.9.3]: https://gitlab.com/duplicateimages/DuplicateImages/-/compare/0.9.2...0.9.3
 [0.9.2]: https://gitlab.com/duplicateimages/DuplicateImages/-/compare/0.9.1...0.9.2
 [0.9.1]: https://gitlab.com/duplicateimages/DuplicateImages/-/compare/0.9.0...0.9.1
 [0.9.0]: https://gitlab.com/duplicateimages/DuplicateImages/-/compare/0.8.9...0.9.0

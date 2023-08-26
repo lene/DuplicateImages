@@ -59,6 +59,6 @@ def parse_command_line(args: Optional[List[str]] = None) -> Namespace:
     )
 
     namespace = parser.parse_args(args)
-    if namespace.on_equal == 'exec' and (namespace.exec is None or len(namespace.exec) == 0):
+    if namespace.on_equal == 'exec' and not namespace.exec:
         parser.error('--exec argument is required')
     return namespace

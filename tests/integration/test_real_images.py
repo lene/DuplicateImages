@@ -151,7 +151,7 @@ def test_different(
 ) -> None:
     folder = data_dir / 'different' / image_pair
     matches = get_matches([folder], algorithm, PairFinderOptions(slow=slow, parallel=parallel))
-    assert len(matches) == 0
+    assert not matches
 
 
 @pytest.mark.parametrize('parallel', [True, False])
