@@ -11,7 +11,7 @@ from pillow_heif import register_heif_opener
 
 from duplicate_images.common import path_with_parent
 from duplicate_images.function_types import Results
-from duplicate_images.hash_store import PickleHashStore
+from duplicate_images.hash_store import FileHashStore
 from duplicate_images.image_pair_finder import ImagePairFinder, PairFinderOptions
 from duplicate_images.log import setup_logging
 from duplicate_images.methods import ACTIONS_ON_EQUALITY, IMAGE_HASH_ALGORITHM
@@ -52,7 +52,7 @@ def get_matches(
     logging.info('%d total files', len(image_files))
     logging.info('Computing image hashes')
 
-    with PickleHashStore.create(hash_store_path) as hash_store:
+    with FileHashStore.create(hash_store_path) as hash_store:
         return ImagePairFinder.create(
             image_files, hash_algorithm, options=options, hash_store=hash_store
         ).get_equal_groups()
