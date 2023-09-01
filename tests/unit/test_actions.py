@@ -36,7 +36,7 @@ def fixture_equal_images(
 
 def get_equals(equal_images: List[Path], group: bool) -> List[Tuple[Path, ...]]:
     equals = ImagePairFinder.create(
-        equal_images, HASH_ALGORITHM, PairFinderOptions(group=group)
+        equal_images, HASH_ALGORITHM, options=PairFinderOptions(group=group)
     ).get_equal_groups()
     assert len(equals) == 1
     return equals

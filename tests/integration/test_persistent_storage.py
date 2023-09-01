@@ -2,13 +2,12 @@
 import json
 import pickle
 from pathlib import Path
-from typing import Any
+from typing import Any, Tuple
 from unittest.mock import Mock, patch
 
 import pytest
 
 from duplicate_images.duplicate import get_matches
-from duplicate_images.hash_store import FileHashStore
 
 
 @pytest.mark.parametrize('test_set', ['equal_but_binary_different'])
@@ -71,15 +70,14 @@ def test_open_correct_file_format_but_values_not_image_hashes(
 
 @pytest.mark.parametrize('test_set', ['different', 'equal_but_binary_different'])
 @pytest.mark.parametrize('file_type', ['pickle'])
-@pytest.mark.parametrize('algorithm,other_algorithm', [('phash', 'ahash')])
+@pytest.mark.parametrize('algorithms', [('phash', 'ahash')])
 def test_opening_with_different_algorithm_leads_to_error(
-        tmp_dir: Path, data_dir: Path, test_set: str, file_type: str,
-        algorithm: str, other_algorithm: str
+        tmp_dir: Path, data_dir: Path, test_set: str, file_type: str, algorithms: Tuple[str, str]
 ) -> None:
     cache_file = tmp_dir / f'hash_store.{file_type}'
-    get_matches([data_dir / test_set], algorithm, hash_store_path=cache_file)
+    get_matches([data_dir / test_set], algorithms[0], hash_store_path=cache_file)
     with pytest.raises(ValueError):
-        get_matches([data_dir / test_set], other_algorithm, hash_store_path=cache_file)
+        get_matches([data_dir / test_set], algorithms[1], hash_store_path=cache_file)
 
 
 def check_garbage(

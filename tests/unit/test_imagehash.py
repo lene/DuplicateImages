@@ -34,9 +34,10 @@ def test_max_distance(image_files: List[Path], algorithm: str) -> None:
 
 
 @pytest.mark.parametrize('algorithm', list(IMAGE_HASH_ALGORITHM.keys()))
-def test_hash_size(image_files: List[Path], algorithm: str) -> None:
+def test_explicit_hash_size_works(image_files: List[Path], algorithm: str) -> None:
     equals = ImagePairFinder.create(
-        image_files, IMAGE_HASH_ALGORITHM[algorithm], options=PairFinderOptions(hash_size=8)
+        image_files, IMAGE_HASH_ALGORITHM[algorithm],
+        options=PairFinderOptions(hash_size=8)
     ).get_equal_groups()
     check_results(equals)
 
@@ -66,7 +67,7 @@ def test_create_with_all_parameters(
 ) -> None:
     equals = ImagePairFinder.create(
         image_files, IMAGE_HASH_ALGORITHM[algorithm],
-        PairFinderOptions(max_distance=max_distance, hash_size=hash_size, parallel=parallel)
+        options=PairFinderOptions(max_distance=max_distance, hash_size=hash_size, parallel=parallel)
     ).get_equal_groups()
     check_results(equals)
 

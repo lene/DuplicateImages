@@ -103,13 +103,13 @@ def generate_pair_finder(
         top_directory: TemporaryDirectory, hash_store: Optional[Cache]
 ) -> ImagePairFinder:
     return ImagePairFinder.create(
-        image_list(top_directory), mock_algorithm, PairFinderOptions(slow=True),
+        image_list(top_directory), mock_algorithm, options=PairFinderOptions(slow=True),
         hash_store=hash_store
     )
 
 
 def create_verified_hash_store(top_directory: TemporaryDirectory, store_path: Path) -> None:
-    with PickleHashStore.create(store_path) as hash_store:
+    with PickleHashStore.create(store_path, 'algorithm', {}) as hash_store:
         finder = generate_pair_finder(top_directory, hash_store)
         finder.get_equal_groups()
 

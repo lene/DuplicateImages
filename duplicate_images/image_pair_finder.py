@@ -13,6 +13,7 @@ from duplicate_images.function_types import (
     Cache, HashFunction, ImageGroup, Results, ResultsGenerator, ResultsGrouper
 )
 from duplicate_images.hash_scanner import ImageHashScanner, ParallelImageHashScanner
+from duplicate_images.methods import get_hash_size_kwargs
 from duplicate_images.pair_finder_options import PairFinderOptions
 from duplicate_images.progress_bar_manager import ProgressBarManager, NullProgressBarManager
 
@@ -37,16 +38,21 @@ class ImagePairFinder:
             options: PairFinderOptions = PairFinderOptions(),
             hash_store: Optional[Cache] = None
     ) -> 'ImagePairFinder':
+        hash_size_kwargs = get_hash_size_kwargs(hash_algorithm, options.hash_size)
         group_results = group_results_as_tuples if options.group else group_results_as_pairs
         progress_bars = ProgressBarManager.create(len(files), options.show_progress_bars)
         if not options.parallel:
-            scanner = ImageHashScanner(files, hash_algorithm, options, hash_store, progress_bars)
+            scanner = ImageHashScanner(
+                files, hash_algorithm, hash_size_kwargs, hash_store, progress_bars
+            )
         else:
             scanner = ParallelImageHashScanner(
-                files, hash_algorithm, options, hash_store, progress_bars
+                files, hash_algorithm, hash_size_kwargs, hash_store, progress_bars
             )
         if options.max_distance == 0 and not options.slow:
-            return DictImagePairFinder(scanner, group_results, options, progress_bars)
+            return DictImagePairFinder(
+                scanner, group_results, options=options, progress_bars=progress_bars
+            )
         if len(files) > 1000:
             logging.warning(
                 'Using %s with a big number of images. Expect slow performance.',

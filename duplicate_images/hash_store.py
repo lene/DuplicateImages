@@ -4,7 +4,7 @@ import json
 import logging
 import pickle  # nosec
 from pathlib import Path
-from typing import Any, IO, Callable, Optional, Union
+from typing import Any, IO, Callable, Optional, Union, Dict
 
 from imagehash import ImageHash, hex_to_hash
 
@@ -27,15 +27,19 @@ class NullHashStore:
 class FileHashStore:
 
     @classmethod
-    def create(cls, store_path: Optional[Path]) -> Union['FileHashStore', NullHashStore]:
+    def create(
+            cls, store_path: Optional[Path], algorithm: str, hash_size_kwargs: Dict
+    ) -> Union['FileHashStore', NullHashStore]:
         if store_path is None:
             return NullHashStore()
         if store_path.suffix == '.pickle':
-            return PickleHashStore(store_path)
-        return JSONHashStore(store_path)
+            return PickleHashStore(store_path, algorithm, hash_size_kwargs)
+        return JSONHashStore(store_path, algorithm, hash_size_kwargs)
 
-    def __init__(self, store_path: Path) -> None:
+    def __init__(self, store_path: Path, algorithm: str, hash_size_kwargs: Dict) -> None:
         self.store_path = store_path
+        self.algorithm = algorithm
+        self.hash_size_kwargs = hash_size_kwargs
         self.values: Cache = {}
         try:
             self.load()

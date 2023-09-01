@@ -12,7 +12,7 @@ from duplicate_images.hash_scanner import ImageHashScanner, ParallelImageHashSca
 from duplicate_images.image_pair_finder import (
     DictImagePairFinder, PairFinderOptions, SlowImagePairFinder, group_results_as_pairs
 )
-from duplicate_images.methods import IMAGE_HASH_ALGORITHM
+from duplicate_images.methods import IMAGE_HASH_ALGORITHM, get_hash_size_kwargs
 from .conftest import is_pair_found, copy_image_file, delete_image_file, named_file
 
 
@@ -38,11 +38,10 @@ def test_hashes_equal_for_copied_image(
 ) -> None:
     jpeg_file = named_file('jpeg', image_files)
     copied_file = copy_image_file(jpeg_file, image_files)
-    scanner = scanner_class(
-        image_files, IMAGE_HASH_ALGORITHM[algorithm],
-        options=PairFinderOptions(max_distance=max_distance)
-    )
-    equals = finder_class(scanner, group_results_as_pairs).get_equal_groups()
+    scanner = scanner_class(image_files, IMAGE_HASH_ALGORITHM[algorithm])
+    equals = finder_class(
+        scanner, group_results_as_pairs, options=PairFinderOptions(max_distance=max_distance)
+    ).get_equal_groups()
     try:
         assert is_pair_found(jpeg_file, copied_file, equals)
     finally:
@@ -61,11 +60,10 @@ def test_hashes_not_equal_for_noisy_image(
         scanner_class: Callable, finder_class: Callable, max_distance: int
 ) -> None:
     subdir_file = named_file('subdir', image_files)
-    scanner = scanner_class(
-        image_files, IMAGE_HASH_ALGORITHM[algorithm],
-        options=PairFinderOptions(max_distance=max_distance)
-    )
-    equals = finder_class(scanner, group_results_as_pairs).get_equal_groups()
+    scanner = scanner_class(image_files, IMAGE_HASH_ALGORITHM[algorithm])
+    equals = finder_class(
+        scanner, group_results_as_pairs, options=PairFinderOptions(max_distance=max_distance)
+    ).get_equal_groups()
     assert not element_in_list_of_tuples(subdir_file, equals)
 
 
@@ -82,11 +80,10 @@ def test_hashes_equal_for_different_image_format(
 ) -> None:
     jpeg_file = named_file('jpeg', image_files)
     png_file = named_file('png', image_files)
-    scanner = scanner_class(
-        image_files, IMAGE_HASH_ALGORITHM[algorithm],
-        options=PairFinderOptions(max_distance=max_distance)
-    )
-    equals = finder_class(scanner, group_results_as_pairs).get_equal_groups()
+    scanner = scanner_class(image_files, IMAGE_HASH_ALGORITHM[algorithm])
+    equals = finder_class(
+        scanner, group_results_as_pairs, options=PairFinderOptions(max_distance=max_distance)
+    ).get_equal_groups()
     assert (jpeg_file, png_file) in equals
 
 
@@ -103,11 +100,10 @@ def test_hashes_equal_for_scaled_image(
 ) -> None:
     jpeg_file = named_file('jpeg', image_files)
     half_file = named_file('half', image_files)
-    scanner = scanner_class(
-        image_files, IMAGE_HASH_ALGORITHM[algorithm],
-        options=PairFinderOptions(max_distance=max_distance)
-    )
-    equals = finder_class(scanner, group_results_as_pairs).get_equal_groups()
+    scanner = scanner_class(image_files, IMAGE_HASH_ALGORITHM[algorithm])
+    equals = finder_class(
+        scanner, group_results_as_pairs, options=PairFinderOptions(max_distance=max_distance)
+    ).get_equal_groups()
     assert (jpeg_file, half_file) in equals
 
 
@@ -127,11 +123,10 @@ def test_parallel_filtering_gives_same_results(
     half_file = named_file('half', image_files)
     heif_file = named_file('heif', image_files)
     subdir_file = named_file('subdir', image_files)
-    scanner = scanner_class(
-        image_files, IMAGE_HASH_ALGORITHM[algorithm],
-        options=PairFinderOptions(max_distance=max_distance)
-    )
-    equals = finder_class(scanner, group_results_as_pairs).get_equal_groups()
+    scanner = scanner_class(image_files, IMAGE_HASH_ALGORITHM[algorithm])
+    equals = finder_class(
+        scanner, group_results_as_pairs, options=PairFinderOptions(max_distance=max_distance)
+    ).get_equal_groups()
     assert is_pair_found(jpeg_file, png_file, equals)
     assert is_pair_found(jpeg_file, heif_file, equals)
     assert is_pair_found(jpeg_file, half_file, equals)
@@ -156,7 +151,7 @@ def test_different_hash_size_finds_scaled_images(
     half_file = named_file('half', image_files)
     scanner = scanner_class(
         image_files, IMAGE_HASH_ALGORITHM[algorithm],
-        options=PairFinderOptions(hash_size=hash_size)
+        get_hash_size_kwargs(IMAGE_HASH_ALGORITHM[algorithm], hash_size)
     )
     equals = finder_class(scanner, group_results=group_results_as_pairs).get_equal_groups()
     assert (jpeg_file, half_file) in equals
@@ -173,7 +168,8 @@ def test_smaller_hash_size_finds_similar_images(
     jpeg_file = named_file('jpeg', image_files)
     half_file = named_file('half', image_files)
     scanner = scanner_class(
-        image_files, IMAGE_HASH_ALGORITHM[algorithm], options=PairFinderOptions(hash_size=hash_size)
+        image_files, IMAGE_HASH_ALGORITHM[algorithm],
+        get_hash_size_kwargs(IMAGE_HASH_ALGORITHM[algorithm], hash_size)
     )
     equals = finder_class(scanner, group_results=group_results_as_pairs).get_equal_groups()
     assert (jpeg_file, half_file) in equals
