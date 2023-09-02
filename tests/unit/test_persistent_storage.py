@@ -13,8 +13,12 @@ from duplicate_images import duplicate
 from duplicate_images.function_types import Cache
 from duplicate_images.image_pair_finder import ImagePairFinder
 from duplicate_images.pair_finder_options import PairFinderOptions
-from duplicate_images.hash_store import PickleHashStore
+from duplicate_images.hash_store import PickleHashStore, JSONHashStore, FileHashStore
 from .conftest import MOCK_IMAGE_HASH_VALUE, mock_algorithm
+
+DEFAULT_ALGORITHM = 'phash'
+DEFAULT_HASH_SIZE = {'hash_size': 8}
+DEFAULT_METADATA = {'algorithm': DEFAULT_ALGORITHM, **DEFAULT_HASH_SIZE}
 
 
 def test_empty_hash_store_calculates_hash_values(
@@ -58,7 +62,7 @@ def test_pickle_file_contains_correct_hashes(
 ) -> None:
     create_verified_hash_store(top_directory, hash_store_path)
     with hash_store_path.open('rb') as pickle_file:
-        written_hashes = pickle.load(pickle_file)
+        written_hashes = pickle.load(pickle_file)[0]
     for file_name in image_files:
         assert file_name in written_hashes
         assert written_hashes[file_name] == MOCK_IMAGE_HASH_VALUE
@@ -70,10 +74,24 @@ def test_json_file_contains_correct_hashes(
 ) -> None:
     create_verified_hash_store(top_directory, hash_store_path)
     with hash_store_path.open('r') as json_file:
-        written_hashes = json.load(json_file)
+        written_hashes = json.load(json_file)[0]
     for file_name in image_files:
         assert str(file_name) in written_hashes
         assert written_hashes[str(file_name)] == str(MOCK_IMAGE_HASH_VALUE)
+
+
+@pytest.mark.parametrize('file_type', ['pickle', 'json'])
+def test_hash_store_load_loads(
+        top_directory: TemporaryDirectory, image_files: List[Path], hash_store_path
+) -> None:
+    create_verified_hash_store(top_directory, hash_store_path)
+    hash_store_class = PickleHashStore if hash_store_path.suffix == '.pickle' else JSONHashStore
+    hash_store = hash_store_class(hash_store_path, DEFAULT_ALGORITHM, DEFAULT_HASH_SIZE)
+    hash_store.load()
+    written_hashes = hash_store.values
+    for file_name in image_files:
+        assert str(file_name) in map(str, written_hashes.keys())
+        assert str(written_hashes[file_name]) == str(MOCK_IMAGE_HASH_VALUE)
 
 
 @pytest.mark.parametrize('file_type', ['pickle', 'json'])
@@ -95,6 +113,26 @@ def test_existing_backup_file_does_not_lead_to_error(
     create_verified_hash_store(top_directory, hash_store_path)  # check it works still
 
 
+@pytest.mark.parametrize('file_type', ['pickle', 'json'])
+def test_checked_load_sets_values(top_directory: TemporaryDirectory, hash_store_path: Path) -> None:
+    create_verified_hash_store(top_directory, hash_store_path)
+    hash_store_class = PickleHashStore if hash_store_path.suffix == '.pickle' else JSONHashStore
+    hash_store = hash_store_class(hash_store_path, DEFAULT_ALGORITHM, DEFAULT_HASH_SIZE)
+    hash_store.load()
+    assert hash_store.values == {path: MOCK_IMAGE_HASH_VALUE for path in image_list(top_directory)}
+
+
+@pytest.mark.parametrize('file_type', ['pickle', 'json'])
+def test_checked_load_sets_metadata(
+        top_directory: TemporaryDirectory, hash_store_path: Path
+) -> None:
+    create_verified_hash_store(top_directory, hash_store_path)
+    hash_store_class = PickleHashStore if hash_store_path.suffix == '.pickle' else JSONHashStore
+    hash_store = hash_store_class(hash_store_path, DEFAULT_ALGORITHM, DEFAULT_HASH_SIZE)
+    hash_store.load()
+    assert hash_store.metadata() == DEFAULT_METADATA
+
+
 def image_list(top_directory: TemporaryDirectory) -> List[Path]:
     return sorted(duplicate.files_in_dirs([top_directory.name]))
 
@@ -109,7 +147,7 @@ def generate_pair_finder(
 
 
 def create_verified_hash_store(top_directory: TemporaryDirectory, store_path: Path) -> None:
-    with PickleHashStore.create(store_path, 'algorithm', {}) as hash_store:
+    with FileHashStore.create(store_path, DEFAULT_ALGORITHM, DEFAULT_HASH_SIZE) as hash_store:
         finder = generate_pair_finder(top_directory, hash_store)
         finder.get_equal_groups()
 

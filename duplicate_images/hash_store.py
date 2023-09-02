@@ -4,7 +4,7 @@ import json
 import logging
 import pickle  # nosec
 from pathlib import Path
-from typing import Any, IO, Callable, Optional, Union, Dict
+from typing import Any, IO, Callable, Optional, Union, Dict, Tuple
 
 from imagehash import ImageHash, hex_to_hash
 
@@ -59,6 +59,33 @@ class FileHashStore:
             self.store_path.rename(self.store_path.with_suffix('.bak'))
         self.dump()
 
+    def metadata(self) -> Dict:
+        return {'algorithm': self.algorithm, **self.hash_size_kwargs}
+
+    def values_with_metadata(self) -> Tuple[Dict, Dict]:
+        return self.values, self.metadata()
+
+    def checked_load(self, file: IO, load: Callable[[IO], Tuple[Cache, Dict]]) -> None:
+        try:
+            values, metadata = load(file)  # nosec
+        except IndexError as error:
+            raise ValueError('Save file not in format: [values, metadata]') from error
+        if not isinstance(values, dict):
+            raise ValueError(f'Not a dict: {values}')
+        if not metadata:
+            raise ValueError('Metadata empty')
+        if not isinstance(metadata, dict):
+            raise ValueError(f'Metadata not a dict: {metadata}')
+        bad_keys = [key for key in values.keys() if not isinstance(key, Path)]
+        if bad_keys:
+            raise ValueError(f'Not a Path: {bad_keys}')
+        bad_values = [value for value in values.values() if not isinstance(value, ImageHash)]
+        if bad_values:
+            raise ValueError(f'Not an image hash: {bad_values}')
+        if metadata['algorithm'] != self.algorithm:
+            raise ValueError(f'Algorithm mismatch: {metadata["algorithm"]} != {self.algorithm}')
+        self.values = values
+
     def load(self) -> None:
         raise NotImplementedError()
 
@@ -71,12 +98,26 @@ class PickleHashStore(FileHashStore):
     @log_execution_time()
     def load(self) -> None:
         with self.store_path.open('rb') as file:
-            self.values = checked_load(file, pickle.load)
+            self.checked_load(file, pickle.load)
 
     @log_execution_time()
     def dump(self) -> None:
         with self.store_path.open('wb') as file:
-            pickle.dump(self.values, file)  # nosec
+            pickle.dump(self.values_with_metadata(), file)  # nosec
+
+
+def load_values_and_metadata(file: IO) -> Tuple[Cache, Dict]:
+    try:
+        valds = json.load(file)
+    except json.JSONDecodeError as error:
+        raise ValueError('Save file not in JSON format') from error
+    if not isinstance(valds, list):
+        raise ValueError('Save file not in format: [values, metadata]')
+    if not isinstance(valds[0], dict):
+        raise ValueError(f'Not a dict: {valds[0]}')
+    if not isinstance(valds[1], dict):
+        raise ValueError(f'Metadata not a dict: {valds[1]}')
+    return {Path(k): hex_to_hash(str(v)) for k, v in valds[0].items()}, valds[1]
 
 
 class JSONHashStore(FileHashStore):
@@ -84,28 +125,17 @@ class JSONHashStore(FileHashStore):
     @log_execution_time()
     def load(self) -> None:
         with self.store_path.open('r') as file:
-            self.values = checked_load(
-                file,
-                lambda f: {Path(k): hex_to_hash(v) for k, v in json.load(f).items()}
-            )
+            self.checked_load(file, load_values_and_metadata)
+
+    # see https://bugs.python.org/issue18820 for why this pain is necessary (Python does not allow
+    # to automatically convert dict keys for JSON export
+    def converted_values(self):
+        return {str(k.resolve()): str(v) for k, v in self.values.items()}
 
     @log_execution_time()
     def dump(self) -> None:
         with self.store_path.open('w') as file:
-            json.dump({str(k.resolve()): str(v) for k, v in self.values.items()}, file)
-
-
-def checked_load(file: IO, load: Callable[[IO], Cache]) -> Cache:
-    values = load(file)  # nosec
-    if not isinstance(values, dict):
-        raise ValueError(f'Not a dict: {values}')
-    bad_keys = [key for key in values.keys() if not isinstance(key, Path)]
-    if bad_keys:
-        raise ValueError(f'Not a Path: {bad_keys}')
-    bad_values = [value for value in values.values() if not isinstance(value, ImageHash)]
-    if bad_values:
-        raise ValueError(f'Not an image hash: {bad_values}')
-    return values
+            json.dump((self.converted_values(), self.metadata()), file)
 
 
 HashStore = Union[NullHashStore, PickleHashStore, JSONHashStore]

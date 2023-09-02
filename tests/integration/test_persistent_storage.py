@@ -2,7 +2,7 @@
 import json
 import pickle
 from pathlib import Path
-from typing import Any, Tuple
+from typing import Any, Tuple, Optional
 from unittest.mock import Mock, patch
 
 import pytest
@@ -34,17 +34,38 @@ def test_open_bad_file_format(data_dir: Path, test_set: str) -> None:
     assert cache_file.stat().st_ctime == creation_time
 
 
-@pytest.mark.parametrize('test_set', ['different', 'equal_but_binary_different'])
-@pytest.mark.parametrize('file_type', ['pickle'])
-def test_open_correct_file_format_but_bad_data_format(
+@pytest.mark.parametrize('test_set', ['equal_but_binary_different'])
+@pytest.mark.parametrize('file_type', ['pickle', 'json'])
+def test_open_correct_file_format_but_not_a_tuple(
         tmp_dir: Path, data_dir: Path, test_set: str, file_type: str
 ) -> None:
     check_garbage(
-        tmp_dir, data_dir / test_set, file_type, garbage_data='garbage', message='Not a dict'
+        tmp_dir, data_dir / test_set, file_type, garbage_data='garbage', message=None
     )
 
 
-@pytest.mark.parametrize('test_set', ['different', 'equal_but_binary_different'])
+@pytest.mark.parametrize('test_set', ['equal_but_binary_different'])
+@pytest.mark.parametrize('file_type', ['pickle', 'json'])
+def test_open_correct_file_format_but_values_not_a_dict(
+        tmp_dir: Path, data_dir: Path, test_set: str, file_type: str
+) -> None:
+    check_garbage(
+        tmp_dir, data_dir / test_set, file_type, garbage_data=('garbage', {}), message='Not a dict'
+    )
+
+
+@pytest.mark.parametrize('test_set', ['equal_but_binary_different'])
+@pytest.mark.parametrize('file_type', ['pickle', 'json'])
+def test_open_correct_file_format_but_metadata_not_a_dict(
+        tmp_dir: Path, data_dir: Path, test_set: str, file_type: str
+) -> None:
+    check_garbage(
+        tmp_dir, data_dir / test_set, file_type, garbage_data=({}, 'garbage'),
+        message='Metadata not a dict'
+    )
+
+
+@pytest.mark.parametrize('test_set', ['equal_but_binary_different'])
 @pytest.mark.parametrize('file_type', ['pickle'])
 def test_open_correct_file_format_but_keys_not_paths(
         tmp_dir: Path, data_dir: Path, test_set: str, file_type: str
@@ -52,11 +73,14 @@ def test_open_correct_file_format_but_keys_not_paths(
     folder = data_dir / test_set
     check_garbage(
         tmp_dir, folder, file_type,
-        garbage_data={str(path): 0 for path in folder.glob('**')}, message='Not a Path'
+        garbage_data=(
+            {str(path): 0 for path in folder.glob('**')}, {'algorithm': 'phash', 'hash_size': 8}
+        ),
+        message='Not a Path'
     )
 
 
-@pytest.mark.parametrize('test_set', ['different', 'equal_but_binary_different'])
+@pytest.mark.parametrize('test_set', ['equal_but_binary_different'])
 @pytest.mark.parametrize('file_type', ['pickle'])
 def test_open_correct_file_format_but_values_not_image_hashes(
         tmp_dir: Path, data_dir: Path, test_set: str, file_type: str
@@ -64,7 +88,33 @@ def test_open_correct_file_format_but_values_not_image_hashes(
     folder = data_dir / test_set
     check_garbage(
         tmp_dir, folder, file_type,
-        garbage_data={path: 0 for path in folder.glob('**')}, message='Not an image hash'
+        garbage_data=(
+            {path: 0 for path in folder.glob('**')}, {'algorithm': 'phash', 'hash_size': 8}
+        ), message='Not an image hash'
+    )
+
+
+@pytest.mark.parametrize('test_set', ['equal_but_binary_different'])
+@pytest.mark.parametrize('file_type', ['pickle', 'json'])
+def test_open_correct_file_format_but_metadata_missing(
+        tmp_dir: Path, data_dir: Path, test_set: str, file_type: str
+) -> None:
+    folder = data_dir / test_set
+    check_garbage(
+        tmp_dir, folder, file_type,
+        garbage_data=({path: 0 for path in folder.glob('**')}, ), message=None
+    )
+
+
+@pytest.mark.parametrize('test_set', ['equal_but_binary_different'])
+@pytest.mark.parametrize('file_type', ['pickle', 'json'])
+def test_open_correct_file_format_but_metadata_empty(
+        tmp_dir: Path, data_dir: Path, test_set: str, file_type: str
+) -> None:
+    folder = data_dir / test_set
+    check_garbage(
+        tmp_dir, folder, file_type,
+        garbage_data=({path: 0 for path in folder.glob('**')}, {}), message='Metadata empty'
     )
 
 
@@ -76,12 +126,12 @@ def test_opening_with_different_algorithm_leads_to_error(
 ) -> None:
     cache_file = tmp_dir / f'hash_store.{file_type}'
     get_matches([data_dir / test_set], algorithms[0], hash_store_path=cache_file)
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match='Algorithm mismatch'):
         get_matches([data_dir / test_set], algorithms[1], hash_store_path=cache_file)
 
 
 def check_garbage(
-        temp_dir: Path, folder: Path, file_type: str, garbage_data: Any, message: str
+        temp_dir: Path, folder: Path, file_type: str, garbage_data: Any, message: Optional[str]
 ) -> None:
     cache_file = temp_dir / f'garbage.{file_type}'
     if file_type == 'pickle':
@@ -101,4 +151,12 @@ def dump_pickle(cache_file: Path, garbage_data: Any):
 
 def dump_json(cache_file: Path, garbage_data: Any):
     with cache_file.open('w') as file:
-        json.dump(garbage_data, file)
+        json.dump(encode_dict_keys_to_str(garbage_data), file)
+
+
+def encode_dict_keys_to_str(obj: Any) -> Any:
+    if isinstance(obj, dict):
+        return {str(key): value for key, value in obj.items()}
+    if isinstance(obj, tuple):
+        return tuple(encode_dict_keys_to_str(item) for item in obj)
+    return obj
