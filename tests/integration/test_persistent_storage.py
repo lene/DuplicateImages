@@ -8,6 +8,7 @@ from unittest.mock import Mock, patch
 import pytest
 
 from duplicate_images.duplicate import get_matches
+from duplicate_images.pair_finder_options import PairFinderOptions
 
 
 @pytest.mark.parametrize('test_set', ['equal_but_binary_different'])
@@ -19,7 +20,7 @@ def test_open_hash_store_with_filename(
     folder = data_dir / test_set
     cache_file = folder.with_suffix(f'.{file_type}')
     creation_time = cache_file.stat().st_ctime
-    get_matches([folder], 'ahash', hash_store_path=cache_file)
+    get_matches([folder], 'phash', hash_store_path=cache_file)
     assert average_hash.call_count == 0
     assert cache_file.stat().st_ctime > creation_time
 
@@ -30,7 +31,7 @@ def test_open_bad_file_format(data_dir: Path, test_set: str) -> None:
     cache_file = data_dir / 'garbage.txt'
     creation_time = cache_file.stat().st_ctime
     with pytest.raises(ValueError):
-        get_matches([folder], 'ahash', hash_store_path=cache_file)
+        get_matches([folder], 'phash', hash_store_path=cache_file)
     assert cache_file.stat().st_ctime == creation_time
 
 
@@ -119,7 +120,7 @@ def test_open_correct_file_format_but_metadata_empty(
 
 
 @pytest.mark.parametrize('test_set', ['different', 'equal_but_binary_different'])
-@pytest.mark.parametrize('file_type', ['pickle'])
+@pytest.mark.parametrize('file_type', ['pickle', 'json'])
 @pytest.mark.parametrize('algorithms', [('phash', 'ahash')])
 def test_opening_with_different_algorithm_leads_to_error(
         tmp_dir: Path, data_dir: Path, test_set: str, file_type: str, algorithms: Tuple[str, str]
@@ -128,6 +129,24 @@ def test_opening_with_different_algorithm_leads_to_error(
     get_matches([data_dir / test_set], algorithms[0], hash_store_path=cache_file)
     with pytest.raises(ValueError, match='Algorithm mismatch'):
         get_matches([data_dir / test_set], algorithms[1], hash_store_path=cache_file)
+
+
+@pytest.mark.parametrize('test_set', ['different', 'equal_but_binary_different'])
+@pytest.mark.parametrize('file_type', ['pickle', 'json'])
+@pytest.mark.parametrize('hash_size', [(8, 9)])
+def test_opening_with_different_algorithm_parameters_leads_to_error(
+        tmp_dir: Path, data_dir: Path, test_set: str, file_type: str, hash_size: Tuple[int, int]
+) -> None:
+    cache_file = tmp_dir / f'hash_store.{file_type}'
+    get_matches(
+        [data_dir / test_set], 'phash', options=PairFinderOptions(hash_size=hash_size[0]),
+        hash_store_path=cache_file
+    )
+    with pytest.raises(ValueError, match='Metadata mismatch'):
+        get_matches(
+            [data_dir / test_set], 'phash', options=PairFinderOptions(hash_size=hash_size[1]),
+            hash_store_path=cache_file
+        )
 
 
 def check_garbage(
@@ -140,7 +159,7 @@ def check_garbage(
         dump_json(cache_file, garbage_data)
     creation_time = cache_file.stat().st_ctime
     with pytest.raises(ValueError, match=message):
-        get_matches([folder], 'ahash', hash_store_path=cache_file)
+        get_matches([folder], 'phash', hash_store_path=cache_file)
     assert cache_file.stat().st_ctime == creation_time
 
 

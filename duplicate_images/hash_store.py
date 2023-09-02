@@ -84,6 +84,10 @@ class FileHashStore:
             raise ValueError(f'Not an image hash: {bad_values}')
         if metadata['algorithm'] != self.algorithm:
             raise ValueError(f'Algorithm mismatch: {metadata["algorithm"]} != {self.algorithm}')
+        if metadata.keys() != self.metadata().keys():
+            raise ValueError(f'Metadata mismatch: {metadata} != {self.metadata()}')
+        if metadata != self.metadata():
+            raise ValueError(f'Metadata mismatch: {metadata} != {self.metadata()}')
         self.values = values
 
     def load(self) -> None:
