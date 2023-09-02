@@ -1,9 +1,13 @@
 # Changelog
 
-## [0.9.3] - Unreleased
+## [0.10.0] - 2023-09-03
 
 ### Added
-- `symlink-smaller` action to replace the smaller files of a group with a symlink to the biggest one
+- Store hashing algorithm and parameters in hash-db file to ensure that the same algorithm is used 
+  across separate runs with the same hash-db file
+
+### Changed
+- Breaking change in the hash-db file format - files from previous versions are not compatible
 
 ## [0.9.2] - 2023-08-26
 
@@ -162,7 +166,6 @@
 - store the image hashes in a pickle file between runs for a major speedup
 - run tests in parallel
 
-
 ## [0.4.1] - 2021-01-17
 
 ### Added
@@ -225,7 +228,7 @@
 - actions if equal: delete one of the pics, view with `xv` or print
 
 
-[0.9.3]: https://gitlab.com/duplicateimages/DuplicateImages/-/compare/0.9.2...0.9.3
+[0.10.0]: https://gitlab.com/duplicateimages/DuplicateImages/-/compare/0.9.2...0.10.0
 [0.9.2]: https://gitlab.com/duplicateimages/DuplicateImages/-/compare/0.9.1...0.9.2
 [0.9.1]: https://gitlab.com/duplicateimages/DuplicateImages/-/compare/0.9.0...0.9.1
 [0.9.0]: https://gitlab.com/duplicateimages/DuplicateImages/-/compare/0.8.9...0.9.0
