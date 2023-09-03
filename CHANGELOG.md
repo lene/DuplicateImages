@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.10.1] - Unreleased
+
+### Added
+- create GitLab release automatically for each new tag
+
+### Fixed
+- create GitHub release from the correct state
+
 ## [0.10.0] - 2023-09-03
 
 ### Added
@@ -228,6 +236,7 @@
 - actions if equal: delete one of the pics, view with `xv` or print
 
 
+[0.10.1]: https://gitlab.com/duplicateimages/DuplicateImages/-/compare/0.10.0...0.10.1
 [0.10.0]: https://gitlab.com/duplicateimages/DuplicateImages/-/compare/0.9.2...0.10.0
 [0.9.2]: https://gitlab.com/duplicateimages/DuplicateImages/-/compare/0.9.1...0.9.2
 [0.9.1]: https://gitlab.com/duplicateimages/DuplicateImages/-/compare/0.9.0...0.9.1
