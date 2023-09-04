@@ -1,5 +1,8 @@
 # Changelog
 
+## [0.10.7] - ...
+- ...
+
 ## [0.10.6] - 2024-01-12
 - Python 3.12 compatibility
 - bugfix: guard against OS failures when determining file type
@@ -258,6 +261,7 @@
 - actions if equal: delete one of the pics, view with `xv` or print
 
 
+[0.10.7]: https://gitlab.com/duplicateimages/DuplicateImages/-/compare/0.10.6...0.10.7
 [0.10.6]: https://gitlab.com/duplicateimages/DuplicateImages/-/compare/0.10.5...0.10.6
 [0.10.5]: https://gitlab.com/duplicateimages/DuplicateImages/-/compare/0.10.4...0.10.5
 [0.10.4]: https://gitlab.com/duplicateimages/DuplicateImages/-/compare/0.10.3...0.10.4
