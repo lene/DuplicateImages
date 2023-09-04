@@ -143,6 +143,8 @@ CreateTag:
       when: on_success
   needs:
     - TagIsNew
+    - ChangelogIsUpdated
+    - RunAndCheckResults
   before_script:
     - apk update
     - apk add git
