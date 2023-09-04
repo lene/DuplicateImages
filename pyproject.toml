@@ -15,7 +15,7 @@ classifiers = [
 ]
 
 [tool.poetry.dependencies]
-python = ">=3.8.1"
+python = ">=3.9,<3.13"
 Wand = "^0.6"
 pillow = "^10.0"
 imagehash = "^4.3"

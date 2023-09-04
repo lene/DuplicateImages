@@ -3,6 +3,7 @@
 ## [0.10.1] - Unreleased
 
 ### Added
+- Upgrade Python dependency to 3.9 to fix security warning about old SciPy version
 - create GitLab release automatically for each new tag
 
 ### Fixed
