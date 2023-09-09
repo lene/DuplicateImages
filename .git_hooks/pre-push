@@ -13,8 +13,11 @@
 # even if the tests fail, since it might be necessary to push to share between
 # work environments.
 
+GITLAB_PROJECT_ID=6643206
 CI_LINT_OUTPUT=/tmp/gitlab-ci-lint.json
+
 STATUS=0
+
 poetry run pytest -n auto tests/unit || STATUS=1
 poetry run pytest -n auto tests/integration || STATUS=1
 poetry run mypy duplicate_images tests || STATUS=1
@@ -26,16 +29,17 @@ poetry run bandit -r duplicate_images -q || STATUS=1
 if [ "$GITLAB_ACCESS_TOKEN" != "" ]; then
     rm -f "$CI_LINT_OUTPUT"
     jq --null-input --arg yaml "$(cat .gitlab-ci.yml)" '{ content: $yaml }' | \
-      curl -s 'https://gitlab.com/api/v4/ci/lint' \
+      curl -s "https://gitlab.com/api/v4/projects/${GITLAB_PROJECT_ID}/ci/lint" \
         --header 'Content-Type: application/json' \
         --header "PRIVATE-TOKEN: $GITLAB_ACCESS_TOKEN" \
         --data @- > "$CI_LINT_OUTPUT"
-    echo "GitLab CI: $(jq -r .status < "$CI_LINT_OUTPUT")"
-    if [ "$(jq -r .status <"$CI_LINT_OUTPUT")" != "valid" ]; then
-#        STATUS=1
+    echo "GitLab CI valid: $(jq -r .valid < "$CI_LINT_OUTPUT")"
+    if [ "$(jq -r .valid <"$CI_LINT_OUTPUT")" != "true" ]; then
+        STATUS=1
         echo "errors: $(jq .errors < "$CI_LINT_OUTPUT")"
         echo "warnings: $(jq .warnings < "$CI_LINT_OUTPUT")"
     fi
+	#rm -f "$CI_LINT_OUTPUT"
 else
     echo "\$GITLAB_ACCESS_TOKEN not set"
 fi
