@@ -1,6 +1,12 @@
 # Changelog
 
-## [0.10.1] - Unreleased
+## [0.10.2] - 2023-10-04
+
+### Fixed
+- Upgrade Pillow dependency to 10.0.1 to fix libWebP security vulnerability
+- Upgrade GitPython dependency to 3.1.37 to fix security vulnerability
+
+## [0.10.1] - 2023-09-04
 
 ### Added
 - Upgrade Python dependency to 3.9 to fix security warning about old SciPy version
@@ -237,6 +243,7 @@
 - actions if equal: delete one of the pics, view with `xv` or print
 
 
+[0.10.2]: https://gitlab.com/duplicateimages/DuplicateImages/-/compare/0.10.1...0.10.2
 [0.10.1]: https://gitlab.com/duplicateimages/DuplicateImages/-/compare/0.10.0...0.10.1
 [0.10.0]: https://gitlab.com/duplicateimages/DuplicateImages/-/compare/0.9.2...0.10.0
 [0.9.2]: https://gitlab.com/duplicateimages/DuplicateImages/-/compare/0.9.1...0.9.2
