@@ -1,6 +1,6 @@
 # Changelog
 
-## [0.10.2] - 2023-10-04
+## [0.10.2] - 2023-10-05
 
 ### Fixed
 - Upgrade Pillow dependency to 10.0.1 to fix libWebP security vulnerability
