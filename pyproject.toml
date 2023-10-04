@@ -25,6 +25,7 @@ pillow-heif = "^0.13"
 six = "^1.16"
 numpy = "^1.23"
 filetype = "^1.2"
+setuptools = ">=68.2.2"
 
 [tool.poetry.group.dev.dependencies]
 bandit = "^1.7.5"
