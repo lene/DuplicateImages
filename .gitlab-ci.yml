@@ -55,7 +55,7 @@ bandit:
   extends: .test
   parallel:
     matrix:
-      - PY_VERSION: [ "latest" ]
+      - PY_VERSION: [ "3.11" ]
   script:
     - poetry run bandit -r duplicate_images
 
@@ -95,7 +95,7 @@ RunAndCheckResults:
 
 RunWithArgs:
   stage: test
-  image: python:latest
+  image: python:3.11
   rules:
     - if: '$CI_PIPELINE_SOURCE == "push" || $CI_PIPELINE_SOURCE == "merge_request_event"'
   before_script:
