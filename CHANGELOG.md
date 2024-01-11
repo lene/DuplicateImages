@@ -1,7 +1,10 @@
 # Changelog
 
+## [0.10.4] - 2024-01-11
+- Upgrade dependencies to fix security vulnerabilities
+
 ## [0.10.3] - 2023-10-05
-Changes to CI only
+- Changes to CI only
 
 ## [0.10.2] - 2023-10-05
 
@@ -246,6 +249,7 @@ Changes to CI only
 - actions if equal: delete one of the pics, view with `xv` or print
 
 
+[0.10.4]: https://gitlab.com/duplicateimages/DuplicateImages/-/compare/0.10.3...0.10.4
 [0.10.3]: https://gitlab.com/duplicateimages/DuplicateImages/-/compare/0.10.2...0.10.3
 [0.10.2]: https://gitlab.com/duplicateimages/DuplicateImages/-/compare/0.10.1...0.10.2
 [0.10.1]: https://gitlab.com/duplicateimages/DuplicateImages/-/compare/0.10.0...0.10.1
