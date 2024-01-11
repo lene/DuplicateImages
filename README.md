@@ -38,6 +38,12 @@ $ find-dups $IMAGE_ROOT --parallel --progress --hash-db hashes.json
   [formats supported](https://pillow.readthedocs.io/en/latest/handbook/image-file-formats.html) by 
   the `pillow` Python Imaging Library should work, but are not specifically tested. 
 
+#### Explicitly allow huge images
+
+The `PIL` image library, which is used as backend, limits the size of images to 178956970 pixels by
+default, to guard against memory exhaustion. For larger images, specify the maximum image size in 
+pixels with the `--max-image-pixels` option.
+
 ### Image comparison algorithms
 
 Use the `--algorithm` option to select how equal images are found. The default algorithm is `phash`.
@@ -121,6 +127,12 @@ with the `--group` argument may be more than two images considered equal.
 ### Parallel execution
 
 Use the `--parallel` option to utilize all free cores on your system for calculating image hashes. 
+
+### Excluding subfolders
+
+Use the `--exclude-dir` option to exclude subfolders of `$IMAGE_ROOT` from the search. The argument
+is a regular expression matching the subfolder names to be excluded. `--exclude-dir` can be 
+repeated to exclude multiple subfolders.
 
 ### Slow execution
 

@@ -6,6 +6,7 @@ from os import walk, access, R_OK
 from pathlib import Path
 from typing import Callable, List, Optional
 
+import PIL.Image
 from filetype import guess
 from pillow_heif import register_heif_opener
 
@@ -69,9 +70,15 @@ def execute_actions(matches: Results, args: Namespace) -> None:
             continue
 
 
+def set_max_image_pixels(args: Namespace) -> None:
+    if args.max_image_pixels is not None:
+        PIL.Image.MAX_IMAGE_PIXELS = args.max_image_pixels
+
+
 def main() -> None:
     args = parse_command_line()
     setup_logging(args)
+    set_max_image_pixels(args)
     options = PairFinderOptions.from_args(args)
     for folder in args.root_directory:
         logging.info('Scanning %s', path_with_parent(folder))

@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import List, Optional, Dict
 
 from PIL import Image
+from PIL.Image import DecompressionBombError
 
 from duplicate_images.common import path_with_parent
 from duplicate_images.function_types import Cache, CacheEntry, HashFunction
@@ -42,6 +43,10 @@ class ImageHashScanner:
             return file, image_hash
         except OSError as err:
             logging.warning('%s: %s', path_with_parent(file), err)
+            return file, None
+        except DecompressionBombError as err:
+            logging.warning('%s: %s. Skipping', path_with_parent(file), err)
+            logging.warning('To process this file, use the --max-image-pixels option')
             return file, None
 
 

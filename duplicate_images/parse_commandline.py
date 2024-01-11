@@ -3,6 +3,8 @@ __author__ = 'lene'
 from argparse import ArgumentParser, Namespace
 from typing import List, Optional
 
+from PIL import Image
+
 from duplicate_images.methods import ACTIONS_ON_EQUALITY, IMAGE_HASH_ALGORITHM
 
 
@@ -56,6 +58,10 @@ def parse_command_line(args: Optional[List[str]] = None) -> Namespace:
     )
     parser.add_argument(
         '--hash-db', default=None, help='File storing precomputed hashes'
+    )
+    parser.add_argument(
+        '--max-image-pixels', type=int, default=None,
+        help=f'Maximum size of image in pixels (default: {Image.MAX_IMAGE_PIXELS})'
     )
 
     namespace = parser.parse_args(args)

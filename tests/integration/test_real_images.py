@@ -6,11 +6,16 @@ from typing import List
 import pytest
 
 from PIL import Image
+from PIL.Image import DecompressionBombError
 
 from duplicate_images.image_pair_finder import PairFinderOptions
 from duplicate_images.methods import IMAGE_HASH_ALGORITHM
-from duplicate_images.duplicate import files_in_dirs, is_image_file
-from duplicate_images.duplicate import get_matches
+from duplicate_images.duplicate import (
+    files_in_dirs, is_image_file, get_matches, set_max_image_pixels
+)
+from duplicate_images.parse_commandline import parse_command_line
+
+HUGE_IMAGE_SIZE = 20000 * 20000
 
 
 @pytest.mark.parametrize('parallel', [True, False])
@@ -210,3 +215,27 @@ def test_slow_image_finder_fails_with_group_option(
     folders = [data_dir / 'equal_but_binary_different' / folder for folder in folders]
     with pytest.raises(ValueError):
         get_matches(folders, algorithm, PairFinderOptions(slow=True, group=True))
+
+
+@pytest.mark.parametrize('algorithm', ['ahash'])
+@pytest.mark.parametrize('folder', ['huge'])
+def test_huge_image_fails_loading_per_default(
+        data_dir: Path, algorithm: str, folder: str
+) -> None:
+    hash_algorithm = IMAGE_HASH_ALGORITHM[algorithm]
+    image_files = sorted(files_in_dirs([(data_dir / folder)], is_image_file))
+    with pytest.raises(DecompressionBombError):
+        for file in image_files:
+            hash_algorithm(Image.open(file))
+
+
+@pytest.mark.parametrize('algorithm', ['ahash'])
+@pytest.mark.parametrize('folder', ['huge'])
+def test_huge_image_succeeds_with_max_image_size_set(
+        data_dir: Path, algorithm: str, folder: str
+) -> None:
+    sub_folder = data_dir / folder
+    args = parse_command_line([str(sub_folder), '--max-image-pixels', str(HUGE_IMAGE_SIZE)])
+    set_max_image_pixels(args)
+    matches = get_matches([sub_folder], algorithm, PairFinderOptions.from_args(args))
+    assert len(matches) == 1
