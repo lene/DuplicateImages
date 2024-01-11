@@ -16,6 +16,10 @@ def parse_command_line(args: Optional[List[str]] = None) -> Namespace:
         help='The root of the directory tree under which images are compared'
     )
     parser.add_argument(
+        '--exclude-dir', default=None, nargs='*',
+        help='Directories to exclude from the search (can be given as regular expressions)'
+    )
+    parser.add_argument(
         '--algorithm', choices=IMAGE_HASH_ALGORITHM.keys(),
         default='phash',
         help='Method used to determine if two images are considered equal'

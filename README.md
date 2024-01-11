@@ -131,8 +131,22 @@ Use the `--parallel` option to utilize all free cores on your system for calcula
 ### Excluding subfolders
 
 Use the `--exclude-dir` option to exclude subfolders of `$IMAGE_ROOT` from the search. The argument
-is a regular expression matching the subfolder names to be excluded. `--exclude-dir` can be 
-repeated to exclude multiple subfolders.
+is a regular expression matching the subfolder names to be excluded. Multiple arguments can be 
+passed to `--exclude-dir` to exclude multiple subfolders. 
+
+The argument(s) given to `--exclude-dir` may be regular expressions. These regular expressions are 
+matched only against the directory name, not the file name.
+
+#### Examples
+
+Exclude subfolder `$IMAGE_ROOT/foo`:
+```shell
+$ find-dups $IMAGE_ROOT --exclude-dir $IMAGE_ROOT/foo
+```
+Exclude all subfolders named `foo` or `bar`:
+```shell
+$ find-dups $IMAGE_ROOT --exclude-dir foo bar
+```
 
 ### Slow execution
 

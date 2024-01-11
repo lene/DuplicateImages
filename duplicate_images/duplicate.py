@@ -1,6 +1,7 @@
 #!/usr/bin/env /usr/bin/python3
 
 import logging
+import re
 from argparse import Namespace
 from os import walk, access, R_OK
 from pathlib import Path
@@ -29,15 +30,26 @@ def is_image_file(filename: Path) -> bool:
     return False
 
 
+def folder_matches(filename: Path, regex: re.Pattern) -> bool:
+    return bool(re.search(regex, str(filename.parent)))
+
+
 def files_in_dirs(
-        dir_names: List[Path], is_file: Callable[[Path], bool] = lambda f: f.is_file()
+        dir_names: List[Path], is_file: Callable[[Path], bool] = lambda f: f.is_file(),
+        exclude_regexes: Optional[List[str]] = None
 ) -> List[Path]:
-    """Returns a list of all files in directory dir_name, recursively scanning subdirectories"""
+    """
+    Returns a list of all files in directory dir_name (recursively scanning subdirectories), which
+    satisfy the condition is_file. If exclude_regexes is given, files in directories matching any
+    of the regular expressions are excluded.
+    """
+    exclude_compiled = [re.compile(regex) for regex in exclude_regexes or []]
     files = [
         Path(root) / filename
         for dir_name in dir_names
         for root, _, filenames in walk(dir_name)
         for filename in filenames
+        if not any(folder_matches(Path(root) / filename, regex) for regex in exclude_compiled)
         if is_file(Path(root) / filename)
     ]
     return files
@@ -46,11 +58,12 @@ def files_in_dirs(
 def get_matches(
         root_directories: List[Path], algorithm: str,
         options: PairFinderOptions = PairFinderOptions(),
-        hash_store_path: Optional[Path] = None
+        hash_store_path: Optional[Path] = None,
+        exclude_regexes: Optional[List[str]] = None
 ) -> Results:
     hash_algorithm = IMAGE_HASH_ALGORITHM[algorithm]
     hash_size_kwargs = get_hash_size_kwargs(hash_algorithm, options.hash_size)
-    image_files = sorted(files_in_dirs(root_directories, is_image_file))
+    image_files = sorted(files_in_dirs(root_directories, is_image_file, exclude_regexes))
     logging.info('%d total files', len(image_files))
     logging.info('Computing image hashes')
 
@@ -81,11 +94,15 @@ def main() -> None:
     set_max_image_pixels(args)
     options = PairFinderOptions.from_args(args)
     for folder in args.root_directory:
-        logging.info('Scanning %s', path_with_parent(folder))
+        logging.info(
+            'Scanning %s %s', path_with_parent(folder),
+            f'(excluding {", ".join(args.exclude_dir)})' if args.exclude_dir else ''
+        )
     try:
         matches = get_matches(
             [Path(folder) for folder in args.root_directory], args.algorithm,
-            options=options, hash_store_path=Path(args.hash_db) if args.hash_db else None
+            options=options, hash_store_path=Path(args.hash_db) if args.hash_db else None,
+            exclude_regexes=list(args.exclude_dir) if args.exclude_dir else None
         )
         logging.info('%d matches', len(matches))
         execute_actions(matches, args)
