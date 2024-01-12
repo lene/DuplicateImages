@@ -21,6 +21,8 @@ mock_algorithm = Mock(return_value=MOCK_IMAGE_HASH_VALUE)
 
 
 def create_image(file: Path, width: int) -> Path:
+    if file.suffix == '.heif':
+        return create_heif_image(file, width)
     height = int(width * 3 / 4)
     color = Color('Black')
     image = Image(width=width, height=height, background=color)

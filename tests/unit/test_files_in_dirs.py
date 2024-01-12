@@ -3,12 +3,15 @@ __author__ = 'Lene Preuss <lene.preuss@gmail.com>'
 from pathlib import Path
 from tempfile import TemporaryDirectory
 from typing import Generator
+from unittest.mock import patch
 
 import pytest
 
 from duplicate_images.duplicate import files_in_dirs, is_image_file
+from .conftest import create_image
 
 NUM_NUMBERED_FILES = 3
+TEST_IMAGE_WIDTH = 40
 
 
 @pytest.fixture(name='temp_dir', scope='session')
@@ -64,3 +67,20 @@ def test_files_in_dirs_with_arbitrary_condition(filled_folder: Path) -> None:
     found = files_in_dirs([filled_folder], is_file=lambda f: '2.txt' == f.name)
     assert 1 == len(found)
     assert '2.txt' == found[0].name
+
+
+def test_is_image_file_empty_file(filled_folder: Path) -> None:
+    assert not is_image_file(filled_folder / '1' / '1.txt')
+
+
+@pytest.mark.parametrize('extension', ['jpg', 'png', 'heif'])
+def test_is_image_file_image_file(temp_dir: Path, extension: str) -> None:
+    create_image(temp_dir / f'1.{extension}', TEST_IMAGE_WIDTH)
+    assert is_image_file(temp_dir / f'1.{extension}')
+
+
+@pytest.mark.parametrize('extension', ['jpg', 'png', 'heif'])
+def test_is_image_file_with_os_failure(temp_dir: Path, extension: str) -> None:
+    create_image(temp_dir / f'1.{extension}', TEST_IMAGE_WIDTH)
+    with patch('builtins.open', side_effect=OSError()):
+        assert not is_image_file(temp_dir / f'1.{extension}')

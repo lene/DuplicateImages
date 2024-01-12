@@ -24,9 +24,12 @@ register_heif_opener()
 
 def is_image_file(filename: Path) -> bool:
     """Returns True if filename is a readable image file"""
-    if access(filename, R_OK) and not filename.is_symlink():
-        kind = guess(filename)
-        return kind is not None and kind.mime.startswith('image/')
+    try:
+        if access(filename, R_OK) and not filename.is_symlink():
+            kind = guess(filename)
+            return kind is not None and kind.mime.startswith('image/')
+    except OSError as err:
+        logging.warning('Skipping %s: %s', path_with_parent(filename), err)
     return False
 
 
