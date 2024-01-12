@@ -8,6 +8,11 @@ from PIL import Image
 from duplicate_images.methods import ACTIONS_ON_EQUALITY, IMAGE_HASH_ALGORITHM
 
 
+def is_power_of_2(n: int) -> bool:
+    # https://stackoverflow.com/questions/57025836/how-to-check-if-a-given-number-is-a-power-of-two
+    return (n != 0) and (n & (n - 1) == 0)
+
+
 def parse_command_line(args: Optional[List[str]] = None) -> Namespace:
     parser = ArgumentParser(description='Find pairs of equal or similar images.')
 
@@ -71,4 +76,6 @@ def parse_command_line(args: Optional[List[str]] = None) -> Namespace:
     namespace = parser.parse_args(args)
     if namespace.on_equal == 'exec' and not namespace.exec:
         parser.error('--exec argument is required')
+    if namespace.algorithm == 'whash' and not is_power_of_2(namespace.hash_size):
+        parser.error('whash requires hash_size to be a power of 2')
     return namespace
