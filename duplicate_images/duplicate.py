@@ -66,8 +66,9 @@ def get_matches(
 ) -> Results:
     hash_algorithm = IMAGE_HASH_ALGORITHM[algorithm]
     hash_size_kwargs = get_hash_size_kwargs(hash_algorithm, options.hash_size)
-    image_files = sorted(files_in_dirs(root_directories, is_image_file, exclude_regexes))
+    image_files = files_in_dirs(root_directories, is_image_file, exclude_regexes)
     logging.info('%d total files', len(image_files))
+    image_files.sort()
     logging.info('Computing image hashes')
 
     with FileHashStore.create(hash_store_path, algorithm, hash_size_kwargs) as hash_store:
