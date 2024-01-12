@@ -9,7 +9,7 @@ include:
 .test:
   parallel:
     matrix:
-      - PY_VERSION: [ "3.9", "3.10", "3.11" ]
+      - PY_VERSION: [ "3.9", "3.10", "3.11", "3.12" ]
   stage: test
   image: python:$PY_VERSION
   rules:
