@@ -1,7 +1,9 @@
 # Changelog
 
 ## [0.10.6] - 2024-01-12
-- re-enable for Python 3.12
+- Python 3.12 compatibility
+- bugfix: guard against OS failures when determining file type
+- small memory optimization
 
 ## [0.10.5] - 2024-01-12
 - `--exclude-dir` option to exclude directories from scanning

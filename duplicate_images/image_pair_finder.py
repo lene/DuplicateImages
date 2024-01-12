@@ -78,7 +78,7 @@ class ImagePairFinder:
 
     def log_scan_finished(self) -> None:
         logging.info(
-            '%d hashes calculated in %.2fs',
+            '%d distinct hashes calculated in %.2fs',
             len(self.precalculated_hashes), time() - self.scan_start_time
         )
 
