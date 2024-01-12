@@ -38,7 +38,7 @@ def symlink_to_biggest_file(group: ImageGroup):
 def shell_exec(args: Namespace, group: ImageGroup) -> None:
     cmd = args.exec
     for num, path in enumerate(group):
-        cmd = cmd.replace(f"{'{'}{num+1}{'}'}", f'{quote(str(path))}')
+        cmd = cmd.replace(f"{'{'}{num + 1}{'}'}", f'{quote(str(path))}')
     cmd = cmd.replace('{*}', ' '.join([quote(str(path)) for path in group]))
     call(cmd, shell=True)  # nosec
 
