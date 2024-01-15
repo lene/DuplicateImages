@@ -55,6 +55,10 @@ if ! fgrep -q "...$VERSION" CHANGELOG.md
 then echo "link to $VERSION diff not found in changelog"; STATUS=1
 else echo "link to $VERSION diff found in CHANGELOG.md, cool"
 fi
+if ! fgrep "## [$VERSION] - $(date +%Y-%m-%d)" CHANGELOG.md
+then echo "date not set correctly in changelog"; STATUS=1
+else echo "date in CHANGELOG.md is $(date +%Y-%m-%d), cool"
+fi
 
 if [ $STATUS -gt 0 ]; then
   commitmsg=$(git log --oneline | head -n 1 | cut -d' ' -f 2-)
