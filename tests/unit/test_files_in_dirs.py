@@ -64,7 +64,7 @@ def test_files_in_dirs_ignores_patterns_in_file_names(filled_folder: Path) -> No
 
 def test_files_in_dirs_with_arbitrary_condition(filled_folder: Path) -> None:
     assert NUM_NUMBERED_FILES >= 2
-    found = files_in_dirs([filled_folder], is_file=lambda f: '2.txt' == f.name)
+    found = files_in_dirs([filled_folder], is_relevant=lambda f: '2.txt' == f.name)
     assert 1 == len(found)
     assert '2.txt' == found[0].name
 

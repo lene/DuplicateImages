@@ -12,8 +12,7 @@ import pytest
 from duplicate_images import duplicate
 from duplicate_images.function_types import Results
 from duplicate_images.image_pair_finder import ImagePairFinder
-from duplicate_images.methods import IMAGE_HASH_ALGORITHM
-from duplicate_images.methods import quote
+from duplicate_images.methods import IMAGE_HASH_ALGORITHM, quote
 from duplicate_images.pair_finder_options import PairFinderOptions
 from duplicate_images.parse_commandline import parse_command_line
 from .conftest import create_jpg_and_png, create_half_jpg

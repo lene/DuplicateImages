@@ -1,18 +1,33 @@
 # Changelog
 
-## [0.10.7] - ...
-- ...
+## [0.10.8] - 2024-01-16
+
+### Added
+- optional argument to specify the number of threads with `--parallel`
+- `--parallel-actions` option to run actions in parallel
+- performance optimization when reading the files to compare
+
+## [0.10.7] - 2024-01-13
+
+### Added
+- Check that `hash_size` ia a power of 2 for `whash` algorithm
 
 ## [0.10.6] - 2024-01-12
+
+### Fixed
 - Python 3.12 compatibility
 - bugfix: guard against OS failures when determining file type
 - small memory optimization
 
 ## [0.10.5] - 2024-01-12
+
+### Added
 - `--exclude-dir` option to exclude directories from scanning
 - `--max-image-pixels` option to allow for huge images to bypass `PIL`'s `DecompressionBombError`
 
 ## [0.10.4] - 2024-01-11
+
+### Fixed
 - Upgrade dependencies to fix security vulnerabilities
 
 ## [0.10.3] - 2023-10-05
@@ -261,6 +276,7 @@
 - actions if equal: delete one of the pics, view with `xv` or print
 
 
+[0.10.8]: https://gitlab.com/duplicateimages/DuplicateImages/-/compare/0.10.7...0.10.8
 [0.10.7]: https://gitlab.com/duplicateimages/DuplicateImages/-/compare/0.10.6...0.10.7
 [0.10.6]: https://gitlab.com/duplicateimages/DuplicateImages/-/compare/0.10.5...0.10.6
 [0.10.5]: https://gitlab.com/duplicateimages/DuplicateImages/-/compare/0.10.4...0.10.5

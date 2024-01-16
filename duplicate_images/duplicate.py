@@ -12,6 +12,7 @@ from filetype import guess
 from pillow_heif import register_heif_opener
 
 from duplicate_images.common import path_with_parent, log_execution_time
+from duplicate_images.function_types import Results
 from duplicate_images.hash_store import FileHashStore
 from duplicate_images.image_pair_finder import ImagePairFinder, PairFinderOptions
 from duplicate_images.log import setup_logging
