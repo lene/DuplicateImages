@@ -89,5 +89,5 @@ ACTIONS_ON_EQUALITY: Dict[str, ActionFunction] = {
         ' '.join([quote(str(pic)) for pic in group]), end=' '
     ),
     'exec': lambda args, group: shell_exec(args, group),  # pylint: disable=unnecessary-lambda
-    'none': lambda args, group: None
+    'none': lambda args, group: None,
 }

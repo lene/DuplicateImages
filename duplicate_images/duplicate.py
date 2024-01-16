@@ -11,8 +11,7 @@ import PIL.Image
 from filetype import guess
 from pillow_heif import register_heif_opener
 
-from duplicate_images.common import path_with_parent
-from duplicate_images.function_types import Results
+from duplicate_images.common import path_with_parent, log_execution_time
 from duplicate_images.hash_store import FileHashStore
 from duplicate_images.image_pair_finder import ImagePairFinder, PairFinderOptions
 from duplicate_images.log import setup_logging
@@ -37,8 +36,9 @@ def folder_matches(filename: Path, regex: re.Pattern) -> bool:
     return bool(re.search(regex, str(filename.parent)))
 
 
+@log_execution_time()
 def files_in_dirs(
-        dir_names: List[Path], is_file: Callable[[Path], bool] = lambda f: f.is_file(),
+        dir_names: List[Path], is_relevant: Callable[[Path], bool] = lambda f: f.is_file(),
         exclude_regexes: Optional[List[str]] = None
 ) -> List[Path]:
     """
@@ -47,15 +47,15 @@ def files_in_dirs(
     of the regular expressions are excluded.
     """
     exclude_compiled = [re.compile(regex) for regex in exclude_regexes or []]
-    files = [
+    unfiltered = (
         Path(root) / filename
         for dir_name in dir_names
         for root, _, filenames in walk(dir_name)
         for filename in filenames
         if not any(folder_matches(Path(root) / filename, regex) for regex in exclude_compiled)
-        if is_file(Path(root) / filename)
-    ]
-    return files
+    )
+    # astonishingly, filtering in a separate step is faster than in the generator expression
+    return [file for file in unfiltered if is_relevant(file)]
 
 
 def get_matches(

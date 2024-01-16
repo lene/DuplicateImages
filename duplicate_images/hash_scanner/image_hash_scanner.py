@@ -2,7 +2,7 @@ __author__ = 'Lene Preuss <lene.preuss@gmail.com>'
 
 import logging
 
-from multiprocessing.pool import ThreadPool as Pool
+from multiprocessing.pool import ThreadPool
 from pathlib import Path
 from typing import List, Optional, Dict
 
@@ -53,5 +53,5 @@ class ImageHashScanner:
 class ParallelImageHashScanner(ImageHashScanner):
 
     def precalculate_hashes(self) -> List[CacheEntry]:
-        with Pool() as pool:
+        with ThreadPool() as pool:
             return pool.map(self.get_hash, self.files)
