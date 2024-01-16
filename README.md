@@ -126,7 +126,8 @@ with the `--group` argument may be more than two images considered equal.
 
 ### Parallel execution
 
-Use the `--parallel` option to utilize all free cores on your system for calculating image hashes. 
+Use the `--parallel` option to utilize all free cores on your system for calculating image hashes.
+Optionally, you can specify the number of processes to use with `--parallel $N`.
 
 ### Excluding subfolders
 

@@ -7,7 +7,7 @@ from time import time
 
 
 def path_with_parent(path: Path) -> str:
-    return '/'.join(str(path).split('/')[-2:])
+    return '/'.join(str(path).rstrip('/').split('/')[-2:])
 
 
 def log_execution_time():

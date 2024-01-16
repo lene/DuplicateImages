@@ -1,5 +1,6 @@
 __author__ = 'lene'
 
+from os import cpu_count
 from argparse import ArgumentParser, Namespace
 from typing import List, Optional
 
@@ -43,10 +44,11 @@ def parse_command_line(args: Optional[List[str]] = None) -> Namespace:
     )
     parser.add_argument(
         '--exec', type=str,
-        help='Command to execute (replaces {1}, {2} with file pathes)'
+        help='Command to execute (replaces {1}, {2} with file paths)'
     )
     parser.add_argument(
-        '--parallel', action='store_true', help='Calculate hashes using all available cores'
+        '--parallel', nargs='?', type=int, default=None, const=cpu_count(),
+        help='Calculate hashes using PARALLEL threads (default: number of cores in the system)'
     )
     group = parser.add_mutually_exclusive_group()
     group.add_argument(

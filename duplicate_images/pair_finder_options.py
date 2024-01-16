@@ -10,7 +10,7 @@ class PairFinderOptions:
     max_distance: int = 0
     hash_size: Optional[int] = None
     show_progress_bars: bool = False
-    parallel: bool = False
+    parallel: Optional[int] = None
     slow: bool = False
     group: bool = False
 

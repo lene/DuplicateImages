@@ -1,6 +1,7 @@
 __author__ = 'Lene Preuss <lene.preuss@gmail.com>'
 
 import logging
+import os
 
 from multiprocessing.pool import ThreadPool
 from pathlib import Path
@@ -11,10 +12,28 @@ from PIL.Image import DecompressionBombError
 
 from duplicate_images.common import path_with_parent
 from duplicate_images.function_types import Cache, CacheEntry, HashFunction
+from duplicate_images.methods import get_hash_size_kwargs
+from duplicate_images.pair_finder_options import PairFinderOptions
 from duplicate_images.progress_bar_manager import ProgressBarManager, NullProgressBarManager
 
 
 class ImageHashScanner:
+    @staticmethod
+    def create(
+            files: List[Path], hash_algorithm: HashFunction,
+            options: PairFinderOptions,
+            hash_store: Optional[Cache] = None,
+            progress_bars: ProgressBarManager = NullProgressBarManager()
+    ) -> 'ImageHashScanner':
+        hash_size_kwargs = get_hash_size_kwargs(hash_algorithm, options.hash_size)
+        if not options.parallel:
+            return ImageHashScanner(
+                files, hash_algorithm, hash_size_kwargs, hash_store, progress_bars
+            )
+        return ParallelImageHashScanner(
+            files, hash_algorithm, hash_size_kwargs, hash_store, progress_bars,
+            options.parallel
+        )
 
     def __init__(  # pylint: disable = too-many-arguments
             self, files: List[Path], hash_algorithm: HashFunction,
@@ -27,6 +46,10 @@ class ImageHashScanner:
         self.hash_size_kwargs = hash_size_kwargs if hash_size_kwargs is not None else {}
         self.hash_store = hash_store if hash_store is not None else {}
         self.progress_bars = progress_bars
+        logging.info('Using %s', self.class_string())
+
+    def class_string(self) -> str:
+        return self.__class__.__name__
 
     def precalculate_hashes(self) -> List[CacheEntry]:
         return [self.get_hash(file) for file in self.files]
@@ -45,13 +68,27 @@ class ImageHashScanner:
             logging.warning('%s: %s', path_with_parent(file), err)
             return file, None
         except DecompressionBombError as err:
-            logging.warning('%s: %s. Skipping', path_with_parent(file), err)
+            logging.warning('%s: %s', path_with_parent(file), err)
             logging.warning('To process this file, use the --max-image-pixels option')
             return file, None
 
 
 class ParallelImageHashScanner(ImageHashScanner):
 
+    def __init__(  # pylint: disable = too-many-arguments
+            self,
+            files: List[Path], hash_algorithm: HashFunction,
+            hash_size_kwargs: Optional[Dict] = None,
+            hash_store: Optional[Cache] = None,
+            progress_bars: ProgressBarManager = NullProgressBarManager(),
+            parallel: int = os.cpu_count() or 1
+    ) -> None:
+        self.num_threads = parallel
+        super().__init__(files, hash_algorithm, hash_size_kwargs, hash_store, progress_bars)
+
+    def class_string(self) -> str:
+        return f'{self.__class__.__name__} with {self.num_threads} threads'
+
     def precalculate_hashes(self) -> List[CacheEntry]:
-        with ThreadPool() as pool:
+        with ThreadPool(self.num_threads) as pool:
             return pool.map(self.get_hash, self.files)
