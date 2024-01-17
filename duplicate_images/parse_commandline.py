@@ -48,7 +48,11 @@ def parse_command_line(args: Optional[List[str]] = None) -> Namespace:
     )
     parser.add_argument(
         '--parallel', nargs='?', type=int, default=None, const=cpu_count(),
-        help='Calculate hashes using PARALLEL threads (default: number of cores in the system)'
+        help=f'Calculate hashes using PARALLEL threads (default: {cpu_count()})'
+    )
+    parser.add_argument(
+        '--parallel-actions', nargs='?', type=int, default=None, const=cpu_count(),
+        help=f'Execute actions on equal images using PARALLEL threads (default: {cpu_count()})'
     )
     group = parser.add_mutually_exclusive_group()
     group.add_argument(

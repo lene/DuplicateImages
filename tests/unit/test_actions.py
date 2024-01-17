@@ -2,8 +2,10 @@ __author__ = 'Lene Preuss <lene.preuss@gmail.com>'
 
 import shlex
 from argparse import Namespace
+from datetime import datetime, timedelta
+from math import factorial
 from pathlib import Path
-from tempfile import TemporaryDirectory
+from tempfile import TemporaryDirectory, NamedTemporaryFile
 from typing import List, Generator, Tuple
 from unittest.mock import Mock, patch
 
@@ -15,7 +17,7 @@ from duplicate_images.image_pair_finder import ImagePairFinder
 from duplicate_images.methods import IMAGE_HASH_ALGORITHM, quote
 from duplicate_images.pair_finder_options import PairFinderOptions
 from duplicate_images.parse_commandline import parse_command_line
-from .conftest import create_jpg_and_png, create_half_jpg
+from .conftest import create_jpg_and_png, create_half_jpg, create_image, IMAGE_WIDTH
 
 HASH_ALGORITHM = IMAGE_HASH_ALGORITHM['phash']
 
@@ -28,6 +30,22 @@ def fixture_equal_images(
     if group:
         half_file = create_half_jpg(top_directory)
         images.append(half_file)
+    yield images
+    for file in images:
+        file.unlink(missing_ok=True)
+
+
+@pytest.fixture(name='many_equal_images')
+def fixture_many_equal_images(
+        top_directory: TemporaryDirectory, num_images: int
+) -> Generator[List[Path], None, None]:
+    images = []
+    for _ in range(num_images):
+        file_name = Path(
+            NamedTemporaryFile(dir=top_directory.name, prefix='jpeg_', suffix='.jpg').name
+        )
+        create_image(file_name, IMAGE_WIDTH)
+        images.append(file_name)
     yield images
     for file in images:
         file.unlink(missing_ok=True)
@@ -191,6 +209,35 @@ def test_symlink(equal_images: List[Path], option: str, group: bool):
     for path in others:
         assert path.is_symlink()
         assert path.resolve() == relevant
+
+
+@pytest.mark.parametrize('num_images', [7])
+@pytest.mark.parametrize('parallel', [4, 10, 20])
+@pytest.mark.parametrize('sleep_time', [0.005])
+def test_parallel_actions(
+        many_equal_images: List[Path], num_images: int, parallel: int, sleep_time: float
+) -> None:
+    equals = ImagePairFinder.create(
+        many_equal_images, HASH_ALGORITHM, options=PairFinderOptions(group=False)
+    ).get_equal_groups()
+    assert len(equals) == factorial(num_images) / (factorial(2) * factorial(num_images - 2))
+
+    execution_time_single = actions_execution_time(
+        equals, sleep_time, []
+    )
+    execution_time_parallel = actions_execution_time(
+        equals, sleep_time, ['--parallel-actions', str(parallel)]
+    )
+    assert execution_time_parallel < execution_time_single
+
+
+def actions_execution_time(equals: Results, sleep_time: float, extra_args: List[str]) -> timedelta:
+    args = parse_command_line(
+        ['.', '--on-equal', 'exec', '--exec', f'sleep {sleep_time}'] + extra_args
+    )
+    start_time = datetime.now()
+    duplicate.execute_actions(equals, args)
+    return datetime.now() - start_time
 
 
 @pytest.mark.parametrize('option', ['unknown-option'])

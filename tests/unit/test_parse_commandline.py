@@ -47,9 +47,26 @@ def test_parallel_default_arg() -> None:
     assert args.parallel == cpu_count()
 
 
-def test_parallel_explicit_arg() -> None:
-    args = parse_command_line(['.', '--parallel', '2'])
-    assert args.parallel == 2
+@pytest.mark.parametrize('parallel', ['1', '2', '4', '8', '16'])
+def test_parallel_explicit_arg(parallel) -> None:
+    args = parse_command_line(['.', '--parallel', parallel])
+    assert args.parallel == int(parallel)
+
+
+def test_parallel_actions_unspecified() -> None:
+    args = parse_command_line(['.'])
+    assert args.parallel_actions is None
+
+
+def test_parallel_actions_default_arg() -> None:
+    args = parse_command_line(['.', '--parallel-actions'])
+    assert args.parallel_actions == cpu_count()
+
+
+@pytest.mark.parametrize('parallel', ['1', '2', '4', '8', '16'])
+def test_parallel_actions_explicit_arg(parallel) -> None:
+    args = parse_command_line(['.', '--parallel-actions', parallel])
+    assert args.parallel_actions == int(parallel)
 
 
 def test_exclude_dir_unspecified() -> None:

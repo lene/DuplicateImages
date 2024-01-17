@@ -1,6 +1,6 @@
 # Changelog
 
-## [0.10.8] - 2024-01-16
+## [0.10.8] - 2024-01-17
 
 ### Added
 - optional argument to specify the number of threads with `--parallel`

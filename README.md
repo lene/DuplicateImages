@@ -129,6 +129,9 @@ with the `--group` argument may be more than two images considered equal.
 Use the `--parallel` option to utilize all free cores on your system for calculating image hashes.
 Optionally, you can specify the number of processes to use with `--parallel $N`.
 
+To execute the `--on-equal` actions in parallel, use the `--parallel-actions` option, which also can
+take an optional number of processes to use as argument.
+
 ### Excluding subfolders
 
 Use the `--exclude-dir` option to exclude subfolders of `$IMAGE_ROOT` from the search. The argument

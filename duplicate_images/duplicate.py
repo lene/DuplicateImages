@@ -3,6 +3,7 @@
 import logging
 import re
 from argparse import Namespace
+from multiprocessing.pool import ThreadPool
 from os import walk, access, R_OK
 from pathlib import Path
 from typing import Callable, List, Optional
@@ -12,7 +13,7 @@ from filetype import guess
 from pillow_heif import register_heif_opener
 
 from duplicate_images.common import path_with_parent, log_execution_time
-from duplicate_images.function_types import Results
+from duplicate_images.function_types import Results, ImageGroup, ActionFunction
 from duplicate_images.hash_store import FileHashStore
 from duplicate_images.image_pair_finder import ImagePairFinder, PairFinderOptions
 from duplicate_images.log import setup_logging
@@ -81,11 +82,19 @@ def get_matches(
 
 def execute_actions(matches: Results, args: Namespace) -> None:
     action_equal = ACTIONS_ON_EQUALITY[args.on_equal]
-    for group in sorted(matches):
-        try:
-            action_equal(args, group)
-        except FileNotFoundError:
-            continue
+    if args.parallel_actions:
+        with ThreadPool(args.parallel_actions) as pool:
+            pool.map(lambda group: execute_action(action_equal, group, args), matches)
+    else:
+        for group in sorted(matches):
+            execute_action(action_equal, group, args)
+
+
+def execute_action(action: ActionFunction, group: ImageGroup, args: Namespace) -> None:
+    try:
+        action(args, group)
+    except FileNotFoundError:
+        pass
 
 
 def set_max_image_pixels(args: Namespace) -> None:
