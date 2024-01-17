@@ -15,7 +15,9 @@
 
 GITLAB_PROJECT_ID=6643206
 CI_LINT_OUTPUT=/tmp/gitlab-ci-lint.json
-
+RED_TEXT='\e[38;5;196m'
+GREEN_TEXT='\e[38;5;46m'
+RESET_TEXT='\e[0m'
 STATUS=0
 
 poetry run pytest -n auto tests/unit || STATUS=1
@@ -33,9 +35,11 @@ if [ "$GITLAB_ACCESS_TOKEN" != "" ]; then
         --header 'Content-Type: application/json' \
         --header "PRIVATE-TOKEN: $GITLAB_ACCESS_TOKEN" \
         --data @- > "$CI_LINT_OUTPUT"
-    echo "GitLab CI valid: $(jq -r .valid < "$CI_LINT_OUTPUT")"
-    if [ "$(jq -r .valid <"$CI_LINT_OUTPUT")" != "true" ]; then
-        STATUS=1
+    VALID=$(jq -r .valid < "$CI_LINT_OUTPUT")
+    if [ "$VALID" = "true" ]; then
+        echo "GitLab CI valid: ${GREEN_TEXT}$VALID${RESET_TEXT}"
+    else
+        echo "GitLab CI valid: ${RED_TEXT}$VALID${RESET_TEXT}"
         echo "errors: $(jq .errors < "$CI_LINT_OUTPUT")"
         echo "warnings: $(jq .warnings < "$CI_LINT_OUTPUT")"
     fi
@@ -46,18 +50,22 @@ fi
 
 # check Changelog is updated
 VERSION=$(egrep 'version = ".*"' pyproject.toml | cut -d \" -f 2)
-if test -z "$VERSION"; then echo 'version not found in pyproject.toml'; STATUS=1; fi
-if ! grep -q "$VERSION" CHANGELOG.md
-then echo "$VERSION not found in changelog"; STATUS=1
-else echo "$VERSION found in CHANGELOG.md, cool"
-fi
-if ! fgrep -q "...$VERSION" CHANGELOG.md
-then echo "link to $VERSION diff not found in changelog"; STATUS=1
-else echo "link to $VERSION diff found in CHANGELOG.md, cool"
-fi
-if ! fgrep "## [$VERSION] - $(date +%Y-%m-%d)" CHANGELOG.md
-then echo "date not set correctly in changelog"; STATUS=1
-else echo "date in CHANGELOG.md is $(date +%Y-%m-%d), cool"
+if test -z "$VERSION"
+then echo "${RED_TEXT}version not found in pyproject.toml${RESET_TEXT}"; STATUS=1
+else
+  echo "${GREEN_TEXT}Version $VERSION${RESET_TEXT}"
+  if ! grep -q "$VERSION" CHANGELOG.md
+  then echo "${RED_TEXT}$VERSION not found in changelog${RESET_TEXT}"; STATUS=1
+  else echo "${GREEN_TEXT}$VERSION found in CHANGELOG.md, cool${RESET_TEXT}"
+  fi
+  if ! fgrep -q "...$VERSION" CHANGELOG.md
+  then echo "${RED_TEXT}link to $VERSION diff not found in changelog${RESET_TEXT}"; STATUS=1
+  else echo "${GREEN_TEXT}link to $VERSION diff found in CHANGELOG.md, cool${RESET_TEXT}"
+  fi
+  if ! fgrep -q "## [$VERSION] - $(date +%Y-%m-%d)" CHANGELOG.md
+  then echo "${RED_TEXT}date not set correctly in changelog${RESET_TEXT}"; STATUS=1
+  else echo "${GREEN_TEXT}date in CHANGELOG.md is $(date +%Y-%m-%d), cool${RESET_TEXT}"
+  fi
 fi
 
 if [ $STATUS -gt 0 ]; then
@@ -67,5 +75,8 @@ if [ $STATUS -gt 0 ]; then
     STATUS=0
   fi
 fi
-echo Status: $STATUS
+if [ $STATUS -gt 0 ]
+then echo "Status: ${RED_TEXT}${STATUS}${RESET_TEXT}"
+else echo "Status: ${GREEN_TEXT}${STATUS}${RESET_TEXT}"
+fi
 exit $STATUS
