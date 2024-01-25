@@ -1,4 +1,7 @@
 #!/usr/bin/env /usr/bin/python3
+"""
+The main script for the `find-dups` command line tool.
+"""
 
 import logging
 import re

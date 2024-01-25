@@ -1,3 +1,7 @@
+"""
+Finds duplicate images by comparing their image hashes using the given hash
+algorithm
+"""
 __author__ = 'Lene Preuss <lene.preuss@gmail.com>'
 
 import logging
@@ -31,6 +35,9 @@ def group_results_as_tuples(results: ResultsGenerator) -> Results:
 
 
 class ImagePairFinder:
+    """
+    Finds duplicate images by comparing their image hashes
+    """
 
     @classmethod
     def create(

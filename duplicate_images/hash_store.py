@@ -1,3 +1,6 @@
+"""
+Persistent storage for calculated image hashes
+"""
 __author__ = 'Lene Preuss <lene.preuss@gmail.com>'
 
 import json
@@ -13,6 +16,11 @@ from duplicate_images.function_types import Cache
 
 
 class NullHashStore:
+    """
+    Hash store that does not store anything but can be used as a drop-in
+    replacement for `FileHashStore` and `PickleHashStore` when no persistent
+    storage is desired
+    """
 
     def __init__(self) -> None:
         logging.info('No persistent storage for calculated image hashes set up')
@@ -34,7 +42,11 @@ HashStore = Union[NullHashStore, 'FileHashStore', 'PickleHashStore', 'JSONHashSt
 
 
 class FileHashStore:
-
+    """
+    Base class for persistent storage of calculated image hashes, providing all
+    necessary functionality except for reading and writing data to various file
+    formats
+    """
     @staticmethod
     def create(
             store_path: Optional[Path], algorithm: str, hash_size_kwargs: Dict
@@ -117,6 +129,10 @@ class FileHashStore:
 
 
 class PickleHashStore(FileHashStore):
+    """
+    Implementation of `FileHashStore` that reads and stores the calculated
+    image hashes in Pickle format
+    """
 
     @log_execution_time()
     def load(self) -> None:
@@ -144,6 +160,10 @@ def load_values_and_metadata(file: IO) -> Tuple[Cache, Dict]:
 
 
 class JSONHashStore(FileHashStore):
+    """
+    Implementation of `FileHashStore` that reads and stores the calculated
+    image hashes in JSON format
+    """
 
     @log_execution_time()
     def load(self) -> None:

@@ -1,3 +1,6 @@
+"""
+Calculate the image hashes of a given set of images
+"""
 __author__ = 'Lene Preuss <lene.preuss@gmail.com>'
 
 import logging
@@ -19,6 +22,11 @@ from duplicate_images.progress_bar_manager import ProgressBarManager, NullProgre
 
 
 class ImageHashScanner:
+    """
+    Reads images from the given list of files and calculates their image hashes,
+    using a single thread only
+    """
+
     @staticmethod
     def create(
             files: List[Path], hash_algorithm: HashFunction,
@@ -75,6 +83,10 @@ class ImageHashScanner:
 
 
 class ParallelImageHashScanner(ImageHashScanner):
+    """
+    Reads images from the given list of files and calculates their image hashes,
+    using a specified number of threads in parallel
+    """
 
     def __init__(  # pylint: disable = too-many-arguments
             self,

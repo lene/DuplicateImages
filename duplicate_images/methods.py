@@ -1,3 +1,6 @@
+"""
+Definition of the possible actions run on sets of equal images
+"""
 __author__ = 'Lene Preuss <lene.preuss@gmail.com>'
 
 import logging

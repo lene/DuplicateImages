@@ -1,3 +1,7 @@
+"""
+Shorter and more descriptive type aliases used in static type checking for the
+`duplicate_images` package.
+"""
 __author__ = 'Lene Preuss <lene.preuss@gmail.com>'
 
 from argparse import Namespace

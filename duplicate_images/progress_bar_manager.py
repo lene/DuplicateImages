@@ -1,3 +1,6 @@
+"""
+Controlling the progress bars shown during processing images
+"""
 __author__ = 'Lene Preuss <lene.preuss@gmail.com>'
 
 from typing import Optional
@@ -6,7 +9,10 @@ from tqdm import tqdm
 
 
 class ProgressBarManager:
-
+    """
+    Manages the progress bars shown during image scan and, optionally, duplicate
+    detection
+    """
     @classmethod
     def create(cls, files_length: int, active: bool = False) -> 'ProgressBarManager':
         return ProgressBarManager(files_length) if active else NullProgressBarManager()
@@ -44,7 +50,10 @@ class ProgressBarManager:
 
 
 class NullProgressBarManager(ProgressBarManager):
-
+    """
+    Implementation of `ProgressBarManager` that does nothing but can be used in
+    place of one
+    """
     def __init__(self) -> None:
         super().__init__(0)
 

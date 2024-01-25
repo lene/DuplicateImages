@@ -1,3 +1,6 @@
+"""
+Functions used in multiple places
+"""
 __author__ = 'Lene Preuss <lene.preuss@gmail.com>'
 
 import logging

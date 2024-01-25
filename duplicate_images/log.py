@@ -1,3 +1,6 @@
+"""
+Logging setup
+"""
 __author__ = 'Lene Preuss <lene.preuss@gmail.com>'
 
 import logging

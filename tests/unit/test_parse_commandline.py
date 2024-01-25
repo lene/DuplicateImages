@@ -1,3 +1,4 @@
+# pylint: disable=missing-docstring
 __author__ = 'Lene Preuss <lene.preuss@gmail.com>'
 
 from os import cpu_count

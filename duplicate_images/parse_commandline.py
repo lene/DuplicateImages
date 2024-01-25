@@ -1,4 +1,7 @@
-__author__ = 'lene'
+"""
+Define and parse command line arguments for the `find-dups` command line tool
+"""
+__author__ = 'Lene Preuss <lene.preuss@gmail.com>'
 
 from os import cpu_count
 from argparse import ArgumentParser, Namespace

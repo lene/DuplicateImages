@@ -69,8 +69,6 @@ disable=raw-checker-failed,
         deprecated-pragma,
         use-symbolic-message-instead,
         missing-function-docstring,
-        missing-class-docstring,
-        missing-module-docstring,
         unsubscriptable-object,
         consider-using-with
 

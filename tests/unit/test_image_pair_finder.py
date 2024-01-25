@@ -1,4 +1,5 @@
-__author__ = 'lene'
+# pylint: disable=missing-docstring
+__author__ = 'Lene Preuss <lene.preuss@gmail.com>'
 
 from pathlib import Path
 from tempfile import TemporaryDirectory
