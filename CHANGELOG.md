@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.10.9] - 2024-01-25
+
+### Fixed
+- Cache file is only written to disk if it is changed
+
 ## [0.10.8] - 2024-01-17
 
 ### Added
@@ -276,6 +281,7 @@
 - actions if equal: delete one of the pics, view with `xv` or print
 
 
+[0.10.9]: https://gitlab.com/duplicateimages/DuplicateImages/-/compare/0.10.8...0.10.9
 [0.10.8]: https://gitlab.com/duplicateimages/DuplicateImages/-/compare/0.10.7...0.10.8
 [0.10.7]: https://gitlab.com/duplicateimages/DuplicateImages/-/compare/0.10.6...0.10.7
 [0.10.6]: https://gitlab.com/duplicateimages/DuplicateImages/-/compare/0.10.5...0.10.6
