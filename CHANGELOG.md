@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.11.0] - 2024-01-25
+
+### Added
+- Pydoc for modules and classes
+
 ## [0.10.9] - 2024-01-25
 
 ### Fixed
@@ -281,6 +286,7 @@
 - actions if equal: delete one of the pics, view with `xv` or print
 
 
+[0.11.0]: https://gitlab.com/duplicateimages/DuplicateImages/-/compare/0.10.9...0.11.0
 [0.10.9]: https://gitlab.com/duplicateimages/DuplicateImages/-/compare/0.10.8...0.10.9
 [0.10.8]: https://gitlab.com/duplicateimages/DuplicateImages/-/compare/0.10.7...0.10.8
 [0.10.7]: https://gitlab.com/duplicateimages/DuplicateImages/-/compare/0.10.6...0.10.7
