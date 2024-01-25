@@ -4,15 +4,16 @@ import logging
 from itertools import combinations
 from pathlib import Path
 from time import time
-from typing import Dict, List, Iterator, Optional
+from typing import Dict, List, Iterator
 
 from imagehash import ImageHash
 
 from duplicate_images.common import log_execution_time
 from duplicate_images.function_types import (
-    Cache, HashFunction, ImageGroup, Results, ResultsGenerator, ResultsGrouper
+    HashFunction, ImageGroup, Results, ResultsGenerator, ResultsGrouper
 )
 from duplicate_images.hash_scanner import ImageHashScanner
+from duplicate_images.hash_store import HashStore, NullHashStore
 from duplicate_images.pair_finder_options import PairFinderOptions
 from duplicate_images.progress_bar_manager import ProgressBarManager, NullProgressBarManager
 
@@ -35,7 +36,7 @@ class ImagePairFinder:
     def create(
             cls, files: List[Path], hash_algorithm: HashFunction,
             options: PairFinderOptions = PairFinderOptions(),
-            hash_store: Optional[Cache] = None
+            hash_store: HashStore = NullHashStore()
     ) -> 'ImagePairFinder':
         group_results = group_results_as_tuples if options.group else group_results_as_pairs
         progress_bars = ProgressBarManager.create(len(files), options.show_progress_bars)

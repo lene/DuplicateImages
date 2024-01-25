@@ -11,7 +11,8 @@ from PIL import Image
 from PIL.Image import DecompressionBombError
 
 from duplicate_images.common import path_with_parent
-from duplicate_images.function_types import Cache, CacheEntry, HashFunction
+from duplicate_images.function_types import CacheEntry, HashFunction
+from duplicate_images.hash_store import HashStore, NullHashStore
 from duplicate_images.methods import get_hash_size_kwargs
 from duplicate_images.pair_finder_options import PairFinderOptions
 from duplicate_images.progress_bar_manager import ProgressBarManager, NullProgressBarManager
@@ -22,7 +23,7 @@ class ImageHashScanner:
     def create(
             files: List[Path], hash_algorithm: HashFunction,
             options: PairFinderOptions,
-            hash_store: Optional[Cache] = None,
+            hash_store: HashStore = NullHashStore(),
             progress_bars: ProgressBarManager = NullProgressBarManager()
     ) -> 'ImageHashScanner':
         hash_size_kwargs = get_hash_size_kwargs(hash_algorithm, options.hash_size)
@@ -38,13 +39,13 @@ class ImageHashScanner:
     def __init__(  # pylint: disable = too-many-arguments
             self, files: List[Path], hash_algorithm: HashFunction,
             hash_size_kwargs: Optional[Dict] = None,
-            hash_store: Optional[Cache] = None,
+            hash_store: HashStore = NullHashStore(),
             progress_bars: ProgressBarManager = NullProgressBarManager()
     ) -> None:
         self.files = files
         self.algorithm = hash_algorithm
         self.hash_size_kwargs = hash_size_kwargs if hash_size_kwargs is not None else {}
-        self.hash_store = hash_store if hash_store is not None else {}
+        self.hash_store = hash_store
         self.progress_bars = progress_bars
         logging.info('Using %s', self.class_string())
 
@@ -62,7 +63,7 @@ class ImageHashScanner:
                 return file, cached
 
             image_hash = self.algorithm(Image.open(file), **self.hash_size_kwargs)
-            self.hash_store[file] = image_hash
+            self.hash_store.add(file, image_hash)
             return file, image_hash
         except OSError as err:
             logging.warning('%s: %s', path_with_parent(file), err)
@@ -79,7 +80,7 @@ class ParallelImageHashScanner(ImageHashScanner):
             self,
             files: List[Path], hash_algorithm: HashFunction,
             hash_size_kwargs: Optional[Dict] = None,
-            hash_store: Optional[Cache] = None,
+            hash_store: HashStore = NullHashStore(),
             progress_bars: ProgressBarManager = NullProgressBarManager(),
             parallel: int = os.cpu_count() or 1
     ) -> None:

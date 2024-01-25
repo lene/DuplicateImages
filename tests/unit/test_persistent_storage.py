@@ -5,7 +5,8 @@ import pickle
 from itertools import combinations
 from pathlib import Path
 from tempfile import TemporaryDirectory
-from typing import Optional, List
+from time import sleep
+from typing import List
 
 import pytest
 
@@ -13,19 +14,26 @@ from duplicate_images import duplicate
 from duplicate_images.function_types import Cache
 from duplicate_images.image_pair_finder import ImagePairFinder
 from duplicate_images.pair_finder_options import PairFinderOptions
-from duplicate_images.hash_store import PickleHashStore, JSONHashStore, FileHashStore
-from .conftest import MOCK_IMAGE_HASH_VALUE, mock_algorithm
+from duplicate_images.hash_store import (
+    PickleHashStore, JSONHashStore, FileHashStore, HashStore, NullHashStore
+)
+from .conftest import MOCK_IMAGE_HASH_VALUE, mock_algorithm, create_jpg_and_png
 
 DEFAULT_ALGORITHM = 'phash'
 DEFAULT_HASH_SIZE = {'hash_size': 8}
 DEFAULT_METADATA = {'algorithm': DEFAULT_ALGORITHM, **DEFAULT_HASH_SIZE}
 
 
+class MockHashStore(FileHashStore):  # pylint: disable=abstract-method
+    def __init__(self, values: Cache) -> None:  # pylint: disable=super-init-not-called
+        self.values = values
+
+
 def test_empty_hash_store_calculates_hash_values(
         top_directory: TemporaryDirectory, image_files: List[Path],
         reset_call_count  # pylint: disable=unused-argument
 ) -> None:
-    finder = generate_pair_finder(top_directory, None)
+    finder = generate_pair_finder(top_directory, NullHashStore())
     assert mock_algorithm.call_count > 0
     check_correct_results(finder, image_files)
 
@@ -34,7 +42,7 @@ def test_filled_hash_store_does_not_calculate_hash_values(
         top_directory: TemporaryDirectory, image_files: List[Path],
         reset_call_count  # pylint: disable=unused-argument
 ) -> None:
-    hash_store = {path: MOCK_IMAGE_HASH_VALUE for path in image_files}
+    hash_store = MockHashStore({path: MOCK_IMAGE_HASH_VALUE for path in image_files})
     generate_pair_finder(top_directory, hash_store)
     assert mock_algorithm.call_count == 0
 
@@ -42,7 +50,7 @@ def test_filled_hash_store_does_not_calculate_hash_values(
 def test_empty_hash_store_is_filled(
         top_directory: TemporaryDirectory, reset_call_count  # pylint: disable=unused-argument
 ) -> None:
-    finder = generate_pair_finder(top_directory, None)
+    finder = generate_pair_finder(top_directory, NullHashStore())
     original_call_number = mock_algorithm.call_count
     finder.get_equal_groups()
     assert mock_algorithm.call_count == original_call_number
@@ -133,12 +141,36 @@ def test_checked_load_sets_metadata(
     assert hash_store.metadata() == DEFAULT_METADATA
 
 
+@pytest.mark.parametrize('file_type', ['pickle', 'json'])
+def test_hash_store_not_written_if_not_changed(
+        top_directory: TemporaryDirectory, hash_store_path: Path
+) -> None:
+    create_verified_hash_store(top_directory, hash_store_path)
+    assert hash_store_path.is_file()
+    creation_time = hash_store_path.stat().st_ctime
+    scan_images_with_hash_store(top_directory, hash_store_path)
+    assert hash_store_path.stat().st_ctime == creation_time
+    assert hash_store_path.stat().st_mtime == creation_time
+
+
+@pytest.mark.parametrize('file_type', ['pickle', 'json'])
+def test_hash_store_is_accessed_even_if_not_changed(
+        top_directory: TemporaryDirectory, hash_store_path: Path
+) -> None:
+    create_verified_hash_store(top_directory, hash_store_path)
+    assert hash_store_path.is_file()
+    sleep(0.01)  # ensure the access time is different
+    creation_time = hash_store_path.stat().st_ctime
+    scan_images_with_hash_store(top_directory, hash_store_path)
+    assert hash_store_path.stat().st_atime > creation_time
+
+
 def image_list(top_directory: TemporaryDirectory) -> List[Path]:
     return sorted(duplicate.files_in_dirs([top_directory.name]))
 
 
 def generate_pair_finder(
-        top_directory: TemporaryDirectory, hash_store: Optional[Cache]
+        top_directory: TemporaryDirectory, hash_store: HashStore
 ) -> ImagePairFinder:
     return ImagePairFinder.create(
         image_list(top_directory), mock_algorithm, options=PairFinderOptions(slow=True),
@@ -147,6 +179,11 @@ def generate_pair_finder(
 
 
 def create_verified_hash_store(top_directory: TemporaryDirectory, store_path: Path) -> None:
+    create_jpg_and_png(top_directory)
+    scan_images_with_hash_store(top_directory, store_path)
+
+
+def scan_images_with_hash_store(top_directory: TemporaryDirectory, store_path: Path) -> None:
     with FileHashStore.create(store_path, DEFAULT_ALGORITHM, DEFAULT_HASH_SIZE) as hash_store:
         finder = generate_pair_finder(top_directory, hash_store)
         finder.get_equal_groups()

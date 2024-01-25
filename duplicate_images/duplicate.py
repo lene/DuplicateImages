@@ -76,7 +76,6 @@ def get_matches(
     with FileHashStore.create(hash_store_path, algorithm, hash_size_kwargs) as hash_store:
         return ImagePairFinder.create(
             image_files, hash_algorithm, options=options, hash_store=hash_store,
-
         ).get_equal_groups()
 
 

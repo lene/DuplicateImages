@@ -17,18 +17,27 @@ class NullHashStore:
     def __init__(self) -> None:
         logging.info('No persistent storage for calculated image hashes set up')
 
-    def __enter__(self) -> Cache:
-        return {}
+    def __enter__(self) -> 'NullHashStore':
+        return self
 
     def __exit__(self, _: Any, __: Any, ___: Any) -> None:
         pass
 
+    def get(self, _: Path) -> Optional[ImageHash]:
+        return None
+
+    def add(self, _: Path, __: ImageHash) -> None:
+        pass
+
+
+HashStore = Union[NullHashStore, 'FileHashStore', 'PickleHashStore', 'JSONHashStore']
+
 
 class FileHashStore:
 
-    @classmethod
+    @staticmethod
     def create(
-            cls, store_path: Optional[Path], algorithm: str, hash_size_kwargs: Dict
+            store_path: Optional[Path], algorithm: str, hash_size_kwargs: Dict
     ) -> Union['FileHashStore', NullHashStore]:
         if store_path is None:
             return NullHashStore()
@@ -41,23 +50,33 @@ class FileHashStore:
         self.algorithm = algorithm
         self.hash_size_kwargs = hash_size_kwargs
         self.values: Cache = {}
+        self.dirty: bool = False
         try:
             self.load()
             logging.info(
                 'Opened persistent storage %s with %d entries', store_path, len(self.values)
             )
         except (FileNotFoundError, EOFError, pickle.PickleError):
-            logging.info('Creating new persistent storage at %s', store_path)
+            logging.info('Creating new %s at %s', self.__class__.__name__, store_path)
 
-    def __enter__(self) -> Cache:
-        return self.values
+    def __enter__(self) -> 'FileHashStore':
+        return self
 
     def __exit__(self, _: Any, __: Any, ___: Any) -> None:
+        if not self.dirty:
+            return
         if self.store_path.is_file():
             if self.store_path.with_suffix('.bak').is_file():
                 self.store_path.with_suffix('.bak').unlink()
             self.store_path.rename(self.store_path.with_suffix('.bak'))
         self.dump()
+
+    def add(self, file: Path, image_hash: ImageHash) -> None:
+        self.values[file] = image_hash
+        self.dirty = True
+
+    def get(self, file: Path) -> Optional[ImageHash]:
+        return self.values.get(file)
 
     def metadata(self) -> Dict:
         return {'algorithm': self.algorithm, **self.hash_size_kwargs}
@@ -140,6 +159,3 @@ class JSONHashStore(FileHashStore):
     def dump(self) -> None:
         with self.store_path.open('w') as file:
             json.dump((self.converted_values(), self.metadata()), file)
-
-
-HashStore = Union[NullHashStore, PickleHashStore, JSONHashStore]

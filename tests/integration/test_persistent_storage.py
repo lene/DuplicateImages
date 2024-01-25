@@ -22,7 +22,7 @@ def test_open_hash_store_with_filename(
     creation_time = cache_file.stat().st_ctime
     get_matches([folder], 'phash', hash_store_path=cache_file)
     assert average_hash.call_count == 0
-    assert cache_file.stat().st_ctime > creation_time
+    assert cache_file.stat().st_atime > creation_time
 
 
 @pytest.mark.parametrize('test_set', ['different', 'equal_but_binary_different'])
@@ -138,10 +138,12 @@ def test_opening_with_different_algorithm_parameters_leads_to_error(
         tmp_dir: Path, data_dir: Path, test_set: str, file_type: str, hash_size: Tuple[int, int]
 ) -> None:
     cache_file = tmp_dir / f'hash_store.{file_type}'
+    assert not cache_file.is_file()
     get_matches(
         [data_dir / test_set], 'phash', options=PairFinderOptions(hash_size=hash_size[0]),
         hash_store_path=cache_file
     )
+    assert cache_file.is_file()
     with pytest.raises(ValueError, match='Metadata mismatch'):
         get_matches(
             [data_dir / test_set], 'phash', options=PairFinderOptions(hash_size=hash_size[1]),
