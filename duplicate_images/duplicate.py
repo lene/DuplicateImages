@@ -23,7 +23,11 @@ from duplicate_images.log import setup_logging
 from duplicate_images.methods import ACTIONS_ON_EQUALITY, IMAGE_HASH_ALGORITHM, get_hash_size_kwargs
 from duplicate_images.parse_commandline import parse_command_line
 
-register_heif_opener()
+try:
+    register_heif_opener()
+except ImportError as error:
+    logging.warning('HEIF support not available: %s', error)
+    logging.warning('See https://github.com/lene/DuplicateImages/issues/11 for details')
 
 
 def is_image_file(filename: Path) -> bool:
