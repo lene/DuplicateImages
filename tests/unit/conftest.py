@@ -161,7 +161,6 @@ def reset_call_count():
 
 
 @pytest.fixture
-@pytest.mark.parametrize('file_type', ['pickle', 'json'])
 def hash_store_path(file_type: str) -> Path:
     top_directory = Path(mkdtemp())
     return Path(NamedTemporaryFile(dir=top_directory, suffix=f'.{file_type}').name)
