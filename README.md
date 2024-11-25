@@ -64,12 +64,13 @@ algorithms the hash size defaults to 8. For `whash` it must be a power of 2.
 Use the `--max-distance` parameter to tune how close images should be to be considered duplicates.
 The argument is a positive integer. Its value is highly dependent on the algorithm used and the 
 nature of the images compared, so the best value for your use case can oly be found through 
-experimentation.
+experimentation. 
 
 **NOTE:** using the `--max-distance` parameter slows down the comparison considerably with large
 image collections, making the runtime complexity go from O(N) to O(N<sup>2</sup>). If you want to 
 scan collections with at least thousands of images, it is highly recommended to tune the desired 
-similarity threshold with the `--hash-size` parameter alone, if that is at all possible.
+similarity threshold with the `--hash-size` parameter alone, if that is at all possible. 
+The '--max-distance' parameter it's incompatible with --group parameter.
 
 ### Pre-storing and using image hashes to speed up computation
 
