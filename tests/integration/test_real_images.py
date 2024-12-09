@@ -26,7 +26,7 @@ HUGE_IMAGE_SIZE = 20000 * 20000
     [('ahash', 0), ('dhash', 0), ('phash', 0), ('whash', 0)]
 )
 @pytest.mark.parametrize('image_pair', ['pair1', 'pair2'])
-def test_similar(  # pylint:disable=too-many-arguments
+def test_similar(  # pylint:disable = too-many-arguments,too-many-positional-arguments
         data_dir: Path, image_pair: str, algorithm: str, expected_pairs: int,
         slow: bool, parallel: bool
 ) -> None:
@@ -91,7 +91,7 @@ def test_similar_matches_with_smaller_hash_size(
     [('ahash', 0), ('dhash', 0), ('colorhash', 0), ('phash', 0), ('whash', 0)]
 )
 @pytest.mark.parametrize('image_pair', ['many'])
-def test_similar_many(  # pylint:disable=too-many-arguments
+def test_similar_many(  # pylint:disable = too-many-arguments,too-many-positional-arguments
         data_dir: Path, image_pair: str, algorithm: str, expected_pairs: int,
         slow: bool, parallel: bool
 ) -> None:
@@ -111,7 +111,7 @@ def test_similar_many(  # pylint:disable=too-many-arguments
         'jpeg_quality', 'jpeg_vs_heic', 'heic_bit_depth', 'heic_lossless_vs_lossy', 'shrunk10%'
     ]
 )
-def test_equal_but_binary_different(  # pylint:disable=too-many-arguments
+def test_equal_but_binary_different(  # pylint:disable=R0913,R0917
         data_dir: Path, image_pair: str, algorithm: str, expected_pairs: int,
         slow: bool, parallel: bool
 ) -> None:
@@ -127,7 +127,7 @@ def test_equal_but_binary_different(  # pylint:disable=too-many-arguments
     [('ahash', 0), ('dhash', 0), ('colorhash', 0), ('phash', 0), ('whash', 0)]
 )
 @pytest.mark.parametrize('image_pair', ['jpeg_75', 'jpeg_50', 'jpeg_25', 'jpeg_10'])
-def test_jpeg_artifacts(  # pylint:disable=too-many-arguments
+def test_jpeg_artifacts(  # pylint:disable = too-many-arguments,too-many-positional-arguments
         data_dir: Path, image_pair: str, algorithm: str, expected_pairs: int,
         slow: bool, parallel: bool
 ) -> None:
@@ -172,7 +172,7 @@ def test_different(
         ('similar', 'pair2', 'whash', 0),
     ]
 )
-def test_inconsistent_results_for_different_algorithms(  # pylint:disable=too-many-arguments
+def test_inconsistent_results_for_different_algorithms(  # pylint:disable=R0913,R0917
         data_dir: Path, test_case: str, image_pair: str, algorithm: str, expected_pairs: int,
         slow: bool, parallel: bool
 ) -> None:

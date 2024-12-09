@@ -44,7 +44,7 @@ class ImageHashScanner:
             options.parallel
         )
 
-    def __init__(  # pylint: disable = too-many-arguments
+    def __init__(  # pylint: disable = too-many-arguments,too-many-positional-arguments
             self, files: List[Path], hash_algorithm: HashFunction,
             hash_size_kwargs: Optional[Dict] = None,
             hash_store: HashStore = NullHashStore(),
@@ -88,7 +88,7 @@ class ParallelImageHashScanner(ImageHashScanner):
     using a specified number of threads in parallel
     """
 
-    def __init__(  # pylint: disable = too-many-arguments
+    def __init__(  # pylint: disable = too-many-arguments,too-many-positional-arguments
             self,
             files: List[Path], hash_algorithm: HashFunction,
             hash_size_kwargs: Optional[Dict] = None,
