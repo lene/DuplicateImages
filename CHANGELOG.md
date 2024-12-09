@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.11.4] - 2024-12-09
+
+### Updated
+- Updated dependencies to fix security vulnerabilities
+
 ## [0.11.3] - 2024-09-11
 
 ### Updated
@@ -303,6 +308,7 @@
 - actions if equal: delete one of the pics, view with `xv` or print
 
 
+[0.11.4]: https://gitlab.com/duplicateimages/DuplicateImages/-/compare/0.11.3...0.11.4
 [0.11.3]: https://gitlab.com/duplicateimages/DuplicateImages/-/compare/0.11.2...0.11.3
 [0.11.2]: https://gitlab.com/duplicateimages/DuplicateImages/-/compare/0.11.1...0.11.2
 [0.11.1]: https://gitlab.com/duplicateimages/DuplicateImages/-/compare/0.11.0...0.11.1

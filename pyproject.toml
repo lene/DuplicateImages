@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "duplicate_images"
-version = "0.11.3"
+version = "0.11.4"
 description = "Finds equal or similar images in a directory containing (many) image files"
 authors = ["Lene Preuss <lene.preuss@gmail.com>"]
 repository = "https://github.com/lene/DuplicateImages.git"
@@ -20,12 +20,12 @@ Wand = ">=0.6"
 pillow = ">=10.0"
 imagehash = ">=4.3"
 coloredlogs = ">=15.0"
-tqdm = ">=4.64"
-pillow-heif = ">=0.15"
-six = ">=1.16"
-numpy = ">=1.23"
+tqdm = ">=4.67"
+pillow-heif = ">=0.21"
+six = ">=1.17"
+numpy = ">=2.0"
 filetype = ">=1.2"
-setuptools = ">=68.2.2"
+setuptools = ">=75.6.0"
 
 [tool.poetry.group.dev.dependencies]
 bandit = ">=1.7.5"
