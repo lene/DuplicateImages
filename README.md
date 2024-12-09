@@ -72,6 +72,9 @@ scan collections with at least thousands of images, it is highly recommended to 
 similarity threshold with the `--hash-size` parameter alone, if that is at all possible. 
 The '--max-distance' parameter it's incompatible with --group parameter.
 
+**NOTE:** the `--max-distance` parameter conflicts with tho `--group` parameter. You can only use 
+one at a time.
+
 ### Pre-storing and using image hashes to speed up computation
 
 Use the `--hash-db ${FILE}.json` or `--hash-db ${FILE}.pickle` option to store image hashes in the 

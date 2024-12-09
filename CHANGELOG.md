@@ -3,6 +3,7 @@
 ## [0.11.4] - 2024-12-09
 
 ### Updated
+- Check for illegal parameter combination `--group` and `--max-distance`
 - Updated dependencies to fix security vulnerabilities
 
 ## [0.11.3] - 2024-09-11

@@ -87,4 +87,6 @@ def parse_command_line(args: Optional[List[str]] = None) -> Namespace:
         parser.error('--exec argument is required')
     if namespace.algorithm == 'whash' and not is_power_of_2(namespace.hash_size):
         parser.error('whash requires hash_size to be a power of 2')
+    if namespace.group and namespace.max_distance:
+        parser.error('--max-distance: not allowed with argument --group')
     return namespace
