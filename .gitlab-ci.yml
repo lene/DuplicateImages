@@ -15,8 +15,6 @@ include:
   rules:
     - if: '$CI_PIPELINE_SOURCE == "push" || $CI_PIPELINE_SOURCE == "merge_request_event"'
   before_script:
-    - apt update -y
-    - apt install -y gfortran
     - pip install -q poetry
     - poetry install
 
@@ -58,7 +56,7 @@ bandit:
   extends: .test
   parallel:
     matrix:
-      - PY_VERSION: [ "latest" ]
+      - PY_VERSION: [ "3.12" ]
   script:
     - poetry run bandit -r duplicate_images
 
@@ -96,15 +94,8 @@ RunAndCheckResults:
     - test $NUM_PAIRS -eq $EXPECTED_PAIRS
 
 RunWithArgs:
-  stage: test
-  image: python:latest
-  rules:
-    - if: '$CI_PIPELINE_SOURCE == "push" || $CI_PIPELINE_SOURCE == "merge_request_event"'
-  before_script:
-    - apt update -y
-    - apt install -y gfortran
-    - pip install -q poetry
-    - poetry install
+  extends: .test
+  image: python:3.12
   variables:
     IMAGE_DIR: tests/integration/data
     HASH_DB: test.pickle

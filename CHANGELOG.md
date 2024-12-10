@@ -1,6 +1,6 @@
 # Changelog
 
-## [0.11.4] - 2024-12-10
+## [0.11.4] - 2024-12-16
 
 ### Updated
 - Check for illegal parameter combination `--group` and `--max-distance`
