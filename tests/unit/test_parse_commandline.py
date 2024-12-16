@@ -88,3 +88,8 @@ def test_two_exclude_dirs() -> None:
 def test_one_exclude_dir_with_space() -> None:
     args = parse_command_line(['.', '--exclude-dir', 'foo bar'])
     assert args.exclude_dir == ['foo bar']
+
+
+def test_exec_fails_without_on_equal() -> None:
+    with pytest.raises(SystemExit):
+        parse_command_line(['.', '--exec', 'command'])
