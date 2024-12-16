@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.11.6] - 2024-02-21
+
+### Updated
+- Print warning when specifying `--exec` without `--on-equal exec`
+
 ## [0.11.5] - 2025-02-21
 
 ### Added
@@ -318,6 +323,7 @@
 - actions if equal: delete one of the pics, view with `xv` or print
 
 
+[0.11.6]: https://gitlab.com/duplicateimages/DuplicateImages/-/compare/0.11.5...0.11.6
 [0.11.5]: https://gitlab.com/duplicateimages/DuplicateImages/-/compare/0.11.4...0.11.5
 [0.11.4]: https://gitlab.com/duplicateimages/DuplicateImages/-/compare/0.11.3...0.11.4
 [0.11.3]: https://gitlab.com/duplicateimages/DuplicateImages/-/compare/0.11.2...0.11.3

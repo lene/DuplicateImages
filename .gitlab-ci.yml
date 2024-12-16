@@ -136,8 +136,6 @@ CreateTag:
   rules:
     - if: $CI_COMMIT_BRANCH == "master" && $CI_PIPELINE_SOURCE != "schedule"
       when: on_success
-  needs:
-    - TagIsNew
   before_script:
     - apk update
     - apk add git
