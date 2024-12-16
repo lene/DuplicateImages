@@ -4,6 +4,7 @@
 
 ### Updated
 - Check for illegal parameter combination `--group` and `--max-distance`
+- Explicit support for Python 3.13 by testing it in CI 
 - Updated dependencies to fix security vulnerabilities
 
 ## [0.11.3] - 2024-09-11

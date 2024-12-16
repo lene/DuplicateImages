@@ -9,13 +9,14 @@ include:
 .test:
   parallel:
     matrix:
-      - PY_VERSION: [ "3.9", "3.10", "3.11", "3.12" ]
+      - PY_VERSION: [ "3.9", "3.10", "3.11", "3.12", "3.13" ]
   stage: test
   image: python:$PY_VERSION
   rules:
     - if: '$CI_PIPELINE_SOURCE == "push" || $CI_PIPELINE_SOURCE == "merge_request_event"'
   before_script:
-    - pip install -q poetry
+    - test $(echo $PY_VERSION | cut -d . -f 2) -gt 12 && (apt update && apt install -y gfortran libopenblas-dev)
+    - pip install --root-user-action ignore -q poetry
     - poetry install
 
 unit tests:
@@ -49,7 +50,7 @@ flake8:
 pylint:
   extends: .test
   script:
-    - test "$PY_VERSION" == "3.12" && PYLINT_EXTRA_ARGS="--disable=inconsistent-quotes"
+    - test $(echo $PY_VERSION | cut -d . -f 2) -ge 12 && PYLINT_EXTRA_ARGS="--disable=inconsistent-quotes"
     - poetry run pylint $PYLINT_EXTRA_ARGS duplicate_images tests
 
 bandit:

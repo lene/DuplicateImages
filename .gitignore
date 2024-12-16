@@ -8,4 +8,5 @@ dist
 *.pickle
 *.bak
 fil-result
-
+.cache
+.local
