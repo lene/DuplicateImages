@@ -17,7 +17,7 @@ classifiers = [
 [tool.poetry.dependencies]
 python = ">=3.9"
 Wand = ">=0.6"
-pillow = ">=10.0"
+pillow = ">=11.0"
 imagehash = ">=4.3"
 coloredlogs = ">=15.0"
 tqdm = ">=4.67"
@@ -25,16 +25,16 @@ pillow-heif = ">=0.21"
 six = ">=1.17"
 numpy = ">=2.0"
 filetype = ">=1.2"
-setuptools = ">=75.6.0"
+setuptools = ">=75.6"
 
 [tool.poetry.group.dev.dependencies]
-bandit = ">=1.7.5"
+bandit = ">=1.8"
 lz4 = ">=4.0"
-mypy = ">=1.5"
-flake8 = ">=6.0"
+mypy = ">=1.14"
+flake8 = ">=7.1"
 pytest = ">=7.1"
-pylint = ">=2.15"
-pytest-xdist = ">=3.3"
+pylint = ">=3.3"
+pytest-xdist = ">=3.6"
 ptpython = ">=3.0"
 
 [tool.poetry.scripts]
