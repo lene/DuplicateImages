@@ -50,7 +50,7 @@ def get_hash_size_kwargs(algorithm: HashFunction, size: Optional[int]) -> Dict[s
     if size is None:
         return ALGORITHM_DEFAULTS.get(algorithm, {'hash_size': 8})
     kwarg = next(iter(ALGORITHM_DEFAULTS.get(algorithm, {'hash_size': 8})))
-    return {kwarg: size}
+    return {} if kwarg == 'hash_func' else {kwarg: size}
 
 
 IMAGE_HASH_ALGORITHM = {
@@ -61,6 +61,7 @@ IMAGE_HASH_ALGORITHM = {
     'dhash_vertical': imagehash.dhash_vertical,
     'whash': imagehash.whash,
     'colorhash': imagehash.colorhash,
+    'crop_resistant': imagehash.crop_resistant_hash,
 }  # type: Dict[str, Callable[[Any], imagehash.ImageHash]]
 
 ALGORITHM_DEFAULTS = {
@@ -71,6 +72,7 @@ ALGORITHM_DEFAULTS = {
     imagehash.dhash_vertical: {'hash_size': 8},
     imagehash.whash: {'hash_size': 8},
     imagehash.colorhash: {'binbits': 3},
+    imagehash.crop_resistant_hash: {'hash_func': imagehash.phash},
 }
 
 ACTIONS_ON_EQUALITY: Dict[str, ActionFunction] = {

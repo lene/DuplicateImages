@@ -48,12 +48,12 @@ pixels with the `--max-image-pixels` option.
 
 Use the `--algorithm` option to select how equal images are found. The default algorithm is `phash`.
 
-`ahash`, `colorhash`, `dhash`, `dhash_vertical`, `phash`, `phash_simple`, `whash`: seven different 
-image hashing algorithms. See https://pypi.org/project/ImageHash for an introduction on image 
-hashing and https://tech.okcupid.com/evaluating-perceptual-image-hashes-okcupid for some gory 
-details which image hashing algorithm performs best in which situation. For a start I recommend 
-using `phash`, and only evaluating the other algorithms if `phash` does not perform satisfactorily 
-in your use case.
+`ahash`, `colorhash`, `dhash`, `dhash_vertical`, `phash`, `phash_simple`, `whash`, `crop_resistant`:
+seven different image hashing algorithms. See https://pypi.org/project/ImageHash for an introduction
+on image hashing and https://tech.okcupid.com/evaluating-perceptual-image-hashes-at-okcupid-e98a3e74aa3a 
+for some gory details which image hashing algorithm performs best in which situation. For a start I 
+recommend using `phash`, and only evaluating the other algorithms if `phash` does not perform 
+satisfactorily in your use case.
 
 ### Image similarity threshold configuration
 
