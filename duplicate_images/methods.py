@@ -8,7 +8,7 @@ from argparse import Namespace
 from pathlib import Path
 from shlex import quote
 from subprocess import call  # nosec
-from typing import Any, Callable, Dict, List, Optional
+from typing import Callable, Dict, List, Optional, Union
 
 import imagehash
 
@@ -46,7 +46,7 @@ def shell_exec(args: Namespace, group: ImageGroup) -> None:
     call(cmd, shell=True)  # nosec
 
 
-def get_hash_size_kwargs(algorithm: HashFunction, size: Optional[int]) -> Dict[str, int]:
+def get_hash_size_kwargs(algorithm: HashFunction, size: Optional[int]) -> Dict:
     if size is None:
         return ALGORITHM_DEFAULTS.get(algorithm, {'hash_size': 8})
     kwarg = next(iter(ALGORITHM_DEFAULTS.get(algorithm, {'hash_size': 8})))
@@ -62,9 +62,9 @@ IMAGE_HASH_ALGORITHM = {
     'whash': imagehash.whash,
     'colorhash': imagehash.colorhash,
     'crop_resistant': imagehash.crop_resistant_hash,
-}  # type: Dict[str, Callable[[Any], imagehash.ImageHash]]
+}  # type: Dict[str, HashFunction]
 
-ALGORITHM_DEFAULTS = {
+ALGORITHM_DEFAULTS: Dict[Callable, Dict[str, Union[int, HashFunction]]] = {
     imagehash.average_hash: {'hash_size': 8},
     imagehash.phash: {'hash_size': 8},
     imagehash.phash_simple: {'hash_size': 8},

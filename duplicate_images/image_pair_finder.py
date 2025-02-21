@@ -10,11 +10,9 @@ from pathlib import Path
 from time import time
 from typing import Dict, List, Iterator
 
-from imagehash import ImageHash
-
 from duplicate_images.common import log_execution_time
 from duplicate_images.function_types import (
-    HashFunction, ImageGroup, Results, ResultsGenerator, ResultsGrouper
+    Hash, HashFunction, ImageGroup, Results, ResultsGenerator, ResultsGrouper
 )
 from duplicate_images.hash_scanner import ImageHashScanner
 from duplicate_images.hash_store import HashStore, NullHashStore
@@ -108,8 +106,8 @@ class DictImagePairFinder(ImagePairFinder):
             (result for result in self.precalculated_hashes.values() if len(result) > 1)
         )
 
-    def get_hashes(self) -> Dict[ImageHash, List[Path]]:
-        hash_dict: Dict[ImageHash, List[Path]] = {}
+    def get_hashes(self) -> Dict[Hash, List[Path]]:
+        hash_dict: Dict[Hash, List[Path]] = {}
         for file, image_hash in self.scanner.precalculate_hashes():
             if image_hash is not None:
                 hash_dict.setdefault(image_hash, []).append(file)
@@ -145,7 +143,7 @@ class SlowImagePairFinder(ImagePairFinder):
         self.progress_bars.close()
         return matches
 
-    def get_hashes(self) -> Dict[Path, ImageHash]:
+    def get_hashes(self) -> Dict[Path, Hash]:
         return {
             file: image_hash for file, image_hash in self.scanner.precalculate_hashes()
             if image_hash is not None

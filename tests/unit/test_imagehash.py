@@ -2,9 +2,8 @@
 __author__ = 'Lene Preuss <lene.preuss@gmail.com>'
 
 from pathlib import Path
-from typing import List, Callable, Any
+from typing import List
 
-import imagehash
 import pytest
 
 from duplicate_images.function_types import Results

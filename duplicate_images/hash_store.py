@@ -9,10 +9,10 @@ import pickle  # nosec
 from pathlib import Path
 from typing import Any, IO, Callable, Optional, Union, Dict, Tuple
 
-from imagehash import ImageHash, hex_to_hash
+from imagehash import hex_to_hash
 
 from duplicate_images.common import log_execution_time
-from duplicate_images.function_types import Cache
+from duplicate_images.function_types import Cache, Hash, is_hash
 
 
 class NullHashStore:
@@ -31,10 +31,10 @@ class NullHashStore:
     def __exit__(self, _: Any, __: Any, ___: Any) -> None:
         pass
 
-    def get(self, _: Path) -> Optional[ImageHash]:
+    def get(self, _: Path) -> Optional[Hash]:
         return None
 
-    def add(self, _: Path, __: ImageHash) -> None:
+    def add(self, _: Path, __: Hash) -> None:
         pass
 
 
@@ -83,11 +83,11 @@ class FileHashStore:
             self.store_path.rename(self.store_path.with_suffix('.bak'))
         self.dump()
 
-    def add(self, file: Path, image_hash: ImageHash) -> None:
+    def add(self, file: Path, image_hash: Hash) -> None:
         self.values[file] = image_hash
         self.dirty = True
 
-    def get(self, file: Path) -> Optional[ImageHash]:
+    def get(self, file: Path) -> Optional[Hash]:
         return self.values.get(file)
 
     def metadata(self) -> Dict:
@@ -110,7 +110,7 @@ class FileHashStore:
         bad_keys = [key for key in values.keys() if not isinstance(key, Path)]
         if bad_keys:
             raise ValueError(f'Not a Path: {bad_keys}')
-        bad_values = [value for value in values.values() if not isinstance(value, ImageHash)]
+        bad_values = [value for value in values.values() if not is_hash(value)]
         if bad_values:
             raise ValueError(f'Not an image hash: {bad_values}')
         if metadata['algorithm'] != self.algorithm:

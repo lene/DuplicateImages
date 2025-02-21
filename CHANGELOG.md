@@ -1,6 +1,6 @@
 # Changelog
 
-## [0.11.5] - 2024-12-16
+## [0.11.5] - 2025-02-21
 
 ### Added
 - crop-resistant hash algorithm with `--algorithm=crop_resistant`

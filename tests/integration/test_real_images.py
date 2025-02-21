@@ -47,7 +47,7 @@ def test_hash_distance(
     image_files = sorted(files_in_dirs([folder], is_image_file))
     assert len(image_files) == 2
     hashes = [hash_algorithm(Image.open(file)) for file in image_files]
-    assert hashes[0] - hashes[1] == min_distance, str(hashes[0] - hashes[1])
+    assert hashes[0] - hashes[1] == min_distance, str(hashes[0] - hashes[1])  # type: ignore
 
 
 @pytest.mark.parametrize('parallel', [True, False])

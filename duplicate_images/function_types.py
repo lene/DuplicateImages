@@ -6,16 +6,21 @@ __author__ = 'Lene Preuss <lene.preuss@gmail.com>'
 
 from argparse import Namespace
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional, Tuple, Generator
+from typing import Any, Callable, Dict, List, Optional, Tuple, Generator, Union
 
 from PIL import Image
-from imagehash import ImageHash
+from imagehash import ImageHash, ImageMultiHash
 
-HashFunction = Callable[[Image.Image], ImageHash]
+Hash = Union[ImageHash, ImageMultiHash]
+HashFunction = Callable[[Image.Image], Hash]
 ImageGroup = Tuple[Path, ...]
 ActionFunction = Callable[[Namespace, ImageGroup], Any]
 Results = List[ImageGroup]
 ResultsGenerator = Generator[List[Path], None, None]
 ResultsGrouper = Callable[[ResultsGenerator], Results]
-CacheEntry = Tuple[Path, Optional[ImageHash]]
-Cache = Dict[Path, ImageHash]
+CacheEntry = Tuple[Path, Optional[Hash]]
+Cache = Dict[Path, Hash]
+
+
+def is_hash(x: Any) -> bool:
+    return isinstance(x, (ImageHash, ImageMultiHash))
