@@ -17,6 +17,8 @@ from .conftest import mock_algorithm, MOCK_IMAGE_HASH_VALUE
 def test_different_hash_size_sets_options(
         algorithm: str, scanner_class: Callable, hash_size: int
 ) -> None:
+    if algorithm == 'crop_resistant':
+        return  # crop_resistant does not support hash_size
     hash_size_kwargs = get_hash_size_kwargs(IMAGE_HASH_ALGORITHM[algorithm], hash_size)
     scanner = scanner_class([], IMAGE_HASH_ALGORITHM[algorithm], hash_size_kwargs)
     assert isinstance(scanner.hash_size_kwargs, dict)

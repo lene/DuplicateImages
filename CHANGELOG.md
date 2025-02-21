@@ -318,6 +318,7 @@
 - actions if equal: delete one of the pics, view with `xv` or print
 
 
+[0.11.5]: https://gitlab.com/duplicateimages/DuplicateImages/-/compare/0.11.4...0.11.5
 [0.11.4]: https://gitlab.com/duplicateimages/DuplicateImages/-/compare/0.11.3...0.11.4
 [0.11.3]: https://gitlab.com/duplicateimages/DuplicateImages/-/compare/0.11.2...0.11.3
 [0.11.2]: https://gitlab.com/duplicateimages/DuplicateImages/-/compare/0.11.1...0.11.2
