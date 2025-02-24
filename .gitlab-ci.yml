@@ -102,8 +102,26 @@ RunWithArgs:
     HASH_DB: test.pickle
   parallel:
     matrix:
-      - ON_EQUAL: [print, quote_inline, none, d<, exec]
+      - ON_EQUAL: [print, quote_inline, none, d<]
         ALGORITHM: [ahash, colorhash]
+        MODE: ["", --slow, --parallel]
+  script:
+    # ensure the script runs without any error with the given options
+    - poetry run find-dups 
+        ${IMAGE_DIR} --hash-db ${HASH_DB} --progress 
+        --algorithm ${ALGORITHM} 
+        --on-equal ${ON_EQUAL} 
+        $MODE
+    # ensure the hash cache file is written
+    - test -f ${HASH_DB}
+    - ls -l ${HASH_DB}
+
+RunWithArgsExec:
+  extends: RunWithArgs
+  parallel:
+    matrix:
+      - ON_EQUAL: [exec]
+        ALGORITHM: [ahash]
         MODE: ["", --slow, --parallel]
   script:
     # ensure the script runs without any error with the given options
@@ -115,6 +133,22 @@ RunWithArgs:
     # ensure the hash cache file is written
     - test -f ${HASH_DB}
     - ls -l ${HASH_DB}
+
+RunWithArgsExecFailure:
+  extends: RunWithArgs
+  parallel:
+    matrix:
+      - ON_EQUAL: [ "" ]
+        ALGORITHM: [ "" ]
+        MODE: [ "" ]
+  script:
+    # ensure the script fails when given --exec without --on-equal exec
+    - poetry run find-dups 
+        ${IMAGE_DIR} --hash-db ${HASH_DB} --progress --exec "ls -l {1} {2}" && exit 1
+    # ensure the script fails when given --on-equal exec without --exec
+    - poetry run find-dups 
+        ${IMAGE_DIR} --hash-db ${HASH_DB} --progress --on-equal exec && exit 1
+    - exit 0
 
 TagIsNew:
   stage: test

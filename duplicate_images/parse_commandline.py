@@ -84,7 +84,7 @@ def parse_command_line(args: Optional[List[str]] = None) -> Namespace:
 
     namespace = parser.parse_args(args)
     if namespace.on_equal == 'exec' and not namespace.exec:
-        parser.error('--exec argument is required')
+        parser.error('--exec argument is required with --on-equal exec')
     if namespace.exec and namespace.on_equal != 'exec':
         parser.error('--exec is only allowed with --on-equal exec')
     if namespace.algorithm == 'whash' and not is_power_of_2(namespace.hash_size):

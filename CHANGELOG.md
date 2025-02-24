@@ -1,6 +1,6 @@
 # Changelog
 
-## [0.11.6] - 2024-02-21
+## [0.11.6] - 2025-02-24
 
 ### Updated
 - Print warning when specifying `--exec` without `--on-equal exec`
