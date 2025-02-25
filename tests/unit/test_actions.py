@@ -7,7 +7,7 @@ from datetime import datetime, timedelta
 from math import factorial
 from pathlib import Path
 from tempfile import TemporaryDirectory, NamedTemporaryFile
-from typing import List, Generator, Tuple
+from typing import List, Generator, Tuple, Callable
 from unittest.mock import Mock, patch
 
 import pytest
@@ -15,12 +15,13 @@ import pytest
 from duplicate_images import duplicate
 from duplicate_images.function_types import Results
 from duplicate_images.image_pair_finder import ImagePairFinder
-from duplicate_images.methods import IMAGE_HASH_ALGORITHM, quote
+from duplicate_images.methods import IMAGE_HASH_ALGORITHM, quote, MOVE_ACTIONS, ACTIONS_ON_EQUALITY
 from duplicate_images.pair_finder_options import PairFinderOptions
 from duplicate_images.parse_commandline import parse_command_line
 from .conftest import create_jpg_and_png, create_half_jpg, create_image, IMAGE_WIDTH
 
 HASH_ALGORITHM = IMAGE_HASH_ALGORITHM['phash']
+NON_MOVE_ACTIONS = sorted(list(ACTIONS_ON_EQUALITY.keys() - set(MOVE_ACTIONS)))
 
 
 @pytest.fixture(name='equal_images')
@@ -170,6 +171,24 @@ def test_move_with_recreate_path_recreates_path_under_target_folder(
         assert (Path(destination) / relevant.relative_to(relevant.anchor)).is_file()
 
 
+@pytest.mark.parametrize('option', MOVE_ACTIONS)
+def test_move_fails_without_target_folder_specified(option: str) -> None:
+    with pytest.raises(SystemExit):
+        parse_command_line(['/', '--on-equal', option])
+
+
+@pytest.mark.parametrize('option', NON_MOVE_ACTIONS)
+def test_non_move_action_fails_with_target_folder_specified(option: str) -> None:
+    with pytest.raises(SystemExit):
+        parse_command_line(['/', '--on-equal', option, '--move-to', '/'])
+
+
+@pytest.mark.parametrize('option', NON_MOVE_ACTIONS)
+def test_non_move_action_fails_with_recreate_path_specified(option: str) -> None:
+    with pytest.raises(SystemExit):
+        parse_command_line(['/', '--on-equal', option, '--move-recreate-path'])
+
+
 def check_command_is_called(
         mock_call: Mock, args: Namespace, equal_images: List[Path], group: bool
 ) -> None:
@@ -256,9 +275,21 @@ def test_wildcard_exec_parameter(
 
 @pytest.mark.parametrize('option', ['symlink-smaller'])
 @pytest.mark.parametrize('group', [True, False])
-def test_symlink(equal_images: List[Path], option: str, group: bool):
+def test_symlink_smaller(equal_images: List[Path], option: str, group: bool):
+    check_symlink(equal_images, option, group, get_biggest)
+
+
+@pytest.mark.parametrize('option', ['symlink-bigger'])
+@pytest.mark.parametrize('group', [True, False])
+def test_symlink_bigger(equal_images: List[Path], option: str, group: bool):
+    check_symlink(equal_images, option, group, get_smallest)
+
+
+def check_symlink(
+        equal_images: List[Path], option: str, group: bool, get_relevant: Callable[[Results], Path]
+) -> None:
     equals = get_equals(equal_images, group)
-    relevant = get_biggest(equals)
+    relevant = get_relevant(equals)
     args = parse_command_line(['/', '--on-equal', option])
     duplicate.execute_actions(equals, args)
     assert relevant.is_file()

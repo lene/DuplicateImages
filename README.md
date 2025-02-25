@@ -115,6 +115,7 @@ Use the `--on-equal` option to select what to do to pairs of equal images. The d
 - `move-smallest` or `m<`: moves the file with the smallest size to the folder specified with the
   `--move-to` option
 - `symlink-smaller`: delete the smaller files and replace them to a symlink to the biggest file
+- `symlink-bigger`: delete the bigger files and replace them to a symlink to the smallest file
 - `eog`: launches the `eog` image viewer to compare the files in the group (*deprecated* by `exec`)
 - `xv`: launches the `xv` image viewer to compare the files in the group (*deprecated* by `exec`)
 - `print`: prints the files in the group

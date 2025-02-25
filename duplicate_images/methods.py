@@ -38,8 +38,8 @@ def move_with_log_message(file: Path, destination: Path, recreate_path: bool) ->
     logging.info('Moved %s to %s', file, target)
 
 
-def symlink_to_biggest_file(group: ImageGroup):
-    biggest = ascending_by_size(group)[-1]
+def symlink_to_nth_smallest_file(group: ImageGroup, index: int) -> None:
+    biggest = ascending_by_size(group)[index]
     others = set(group) - {biggest}
     for file in others:
         delete_with_log_message(file)
@@ -116,7 +116,8 @@ ACTIONS_ON_EQUALITY: Dict[str, ActionFunction] = {
     'm<': lambda args, group: move_with_log_message(
         ascending_by_size(group)[0], Path(args.move_to), args.move_recreate_path
     ),
-    'symlink-smaller': lambda args, group: symlink_to_biggest_file(group),
+    'symlink-smaller': lambda args, group: symlink_to_nth_smallest_file(group, -1),
+    'symlink-bigger': lambda args, group: symlink_to_nth_smallest_file(group, 0),
     'eog': lambda args, group: call(['eog'] + [str(pic) for pic in group]),  # nosec
     'xv': lambda args, group: call(['xv', '-nolim'] + [str(pic) for pic in group]),  # nosec
     'print': lambda args, group: print(*group),
@@ -128,3 +129,5 @@ ACTIONS_ON_EQUALITY: Dict[str, ActionFunction] = {
     'exec': lambda args, group: shell_exec(args, group),  # pylint: disable=unnecessary-lambda
     'none': lambda args, group: None,
 }
+
+MOVE_ACTIONS = ['move-first', 'm1', 'move-last', 'ml', 'move-biggest', 'm>', 'move-smallest', 'm<']

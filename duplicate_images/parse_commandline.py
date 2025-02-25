@@ -9,7 +9,7 @@ from typing import List, Optional
 
 from PIL import Image
 
-from duplicate_images.methods import ACTIONS_ON_EQUALITY, IMAGE_HASH_ALGORITHM
+from duplicate_images.methods import ACTIONS_ON_EQUALITY, IMAGE_HASH_ALGORITHM, MOVE_ACTIONS
 
 
 def is_power_of_2(n: int) -> bool:
@@ -99,4 +99,12 @@ def parse_command_line(args: Optional[List[str]] = None) -> Namespace:
         parser.error('whash requires hash_size to be a power of 2')
     if namespace.group and namespace.max_distance:
         parser.error('--max-distance: not allowed with argument --group')
+    if namespace.move_to and namespace.on_equal not in MOVE_ACTIONS:
+        parser.error(f'--move-to requires --on-equal to be one of: {", ".join(MOVE_ACTIONS)}')
+    if namespace.on_equal in MOVE_ACTIONS and not namespace.move_to:
+        parser.error(f'--on-equal {namespace.move_to} requires --move-to to be set')
+    if namespace.move_recreate_path and namespace.on_equal not in MOVE_ACTIONS:
+        parser.error(
+            f'--move-recreate-path requires --on-equal to be one of: {", ".join(MOVE_ACTIONS)}'
+        )
     return namespace
