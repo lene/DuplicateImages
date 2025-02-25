@@ -106,6 +106,14 @@ Use the `--on-equal` option to select what to do to pairs of equal images. The d
 - `delete-last` or `dl`: deletes the last of the files in the group
 - `delete-biggest` or `d>`: deletes the file with the biggest size
 - `delete-smallest` or `d<`: deletes the file with the smallest size
+- `move-first` or `m1`: moves the first of the files in the group to the folder specified with the
+  `--move-to` option
+- `move-last` or `ml`: moves the last of the files in the group to the folder specified with the
+  `--move-to` option
+- `move-biggest` or `m>`: moves the file with the biggest size to the folder specified with the
+  `--move-to` option
+- `move-smallest` or `m<`: moves the file with the smallest size to the folder specified with the
+  `--move-to` option
 - `symlink-smaller`: delete the smaller files and replace them to a symlink to the biggest file
 - `eog`: launches the `eog` image viewer to compare the files in the group (*deprecated* by `exec`)
 - `xv`: launches the `xv` image viewer to compare the files in the group (*deprecated* by `exec`)
@@ -115,6 +123,10 @@ Use the `--on-equal` option to select what to do to pairs of equal images. The d
 - `quote_inline`: like `quote` but without newline
 - `exec`: executes a command (see `--exec` argument below)
 - `none`: does nothing; may be useful for benchmarking and testing
+
+The `move-*` actions require the `--move-to` option to specify the target folder. Additionally, the
+`--move-recreate-path` option can be set to reproduce the directory structure of the source files in
+the target folder.
 
 The `--exec` argument allows calling another program when the `--on-equal exec` option is given.
 You can pass a command line string like `--exec "program {1} {2}"` where `{1}` and `{2}` are

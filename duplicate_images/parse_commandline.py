@@ -47,7 +47,15 @@ def parse_command_line(args: Optional[List[str]] = None) -> Namespace:
     )
     parser.add_argument(
         '--exec', type=str,
-        help='Command to execute (replaces {1}, {2} with file paths)'
+        help='Command to execute (replaces {1}, {2} or {*} with file paths)'
+    )
+    parser.add_argument(
+        '--move-to', type=str,
+        help='Destination directory for moving duplicate images'
+    )
+    parser.add_argument(
+        '--move-recreate-path', action='store_true',
+        help='recreate the path the original images are under in the destination directory'
     )
     parser.add_argument(
         '--parallel', nargs='?', type=int, default=None, const=cpu_count(),

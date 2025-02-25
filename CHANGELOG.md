@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.11.7] - 2025-02-25
+
+### Updated
+- add `move-first`, `move-second`, `move-biggest` and `move-smallest` actions as options for
+  `--on-equal` and their shortcuts `m1`, `m2`, `m>` and `m<` along with the `--move-to` and 
+  `--move-recreate-path` options to move files to a different directory
+
 ## [0.11.6] - 2025-02-24
 
 ### Updated
@@ -323,6 +330,7 @@
 - actions if equal: delete one of the pics, view with `xv` or print
 
 
+[0.11.7]: https://gitlab.com/duplicateimages/DuplicateImages/-/compare/0.11.6...0.11.7
 [0.11.6]: https://gitlab.com/duplicateimages/DuplicateImages/-/compare/0.11.5...0.11.6
 [0.11.5]: https://gitlab.com/duplicateimages/DuplicateImages/-/compare/0.11.4...0.11.5
 [0.11.4]: https://gitlab.com/duplicateimages/DuplicateImages/-/compare/0.11.3...0.11.4

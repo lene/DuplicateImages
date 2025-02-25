@@ -82,6 +82,14 @@ def check_relevant_is_deleted_and_others_are_present(
         assert other.is_file()
 
 
+def check_relevant_is_moved(equals: Results, option: str, relevant: Path) -> None:
+    with TemporaryDirectory() as destination:
+        args = parse_command_line(['/', '--on-equal', option, '--move-to', destination])
+        duplicate.execute_actions(equals, args)
+        assert not relevant.is_file()
+        assert Path(destination, relevant.name).is_file()
+
+
 @pytest.mark.parametrize('option', ['delete-first', 'd1'])
 @pytest.mark.parametrize('group', [True, False])
 def test_delete_first(equal_images: List[Path], option: str, group: bool) -> None:
@@ -112,6 +120,54 @@ def test_delete_smallest(equal_images: List[Path], option: str, group: bool) -> 
     equals = get_equals(equal_images, group)
     relevant = get_smallest(equals)
     check_relevant_is_deleted_and_others_are_present(equals, option, relevant)
+
+
+@pytest.mark.parametrize('option', ['move-first', 'm1'])
+@pytest.mark.parametrize('group', [True, False])
+def test_move_first(equal_images: List[Path], option: str, group: bool) -> None:
+    equals = get_equals(equal_images, group)
+    relevant = equals[0][0]
+    check_relevant_is_moved(equals, option, relevant)
+
+
+@pytest.mark.parametrize('option', ['move-last', 'ml'])
+@pytest.mark.parametrize('group', [True, False])
+def test_move_last(equal_images: List[Path], option: str, group: bool) -> None:
+    equals = get_equals(equal_images, group)
+    relevant = equals[0][-1]
+    check_relevant_is_moved(equals, option, relevant)
+
+
+@pytest.mark.parametrize('option', ['move-biggest', 'm>'])
+@pytest.mark.parametrize('group', [True, False])
+def test_move_biggest(equal_images: List[Path], option: str, group: bool) -> None:
+    equals = get_equals(equal_images, group)
+    relevant = get_biggest(equals)
+    check_relevant_is_moved(equals, option, relevant)
+
+
+@pytest.mark.parametrize('option', ['move-smallest', 'm<'])
+@pytest.mark.parametrize('group', [True, False])
+def test_move_smallest(equal_images: List[Path], option: str, group: bool) -> None:
+    equals = get_equals(equal_images, group)
+    relevant = get_smallest(equals)
+    check_relevant_is_moved(equals, option, relevant)
+
+
+@pytest.mark.parametrize('option', ['move-first'])
+@pytest.mark.parametrize('group', [True, False])
+def test_move_with_recreate_path_recreates_path_under_target_folder(
+        equal_images: List[Path], option: str, group: bool
+) -> None:
+    equals = get_equals(equal_images, group)
+    relevant = equals[0][0]
+    with TemporaryDirectory() as destination:
+        args = parse_command_line(
+            ['/', '--on-equal', option, '--move-to', destination, '--move-recreate-path']
+        )
+        duplicate.execute_actions(equals, args)
+        assert not relevant.is_file()
+        assert (Path(destination) / relevant.relative_to(relevant.anchor)).is_file()
 
 
 def check_command_is_called(

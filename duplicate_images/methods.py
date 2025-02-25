@@ -30,6 +30,14 @@ def delete_with_log_message(file: Path) -> None:
     logging.info('Deleted %s', path_with_parent(file))
 
 
+def move_with_log_message(file: Path, destination: Path, recreate_path: bool) -> None:
+    target = destination / (file.relative_to(file.anchor) if recreate_path else file.name)
+    if recreate_path:
+        target.parent.mkdir(parents=True, exist_ok=True)
+    file.rename(target)
+    logging.info('Moved %s to %s', file, target)
+
+
 def symlink_to_biggest_file(group: ImageGroup):
     biggest = ascending_by_size(group)[-1]
     others = set(group) - {biggest}
@@ -84,6 +92,30 @@ ACTIONS_ON_EQUALITY: Dict[str, ActionFunction] = {
     'd>': lambda args, group: delete_with_log_message(ascending_by_size(group)[-1]),
     'delete-smallest': lambda args, group: delete_with_log_message(ascending_by_size(group)[0]),
     'd<': lambda args, group: delete_with_log_message(ascending_by_size(group)[0]),
+    'move-first': lambda args, group: move_with_log_message(
+        group[0], Path(args.move_to), args.move_recreate_path
+    ),
+    'm1': lambda args, group: move_with_log_message(
+        group[0], Path(args.move_to), args.move_recreate_path
+    ),
+    'move-last': lambda args, group: move_with_log_message(
+        group[-1], Path(args.move_to), args.move_recreate_path
+    ),
+    'ml': lambda args, group: move_with_log_message(
+        group[-1], Path(args.move_to), args.move_recreate_path
+    ),
+    'move-biggest': lambda args, group: move_with_log_message(
+        ascending_by_size(group)[-1], Path(args.move_to), args.move_recreate_path
+    ),
+    'm>': lambda args, group: move_with_log_message(
+        ascending_by_size(group)[-1], Path(args.move_to), args.move_recreate_path
+    ),
+    'move-smallest': lambda args, group: move_with_log_message(
+        ascending_by_size(group)[0], Path(args.move_to), args.move_recreate_path
+    ),
+    'm<': lambda args, group: move_with_log_message(
+        ascending_by_size(group)[0], Path(args.move_to), args.move_recreate_path
+    ),
     'symlink-smaller': lambda args, group: symlink_to_biggest_file(group),
     'eog': lambda args, group: call(['eog'] + [str(pic) for pic in group]),  # nosec
     'xv': lambda args, group: call(['xv', '-nolim'] + [str(pic) for pic in group]),  # nosec
