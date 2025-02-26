@@ -3,14 +3,37 @@ Define and parse command line arguments for the `find-dups` command line tool
 """
 __author__ = 'Lene Preuss <lene.preuss@gmail.com>'
 
+import logging
 from os import cpu_count
 from argparse import ArgumentParser, Namespace, RawDescriptionHelpFormatter
 from configparser import ConfigParser
-from typing import List, Optional
+from typing import List, Optional, Dict, Union
 
 from PIL import Image
 
 from duplicate_images.methods import ACTIONS_ON_EQUALITY, IMAGE_HASH_ALGORITHM, MOVE_ACTIONS
+
+DefaultsDict = Dict[str, Union[str, int, bool, None]]
+DEFAULTS: DefaultsDict = {
+    'root_directory': '.',
+    'exclude_dir': None,
+    'algorithm': 'phash',
+    'max_distance': 0,
+    'hash_size': None,
+    'on_equal': 'print',
+    'exec': None,
+    'move_to': None,
+    'move_recreate_path': False,
+    'parallel': None,
+    'parallel_actions': None,
+    'slow': False,
+    'group': False,
+    'progress': False,
+    'debug': False,
+    'quiet': 0,
+    'hash_db': None,
+    'max_image_pixels': None
+}
 
 
 def is_power_of_2(n: int) -> bool:
@@ -19,46 +42,58 @@ def is_power_of_2(n: int) -> bool:
 
 
 def parse_command_line(args: Optional[List[str]] = None) -> Namespace:
+    conf_parser = create_config_file_parser()
+    conf_namespace, remaining_argv = conf_parser.parse_known_args(args)
+    defaults = read_defaults_from_config(conf_namespace)
+
+    parser = create_main_parser(conf_parser, defaults)
+    namespace = parser.parse_args(remaining_argv)
+
+    check_complex_errors(namespace, parser)
+    return namespace
+
+
+def create_config_file_parser() -> ArgumentParser:
     conf_parser = ArgumentParser(
-        description=__doc__,  # printed with -h/--help
-        # Don't mess with format of description
+        description=__doc__,
         formatter_class=RawDescriptionHelpFormatter,
-        # Turn off help, so we print all options in response to -h
         add_help=False
     )
     conf_parser.add_argument('-c', '--config-file', help='Specify config file', metavar='FILE')
-    conf_namespace, remaining_argv = conf_parser.parse_known_args(args)
+    return conf_parser
 
-    defaults = {}  # TODO all defaults
+
+def read_defaults_from_config(conf_namespace: Namespace) -> DefaultsDict:
+    defaults = DEFAULTS.copy()
     if conf_namespace.config_file:
         config = ConfigParser()
         config.read([conf_namespace.config_file])
+        logging.warning(config.sections())
         defaults.update(dict(config.items('Defaults')))
+    return defaults
 
-    # Parse rest of arguments
-    # Don't suppress add_help here so it will handle -h
+
+def create_main_parser(parent_parser: ArgumentParser, defaults: DefaultsDict) -> ArgumentParser:
     parser = ArgumentParser(
         description='Find pairs of equal or similar images.',
         # Inherit options from config_parser
-        parents=[conf_parser]
+        parents=[parent_parser]
     )
     parser.set_defaults(**defaults)
-
     parser.add_argument(
         'root_directory', default='.', nargs='+',
         help='The root of the directory tree under which images are compared'
     )
     parser.add_argument(
-        '--exclude-dir', default=None, nargs='*',
+        '--exclude-dir', nargs='*',
         help='Directories to exclude from the search (can be given as regular expressions)'
     )
     parser.add_argument(
         '--algorithm', choices=IMAGE_HASH_ALGORITHM.keys(),
-        default='phash',
         help='Method used to determine if two images are considered equal'
     )
     parser.add_argument(
-        '--max-distance', type=int, default=0,
+        '--max-distance', type=int,
         help='Maximum hash distance for images to be considered equal'
     )
     parser.add_argument(
@@ -67,7 +102,7 @@ def parse_command_line(args: Optional[List[str]] = None) -> Namespace:
     )
     parser.add_argument(
         '--on-equal', choices=ACTIONS_ON_EQUALITY.keys(),
-        default='print', help='Command to be run on each pair of images found to be equal'
+        help='Command to be run on each pair of images found to be equal'
     )
     parser.add_argument(
         '--exec', type=str,
@@ -82,11 +117,11 @@ def parse_command_line(args: Optional[List[str]] = None) -> Namespace:
         help='recreate the path the original images are under in the destination directory'
     )
     parser.add_argument(
-        '--parallel', nargs='?', type=int, default=None, const=cpu_count(),
+        '--parallel', nargs='?', type=int, const=cpu_count(),
         help=f'Calculate hashes using PARALLEL threads (default: {cpu_count()})'
     )
     parser.add_argument(
-        '--parallel-actions', nargs='?', type=int, default=None, const=cpu_count(),
+        '--parallel-actions', nargs='?', type=int, const=cpu_count(),
         help=f'Execute actions on equal images using PARALLEL threads (default: {cpu_count()})'
     )
     group = parser.add_mutually_exclusive_group()
@@ -104,17 +139,19 @@ def parse_command_line(args: Optional[List[str]] = None) -> Namespace:
         '--debug', action='store_true', help='Print lots of debugging info'
     )
     parser.add_argument(
-        '--quiet', '-q', action='count', default=0, help='Decrease log level by one for each'
+        '--quiet', '-q', action='count', help='Decrease log level by one for each'
     )
     parser.add_argument(
-        '--hash-db', default=None, help='File storing precomputed hashes'
+        '--hash-db', help='File storing precomputed hashes'
     )
     parser.add_argument(
-        '--max-image-pixels', type=int, default=None,
+        '--max-image-pixels', type=int,
         help=f'Maximum size of image in pixels (default: {Image.MAX_IMAGE_PIXELS})'
     )
+    return parser
 
-    namespace = parser.parse_args(remaining_argv)
+
+def check_complex_errors(namespace, parser):
     if namespace.on_equal == 'exec' and not namespace.exec:
         parser.error('--exec argument is required with --on-equal exec')
     if namespace.exec and namespace.on_equal != 'exec':
@@ -131,4 +168,3 @@ def parse_command_line(args: Optional[List[str]] = None) -> Namespace:
         parser.error(
             f'--move-recreate-path requires --on-equal to be one of: {", ".join(MOVE_ACTIONS)}'
         )
-    return namespace

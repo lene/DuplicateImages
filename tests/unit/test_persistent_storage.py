@@ -2,6 +2,7 @@
 __author__ = 'Lene Preuss <lene.preuss@gmail.com>'
 
 import json
+import logging
 import pickle
 from itertools import combinations
 from pathlib import Path
@@ -11,7 +12,7 @@ from typing import List
 
 import pytest
 
-from duplicate_images import duplicate
+from duplicate_images.duplicate import files_in_dirs, is_image_file
 from duplicate_images.function_types import Cache
 from duplicate_images.image_pair_finder import ImagePairFinder
 from duplicate_images.pair_finder_options import PairFinderOptions
@@ -128,6 +129,7 @@ def test_checked_load_sets_values(top_directory: TemporaryDirectory, hash_store_
     hash_store_class = PickleHashStore if hash_store_path.suffix == '.pickle' else JSONHashStore
     hash_store = hash_store_class(hash_store_path, DEFAULT_ALGORITHM, DEFAULT_HASH_SIZE)
     hash_store.load()
+    logging.warning(image_list(top_directory))
     assert hash_store.values == {path: MOCK_IMAGE_HASH_VALUE for path in image_list(top_directory)}
 
 
@@ -167,7 +169,7 @@ def test_hash_store_is_accessed_even_if_not_changed(
 
 
 def image_list(top_directory: TemporaryDirectory) -> List[Path]:
-    return sorted(duplicate.files_in_dirs([top_directory.name]))
+    return sorted(files_in_dirs([top_directory.name], is_relevant=is_image_file))
 
 
 def generate_pair_finder(

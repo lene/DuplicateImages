@@ -15,13 +15,12 @@ import pytest
 from duplicate_images import duplicate
 from duplicate_images.function_types import Results
 from duplicate_images.image_pair_finder import ImagePairFinder
-from duplicate_images.methods import IMAGE_HASH_ALGORITHM, quote, MOVE_ACTIONS, ACTIONS_ON_EQUALITY
+from duplicate_images.methods import IMAGE_HASH_ALGORITHM, quote
 from duplicate_images.pair_finder_options import PairFinderOptions
 from duplicate_images.parse_commandline import parse_command_line
 from .conftest import create_jpg_and_png, create_half_jpg, create_image, IMAGE_WIDTH
 
 HASH_ALGORITHM = IMAGE_HASH_ALGORITHM['phash']
-NON_MOVE_ACTIONS = sorted(list(ACTIONS_ON_EQUALITY.keys() - set(MOVE_ACTIONS)))
 
 
 @pytest.fixture(name='equal_images')
@@ -169,24 +168,6 @@ def test_move_with_recreate_path_recreates_path_under_target_folder(
         duplicate.execute_actions(equals, args)
         assert not relevant.is_file()
         assert (Path(destination) / relevant.relative_to(relevant.anchor)).is_file()
-
-
-@pytest.mark.parametrize('option', MOVE_ACTIONS)
-def test_move_fails_without_target_folder_specified(option: str) -> None:
-    with pytest.raises(SystemExit):
-        parse_command_line(['/', '--on-equal', option])
-
-
-@pytest.mark.parametrize('option', NON_MOVE_ACTIONS)
-def test_non_move_action_fails_with_target_folder_specified(option: str) -> None:
-    with pytest.raises(SystemExit):
-        parse_command_line(['/', '--on-equal', option, '--move-to', '/'])
-
-
-@pytest.mark.parametrize('option', NON_MOVE_ACTIONS)
-def test_non_move_action_fails_with_recreate_path_specified(option: str) -> None:
-    with pytest.raises(SystemExit):
-        parse_command_line(['/', '--on-equal', option, '--move-recreate-path'])
 
 
 def check_command_is_called(

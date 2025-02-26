@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.11.9] - 2025-03-03
+
+### Added
+- parse config file with `-c|--config-file` to set defaults for CLI options 
+
 ## [0.11.8] - 2025-02-25
 
 ### Added
@@ -335,6 +340,7 @@
 - actions if equal: delete one of the pics, view with `xv` or print
 
 
+[0.11.9]: https://gitlab.com/duplicateimages/DuplicateImages/-/compare/0.11.8...0.11.9
 [0.11.8]: https://gitlab.com/duplicateimages/DuplicateImages/-/compare/0.11.7...0.11.8
 [0.11.7]: https://gitlab.com/duplicateimages/DuplicateImages/-/compare/0.11.6...0.11.7
 [0.11.6]: https://gitlab.com/duplicateimages/DuplicateImages/-/compare/0.11.5...0.11.6
