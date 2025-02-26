@@ -4,7 +4,8 @@ Define and parse command line arguments for the `find-dups` command line tool
 __author__ = 'Lene Preuss <lene.preuss@gmail.com>'
 
 from os import cpu_count
-from argparse import ArgumentParser, Namespace
+from argparse import ArgumentParser, Namespace, RawDescriptionHelpFormatter
+from configparser import ConfigParser
 from typing import List, Optional
 
 from PIL import Image
@@ -18,7 +19,30 @@ def is_power_of_2(n: int) -> bool:
 
 
 def parse_command_line(args: Optional[List[str]] = None) -> Namespace:
-    parser = ArgumentParser(description='Find pairs of equal or similar images.')
+    conf_parser = ArgumentParser(
+        description=__doc__,  # printed with -h/--help
+        # Don't mess with format of description
+        formatter_class=RawDescriptionHelpFormatter,
+        # Turn off help, so we print all options in response to -h
+        add_help=False
+    )
+    conf_parser.add_argument('-c', '--config-file', help='Specify config file', metavar='FILE')
+    conf_namespace, remaining_argv = conf_parser.parse_known_args(args)
+
+    defaults = {}  # TODO all defaults
+    if conf_namespace.config_file:
+        config = ConfigParser()
+        config.read([conf_namespace.config_file])
+        defaults.update(dict(config.items('Defaults')))
+
+    # Parse rest of arguments
+    # Don't suppress add_help here so it will handle -h
+    parser = ArgumentParser(
+        description='Find pairs of equal or similar images.',
+        # Inherit options from config_parser
+        parents=[conf_parser]
+    )
+    parser.set_defaults(**defaults)
 
     parser.add_argument(
         'root_directory', default='.', nargs='+',
@@ -90,7 +114,7 @@ def parse_command_line(args: Optional[List[str]] = None) -> Namespace:
         help=f'Maximum size of image in pixels (default: {Image.MAX_IMAGE_PIXELS})'
     )
 
-    namespace = parser.parse_args(args)
+    namespace = parser.parse_args(remaining_argv)
     if namespace.on_equal == 'exec' and not namespace.exec:
         parser.error('--exec argument is required with --on-equal exec')
     if namespace.exec and namespace.on_equal != 'exec':
