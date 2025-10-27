@@ -5,6 +5,7 @@ stages:
 include:
   - template: Code-Quality.gitlab-ci.yml
   - template: Security/SAST.gitlab-ci.yml
+  - component: $CI_SERVER_FQDN/components/dependency-scanning/main@0.6.0
 
 .test:
   parallel:

@@ -9,105 +9,127 @@ This causes cache misses when paths don't match exactly.
 __author__ = 'Lene Preuss <lene.preuss@gmail.com>'
 
 import json
+import os
+from contextlib import contextmanager
 from pathlib import Path
+from typing import Generator
+
 import pytest
+from imagehash import hex_to_hash
 
-from duplicate_images.hash_store import JSONHashStore
+from duplicate_images.hash_store import JSONHashStore, PickleHashStore
 
 
-def test_json_store_path_resolution_mismatch(tmp_path: Path):
+@contextmanager
+def working_directory(path: Path) -> Generator[None, None, None]:
+    """Context manager to temporarily change working directory."""
+    original_cwd = Path.cwd()
+    try:
+        os.chdir(path)
+        yield
+    finally:
+        os.chdir(original_cwd)
+
+
+@pytest.fixture
+def test_setup(tmp_path: Path) -> tuple[Path, Path]:
+    """
+    Create a test file structure with relative paths.
+
+    Returns:
+        Tuple of (relative_path_to_file, tmp_path)
+    """
+    with working_directory(tmp_path):
+        # Create a test file with a relative path
+        test_dir = Path('images')
+        test_dir.mkdir()
+        test_file = test_dir / 'test_image.txt'
+        test_file.write_text('fake image')
+
+        # Return the relative path to the file
+        return Path('images') / 'test_image.txt', tmp_path
+
+
+def test_json_store_path_resolution_mismatch(test_setup: tuple[Path, Path]):
     """
     Demonstrates the path resolution bug in JSON hash store.
 
     When we add a path to the store and save it, the path is resolved.
     When we load and try to get the same (unresolved) path, it fails.
     """
-    cache_file = tmp_path / 'test.json'
+    relative_path, tmp_path = test_setup
 
-    # Create a test file
-    test_file = tmp_path / 'test_image.txt'
-    test_file.write_text('fake image')
-
-    # Use a relative path (or different representation)
-    relative_path = Path('.') / test_file.relative_to(Path.cwd())
-
-    # Store with relative path
-    with JSONHashStore(cache_file, 'phash', {'hash_size': 8}) as store:
-        # Mock hash value
-        from imagehash import hex_to_hash
+    with working_directory(tmp_path):
+        cache_file = Path('test.json')
         mock_hash = hex_to_hash('0' * 16)
-        store.add(relative_path, mock_hash)
 
-    # Check what was actually saved in JSON
-    with open(cache_file) as f:
-        saved_data = json.load(f)
-        saved_keys = list(saved_data[0].keys())
-        print(f"Saved key: {saved_keys[0]}")
-        print(f"Looking for: {str(relative_path)}")
-        print(f"Resolved looking for: {str(relative_path.resolve())}")
+        # Store with relative path - gets resolved during dump()
+        with JSONHashStore(cache_file, 'phash', {'hash_size': 8}) as store:
+            store.add(relative_path, mock_hash)
 
-    # Try to retrieve with the same relative path
-    with JSONHashStore(cache_file, 'phash', {'hash_size': 8}) as store:
-        retrieved = store.get(relative_path)
+        # Check what was actually saved in JSON
+        with open(cache_file) as f:
+            saved_data = json.load(f)
+            saved_keys = list(saved_data[0].keys())
+            print(f"Saved key: {saved_keys[0]}")
+            print(f"Looking for: {str(relative_path)}")
+            print(f"Resolved: {str(relative_path.resolve())}")
 
-        # This should work but won't if there's a path mismatch
-        assert retrieved is not None, \
-            f"Failed to retrieve hash for {relative_path}. " \
-            f"Saved as {saved_keys[0]}, looked up as {relative_path}"
+        # Try to retrieve with the same relative path
+        # This simulates a second scan with the same relative path
+        with JSONHashStore(cache_file, 'phash', {'hash_size': 8}) as store:
+            retrieved = store.get(relative_path)
+
+            # This should work but won't due to the bug
+            assert retrieved is not None, \
+                f"Failed to retrieve hash for {relative_path}. " \
+                f"Saved as {saved_keys[0]}, looked up as {relative_path}"
 
 
-def test_json_vs_pickle_path_handling(tmp_path: Path):
+def test_json_vs_pickle_path_handling(test_setup: tuple[Path, Path]):
     """
     Compare how JSON and Pickle stores handle paths.
     Pickle should work, JSON might not.
     """
-    from duplicate_images.hash_store import PickleHashStore
-    from imagehash import hex_to_hash
-
-    test_file = tmp_path / 'test_image.txt'
-    test_file.write_text('fake image')
+    relative_path, tmp_path = test_setup
     mock_hash = hex_to_hash('0' * 16)
 
-    # Test with relative path
-    relative_path = Path('.') / test_file.relative_to(Path.cwd())
+    with working_directory(tmp_path):
+        # Pickle store
+        pickle_file = Path('test.pickle')
+        with PickleHashStore(pickle_file, 'phash', {'hash_size': 8}) as store:
+            store.add(relative_path, mock_hash)
 
-    # Pickle store
-    pickle_file = tmp_path / 'test.pickle'
-    with PickleHashStore(pickle_file, 'phash', {'hash_size': 8}) as store:
-        store.add(relative_path, mock_hash)
+        with PickleHashStore(pickle_file, 'phash', {'hash_size': 8}) as store:
+            pickle_retrieved = store.get(relative_path)
 
-    with PickleHashStore(pickle_file, 'phash', {'hash_size': 8}) as store:
-        pickle_retrieved = store.get(relative_path)
+        # JSON store
+        json_file = Path('test.json')
+        with JSONHashStore(json_file, 'phash', {'hash_size': 8}) as store:
+            store.add(relative_path, mock_hash)
 
-    # JSON store
-    json_file = tmp_path / 'test.json'
-    with JSONHashStore(json_file, 'phash', {'hash_size': 8}) as store:
-        store.add(relative_path, mock_hash)
+        with JSONHashStore(json_file, 'phash', {'hash_size': 8}) as store:
+            json_retrieved = store.get(relative_path)
 
-    with JSONHashStore(json_file, 'phash', {'hash_size': 8}) as store:
-        json_retrieved = store.get(relative_path)
-
-    # Both should work the same way
-    assert pickle_retrieved is not None, "Pickle store should work"
-    assert json_retrieved is not None, "JSON store should work (but doesn't due to bug)"
-    assert pickle_retrieved == json_retrieved
+        # Both should work the same way
+        assert pickle_retrieved is not None, "Pickle store should work"
+        assert json_retrieved is not None, "JSON store should work (but doesn't due to bug)"
+        assert pickle_retrieved == json_retrieved
 
 
 def test_json_saved_keys_are_resolved(tmp_path: Path):
     """
     Verify that JSON store saves resolved (absolute) paths.
     """
-    from imagehash import hex_to_hash
-
     cache_file = tmp_path / 'test.json'
     test_file = tmp_path / 'test_image.txt'
     test_file.write_text('fake image')
+    mock_hash = hex_to_hash('0' * 16)
 
     # Use a non-resolved path (with ../ or ./)
     non_resolved_path = tmp_path / '.' / 'test_image.txt'
 
     with JSONHashStore(cache_file, 'phash', {'hash_size': 8}) as store:
-        mock_hash = hex_to_hash('0' * 16)
         store.add(non_resolved_path, mock_hash)
 
     # Check the saved JSON
