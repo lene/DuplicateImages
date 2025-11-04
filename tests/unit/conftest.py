@@ -47,23 +47,33 @@ def _generate_heif_bytes(width: int) -> HeifFile:
     )
 
 
-def create_corrupt_heif_image(file_path: Path, width: int) -> Path:
+def create_corrupt_heif_image(file: Path, width: int) -> Path:
+    """
+    Creates a corrupt HEIF file that can be opened but fails during decoding.
+
+    This creates a more subtle corruption - the file structure is intact enough
+    for PIL to identify it as HEIF, but the image data is corrupted so decoding fails.
+    """
     # create a valid HEIF file in memory buffer
     buffer = BytesIO()
     _generate_heif_bytes(width).save(fp=buffer, quality=-1)
     data = bytearray(buffer.getvalue())
 
-    # Corrupt the middle section (zeroing out bytes to break internal structure)
-    # This preserves magic bytes but corrupts the actual image data
-    corruption_start = min(100, len(data) // 4)
-    corruption_end = min(corruption_start + 100, len(data) // 2)
-    data[corruption_start:corruption_end] = b'\x00' * (corruption_end - corruption_start)
+    # Corrupt the image data section with a much more subtle corruption
+    # We corrupt just a few bytes deep in the file to trigger decoder errors
+    # while keeping the file structure intact
+    corruption_start = len(data) * 3 // 4  # Start corruption in last quarter
+    corruption_end = corruption_start + 8  # Corrupt only 8 bytes
+    if corruption_end < len(data):
+        # Use pattern corruption instead of all 0xFF to avoid making it unidentifiable
+        for i in range(corruption_start, corruption_end):
+            data[i] = (data[i] + 128) % 256  # Flip the high bit
 
     # Write corrupted data to file
-    with open(file_path, 'wb') as file:
+    with open(file, 'wb') as file:
         file.write(data)
 
-    return file_path
+    return file
 
 
 def fill_image_with_random_pixels(file: Path, seed: int = 0) -> None:
