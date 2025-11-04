@@ -13,7 +13,7 @@ from typing import Callable, List, Optional
 
 import PIL.Image
 from filetype import guess
-from pillow_heif import register_heif_opener
+from pillow_heif import is_supported, register_heif_opener
 
 from duplicate_images.common import path_with_parent, log_execution_time
 from duplicate_images.function_types import Results, ImageGroup, ActionFunction
@@ -34,6 +34,9 @@ def is_image_file(filename: Path) -> bool:
     """Returns True if filename is a readable image file"""
     try:
         if access(filename, R_OK) and not filename.is_symlink():
+            # Check for HEIF support first, as filetype.guess() doesn't recognize HEIF
+            if is_supported(filename):
+                return True
             kind = guess(filename)
             return kind is not None and kind.mime.startswith('image/')
     except OSError as err:
