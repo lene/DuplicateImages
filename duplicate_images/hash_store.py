@@ -74,7 +74,12 @@ class FileHashStore:
     def __enter__(self) -> 'FileHashStore':
         return self
 
-    def __exit__(self, _: Any, __: Any, ___: Any) -> None:
+    def __exit__(self, exc_type: Any, _: Any, __: Any) -> None:
+        # Don't save cache if interrupted by user - prevents corrupted partial cache
+        if exc_type is KeyboardInterrupt:
+            logging.info('Scan interrupted - cache not updated')
+            return
+
         if not self.dirty:
             return
         if self.store_path.is_file():
