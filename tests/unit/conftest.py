@@ -3,12 +3,13 @@ __author__ = 'Lene Preuss <lene.preuss@gmail.com>'
 
 import random
 import shutil
+from io import BytesIO
 from pathlib import Path
 from tempfile import NamedTemporaryFile, TemporaryDirectory, mkdtemp
 from typing import Generator, List, Tuple
 from unittest.mock import Mock
 
-import pillow_heif
+from pillow_heif import from_bytes, HeifFile
 import pytest
 from imagehash import ImageHash
 from numpy import array
@@ -32,14 +33,36 @@ def create_image(file: Path, width: int) -> Path:
 
 
 def create_heif_image(file_path: Path, width: int) -> Path:
-    height = int(width * 3 / 4)
-    heif_file = pillow_heif.from_bytes(
+    with open(file_path, 'wb') as file:
+        _generate_heif_bytes(width).save(fp=file, quality=-1)
+    return file_path
+
+
+def _generate_heif_bytes(width: int) -> HeifFile:
+    height = width * 3 // 4
+    return from_bytes(
         mode='BGR;16',
         size=(height, width),
         data=bytes([0] * 3 * 2 * width * height)
     )
+
+
+def create_corrupt_heif_image(file_path: Path, width: int) -> Path:
+    # create a valid HEIF file in memory buffer
+    buffer = BytesIO()
+    _generate_heif_bytes(width).save(fp=buffer, quality=-1)
+    data = bytearray(buffer.getvalue())
+
+    # Corrupt the middle section (zeroing out bytes to break internal structure)
+    # This preserves magic bytes but corrupts the actual image data
+    corruption_start = min(100, len(data) // 4)
+    corruption_end = min(corruption_start + 100, len(data) // 2)
+    data[corruption_start:corruption_end] = b'\x00' * (corruption_end - corruption_start)
+
+    # Write corrupted data to file
     with open(file_path, 'wb') as file:
-        heif_file.save(fp=file, quality=-1)
+        file.write(data)
+
     return file_path
 
 
