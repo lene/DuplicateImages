@@ -2,6 +2,10 @@
 
 ## [0.11.10] - 2025-11-04
 
+### Changed
+- Minimum Python version requirement increased from 3.9 to 3.12 to support modern f-string syntax
+  and maintain compatibility with current linting standards
+
 ### Fixed
 - Fixed issue #18: Cache corruption when aborting parallel scan with Ctrl-C. The application now
   preserves cache integrity by not saving partial results when interrupted, preventing invalid

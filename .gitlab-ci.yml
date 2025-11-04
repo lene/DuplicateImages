@@ -10,7 +10,7 @@ include:
 .test:
   parallel:
     matrix:
-      - PY_VERSION: [ "3.9", "3.10", "3.11", "3.12" ]
+      - PY_VERSION: [ "3.12", "3.13", "3.14" ]
   stage: test
   image: python:$PY_VERSION
   rules:
@@ -185,7 +185,7 @@ CreateTag:
 
 PublishToPyPI:
   stage: publish
-  image: python:3.11
+  image: python:3.12
   rules:
     - if: "$CI_COMMIT_TAG"
       when: on_success
