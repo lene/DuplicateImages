@@ -13,9 +13,11 @@ from pathlib import Path
 from unittest.mock import patch, Mock
 
 import pytest
+from PIL import Image
 
 from duplicate_images.duplicate import get_matches
-from duplicate_images.pair_finder_options import PairFinderOptions
+from duplicate_images.hash_store import JSONHashStore
+from duplicate_images.methods import IMAGE_HASH_ALGORITHM, get_hash_size_kwargs
 
 
 @pytest.mark.parametrize('test_set', ['equal_but_binary_different'])
@@ -73,7 +75,7 @@ def test_json_cache_with_absolute_vs_relative_paths(
 
         # The bug: cache keys don't match because of path resolution mismatch
         assert mock_phash.call_count == 0, \
-            "Cache should work regardless of relative vs absolute paths"
+            'Cache should work regardless of relative vs absolute paths'
 
 
 @pytest.mark.parametrize('test_set', ['equal_but_binary_different'])
@@ -97,7 +99,7 @@ def test_pickle_cache_works_correctly_as_comparison(
 
         # Pickle should work correctly
         assert mock_phash.call_count == 0, \
-            "Pickle cache should work (as reported by user)"
+            'Pickle cache should work (as reported by user)'
 
 
 @pytest.mark.parametrize('test_set', ['equal_but_binary_different'])
@@ -107,9 +109,6 @@ def test_json_cache_lookup_with_actual_file_path(
     """
     Test the actual cache lookup mechanism more directly.
     """
-    from duplicate_images.hash_store import JSONHashStore
-    from duplicate_images.methods import IMAGE_HASH_ALGORITHM, get_hash_size_kwargs
-
     folder = data_dir / test_set
     cache_file = tmp_dir / 'hashes.json'
 
@@ -119,7 +118,6 @@ def test_json_cache_lookup_with_actual_file_path(
 
     with JSONHashStore(cache_file, 'phash', hash_kwargs) as store:
         test_file = next(folder.glob('**/*.jpg'))
-        from PIL import Image
         test_hash = hash_func(Image.open(test_file), **hash_kwargs)
         store.add(test_file, test_hash)
 

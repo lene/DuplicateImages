@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.11.10] - 2025-11-04
+
+### Fixed
+- Fixed issue #18: Cache corruption when aborting parallel scan with Ctrl-C. The application now
+  preserves cache integrity by not saving partial results when interrupted, preventing invalid
+  cache states on subsequent runs
+- Fixed issue #17: JSON hash database path resolution mismatch. Paths are now consistently resolved
+  to absolute paths when loading and saving, ensuring cache works correctly with relative paths
+- Fixed issue #15: Improved error handling for corrupt HEIF image files by catching ValueError
+  exceptions during image processing
+
 ## [0.11.9] - 2025-03-03
 
 ### Added
@@ -340,6 +351,7 @@
 - actions if equal: delete one of the pics, view with `xv` or print
 
 
+[0.11.10]: https://gitlab.com/duplicateimages/DuplicateImages/-/compare/0.11.9...0.11.10
 [0.11.9]: https://gitlab.com/duplicateimages/DuplicateImages/-/compare/0.11.8...0.11.9
 [0.11.8]: https://gitlab.com/duplicateimages/DuplicateImages/-/compare/0.11.7...0.11.8
 [0.11.7]: https://gitlab.com/duplicateimages/DuplicateImages/-/compare/0.11.6...0.11.7
