@@ -87,6 +87,7 @@ def test_value_error_in_batch_scan():
         error_file = create_dummy_file(Path(tmpdir), 'error.heif')
 
         original_open = Image.open
+
         def mock_open(file, *args, **kwargs):
             if Path(file) == error_file:
                 raise ValueError("Decoder plugin generated an error")

@@ -73,7 +73,7 @@ class ImageHashScanner:
             image_hash = self.algorithm(Image.open(file), **self.hash_size_kwargs)
             self.hash_store.add(file, image_hash)
             return file, image_hash
-        except OSError as err:
+        except (OSError, ValueError) as err:
             logging.warning('%s: %s', path_with_parent(file), err)
             return file, None
         except DecompressionBombError as err:

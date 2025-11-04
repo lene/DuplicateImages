@@ -70,8 +70,8 @@ def create_corrupt_heif_image(file: Path, width: int) -> Path:
             data[i] = (data[i] + 128) % 256  # Flip the high bit
 
     # Write corrupted data to file
-    with open(file, 'wb') as file:
-        file.write(data)
+    with file.open('wb') as out_file:
+        out_file.write(data)
 
     return file
 
