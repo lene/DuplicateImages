@@ -20,7 +20,7 @@ from duplicate_images.pair_finder_options import PairFinderOptions
 from duplicate_images.parse_commandline import parse_command_line
 from .conftest import create_jpg_and_png, create_half_jpg, create_image, IMAGE_WIDTH
 
-HASH_ALGORITHM = IMAGE_HASH_ALGORITHM['phash']
+hash_algorithm = IMAGE_HASH_ALGORITHM['phash']
 
 
 @pytest.fixture(name='equal_images')
@@ -54,7 +54,7 @@ def fixture_many_equal_images(
 
 def get_equals(equal_images: List[Path], group: bool) -> List[Tuple[Path, ...]]:
     equals = ImagePairFinder.create(
-        equal_images, HASH_ALGORITHM, options=PairFinderOptions(group=group)
+        equal_images, hash_algorithm, options=PairFinderOptions(group=group)
     ).get_equal_groups()
     assert len(equals) == 1
     return equals
@@ -287,7 +287,7 @@ def test_parallel_actions(
         many_equal_images: List[Path], num_images: int, parallel: int, sleep_time: float
 ) -> None:
     equals = ImagePairFinder.create(
-        many_equal_images, HASH_ALGORITHM, options=PairFinderOptions(group=False)
+        many_equal_images, hash_algorithm, options=PairFinderOptions(group=False)
     ).get_equal_groups()
     assert len(equals) == factorial(num_images) / (factorial(2) * factorial(num_images - 2))
 

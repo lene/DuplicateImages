@@ -34,9 +34,9 @@ def create_dummy_file(directory: Path, filename: str) -> Path:
 def assert_valid_and_error_results(results, valid_file: Path, error_file: Path) -> None:
     assert len(results) == 2
     valid_result = next(r for r in results if r[0] == valid_file)
-    assert valid_result[1] is not None, "Valid file should have a hash"
+    assert valid_result[1] is not None, 'Valid file should have a hash'
     error_result = next(r for r in results if r[0] == error_file)
-    assert error_result[1] is None, "Error file should return None"
+    assert error_result[1] is None, 'Error file should return None'
 
 
 def test_corrupt_heif_does_not_crash():
@@ -48,7 +48,7 @@ def test_corrupt_heif_does_not_crash():
         result = scanner.get_hash(corrupt_file)
 
         assert result[0] == corrupt_file
-        assert result[1] is None, "Corrupt HEIF file should return None, not crash"
+        assert result[1] is None, 'Corrupt HEIF file should return None, not crash'
 
 
 def test_corrupt_heif_in_batch_scan():
@@ -70,13 +70,13 @@ def test_value_error_during_image_open_is_handled():
         test_file = create_dummy_file(Path(tmpdir), 'test.heif')
 
         with patch.object(
-                Image, 'open', side_effect=ValueError("Decoder plugin generated an error")
+                Image, 'open', side_effect=ValueError('Decoder plugin generated an error')
         ):
             scanner = create_scanner([test_file])
             result = scanner.get_hash(test_file)
 
             assert result[0] == test_file
-            assert result[1] is None, "ValueError during Image.open should return None, not crash"
+            assert result[1] is None, 'ValueError during Image.open should return None, not crash'
 
 
 def test_value_error_in_batch_scan():
@@ -90,7 +90,7 @@ def test_value_error_in_batch_scan():
 
         def mock_open(file, *args, **kwargs):
             if Path(file) == error_file:
-                raise ValueError("Decoder plugin generated an error")
+                raise ValueError('Decoder plugin generated an error')
             return original_open(file, *args, **kwargs)
 
         with patch.object(Image, 'open', side_effect=mock_open):

@@ -31,8 +31,8 @@ def working_directory(path: Path) -> Generator[None, None, None]:
         os.chdir(original_cwd)
 
 
-@pytest.fixture
-def test_setup(tmp_path: Path) -> tuple[Path, Path]:
+@pytest.fixture(name='test_setup')
+def fixture_test_setup(tmp_path: Path) -> tuple[Path, Path]:
     """
     Create a test file structure with relative paths.
 
@@ -68,7 +68,7 @@ def test_json_store_path_resolution_mismatch(test_setup: tuple[Path, Path]):
             store.add(relative_path, mock_hash)
 
         # Check what was actually saved in JSON
-        with open(cache_file) as f:
+        with open(cache_file, encoding='utf-8') as f:
             saved_data = json.load(f)
             saved_keys = list(saved_data[0].keys())
             print(f"Saved key: {saved_keys[0]}")
@@ -112,8 +112,8 @@ def test_json_vs_pickle_path_handling(test_setup: tuple[Path, Path]):
             json_retrieved = store.get(relative_path)
 
         # Both should work the same way
-        assert pickle_retrieved is not None, "Pickle store should work"
-        assert json_retrieved is not None, "JSON store should work (but doesn't due to bug)"
+        assert pickle_retrieved is not None, 'Pickle store should work'
+        assert json_retrieved is not None, 'JSON store should work (but doesn\'t due to bug)'
         assert pickle_retrieved == json_retrieved
 
 
@@ -133,7 +133,7 @@ def test_json_saved_keys_are_resolved(tmp_path: Path):
         store.add(non_resolved_path, mock_hash)
 
     # Check the saved JSON
-    with open(cache_file) as f:
+    with open(cache_file, encoding='utf-8') as f:
         data = json.load(f)
         saved_keys = list(data[0].keys())
 
