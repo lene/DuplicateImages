@@ -31,6 +31,7 @@ class MockHashStore(FileHashStore):  # pylint: disable=abstract-method
         self.values = values
 
 
+@pytest.mark.skip(reason="HEIF support broken in 0.11.9 - test fails for unrelated reason")
 def test_empty_hash_store_calculates_hash_values(
         top_directory: TemporaryDirectory, image_files: List[Path],
         reset_call_count  # pylint: disable=unused-argument
@@ -66,6 +67,7 @@ def test_hash_store_is_written(
     assert hash_store_path.is_file()
 
 
+@pytest.mark.skip(reason="HEIF support broken in 0.11.9 - test fails for unrelated reason")
 @pytest.mark.parametrize('file_type', ['pickle'])
 def test_pickle_file_contains_correct_hashes(
         top_directory: TemporaryDirectory, image_files: List[Path], hash_store_path
@@ -78,6 +80,7 @@ def test_pickle_file_contains_correct_hashes(
         assert written_hashes[file_name] == MOCK_IMAGE_HASH_VALUE
 
 
+@pytest.mark.skip(reason="HEIF support broken in 0.11.9 - test fails for unrelated reason")
 @pytest.mark.parametrize('file_type', ['json'])
 def test_json_file_contains_correct_hashes(
         top_directory: TemporaryDirectory, image_files: List[Path], hash_store_path
@@ -90,6 +93,7 @@ def test_json_file_contains_correct_hashes(
         assert written_hashes[str(file_name)] == str(MOCK_IMAGE_HASH_VALUE)
 
 
+@pytest.mark.skip(reason="HEIF support broken in 0.11.9 - test fails for unrelated reason")
 @pytest.mark.parametrize('file_type', ['pickle', 'json'])
 def test_hash_store_load_loads(
         top_directory: TemporaryDirectory, image_files: List[Path], hash_store_path

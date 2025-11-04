@@ -156,7 +156,7 @@ def load_values_and_metadata(file: IO) -> Tuple[Cache, Dict]:
         raise ValueError(f'Not a dict: {valds[0]}')
     if not isinstance(valds[1], dict):
         raise ValueError(f'Metadata not a dict: {valds[1]}')
-    return {Path(k): hex_to_hash(str(v)) for k, v in valds[0].items()}, valds[1]
+    return {Path(k).resolve(): hex_to_hash(str(v)) for k, v in valds[0].items()}, valds[1]
 
 
 class JSONHashStore(FileHashStore):
@@ -164,6 +164,15 @@ class JSONHashStore(FileHashStore):
     Implementation of `FileHashStore` that reads and stores the calculated
     image hashes in JSON format
     """
+
+    def add(self, file: Path, image_hash: Hash) -> None:
+        # Resolve path to ensure consistent key format
+        self.values[file.resolve()] = image_hash
+        self.dirty = True
+
+    def get(self, file: Path) -> Optional[Hash]:
+        # Resolve path to match how paths are stored
+        return self.values.get(file.resolve())
 
     @log_execution_time()
     def load(self) -> None:
