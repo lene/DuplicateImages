@@ -2,6 +2,10 @@
 
 ## [0.11.10] - 2025-11-04
 
+### Added
+- Added ReadTheDocs configuration file to ensure documentation builds with Python 3.12
+- Added Sphinx documentation infrastructure with API reference documentation
+
 ### Changed
 - Minimum Python version requirement increased from 3.9 to 3.12 to support modern f-string syntax
   and maintain compatibility with current linting standards

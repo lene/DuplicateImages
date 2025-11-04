@@ -36,6 +36,7 @@ pytest = ">=7.1"
 pylint = ">=3.3"
 pytest-xdist = ">=3.6"
 ptpython = ">=3.0"
+sphinx = "^8.2.3"
 
 [tool.poetry.scripts]
 find-dups = "duplicate_images.duplicate:main"

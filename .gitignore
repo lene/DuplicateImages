@@ -10,3 +10,4 @@ dist
 fil-result
 .cache
 .local
+docs/_build/
