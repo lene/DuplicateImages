@@ -119,7 +119,7 @@ def main() -> None:
     for folder in args.root_directory:
         logging.info(
             'Scanning %s %s', path_with_parent(folder),
-            f'(excluding {', '.join(args.exclude_dir)})' if args.exclude_dir else ''
+            f"(excluding {', '.join(args.exclude_dir)})" if args.exclude_dir else ''
         )
     try:
         matches = get_matches(

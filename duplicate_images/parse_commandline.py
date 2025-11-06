@@ -161,10 +161,10 @@ def check_complex_errors(namespace, parser):
     if namespace.group and namespace.max_distance:
         parser.error('--max-distance: not allowed with argument --group')
     if namespace.move_to and namespace.on_equal not in MOVE_ACTIONS:
-        parser.error(f'--move-to requires --on-equal to be one of: {', '.join(MOVE_ACTIONS)}')
+        parser.error(f"--move-to requires --on-equal to be one of: {', '.join(MOVE_ACTIONS)}")
     if namespace.on_equal in MOVE_ACTIONS and not namespace.move_to:
         parser.error(f'--on-equal {namespace.move_to} requires --move-to to be set')
     if namespace.move_recreate_path and namespace.on_equal not in MOVE_ACTIONS:
         parser.error(
-            f'--move-recreate-path requires --on-equal to be one of: {', '.join(MOVE_ACTIONS)}'
+            f"--move-recreate-path requires --on-equal to be one of: {', '.join(MOVE_ACTIONS)}"
         )
