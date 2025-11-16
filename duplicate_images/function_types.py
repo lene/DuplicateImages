@@ -19,7 +19,8 @@ Results = List[ImageGroup]
 ResultsGenerator = Generator[List[Path], None, None]
 ResultsGrouper = Callable[[ResultsGenerator], Results]
 CacheEntry = Tuple[Path, Optional[Hash]]
-Cache = Dict[Path, Hash]
+CacheKey = Tuple[Path, float, int]  # (path, mtime, size)
+Cache = Dict[CacheKey, Hash]
 
 
 def is_hash(x: Any) -> bool:

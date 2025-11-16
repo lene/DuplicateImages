@@ -199,3 +199,49 @@ def check_correct_results(finder: ImagePairFinder, images: List[Path]) -> None:
     for pair in expected_pairs:
         assert pair in pairs or (pair[1], pair[0]) in pairs, \
             f'{pair[0].name}, {pair[1].name} not in {expected_pairs_string}'
+
+
+@pytest.mark.parametrize('file_type', ['pickle', 'json'])
+def test_file_replacement_recalculates_hash(
+        top_directory: TemporaryDirectory, hash_store_path: Path,
+        reset_call_count  # pylint: disable=unused-argument
+) -> None:
+    """Test that replacing a file at the same path forces hash recalculation (issue #19)"""
+    from time import sleep
+    from .conftest import create_image, IMAGE_WIDTH
+
+    # Create initial file and populate cache
+    file_path = Path(top_directory.name) / 'test_image.jpg'
+    create_image(file_path, IMAGE_WIDTH)
+    initial_mtime = file_path.stat().st_mtime
+
+    with FileHashStore.create(hash_store_path, DEFAULT_ALGORITHM, DEFAULT_HASH_SIZE) as hash_store:
+        finder = ImagePairFinder.create(
+            [file_path], mock_algorithm, options=PairFinderOptions(slow=True),
+            hash_store=hash_store
+        )
+        finder.get_equal_groups()
+
+    initial_call_count = mock_algorithm.call_count
+    assert initial_call_count > 0, 'Hash should be calculated for new file'
+
+    # Sleep to ensure different mtime
+    sleep(0.01)
+
+    # Replace file with different content (different size)
+    file_path.unlink()
+    create_image(file_path, IMAGE_WIDTH * 2)  # Different size
+    new_mtime = file_path.stat().st_mtime
+    assert new_mtime != initial_mtime, 'File replacement should change mtime'
+
+    # Scan again with same cache - should recalculate because file changed
+    mock_algorithm.call_count = 0
+    with FileHashStore.create(hash_store_path, DEFAULT_ALGORITHM, DEFAULT_HASH_SIZE) as hash_store:
+        finder = ImagePairFinder.create(
+            [file_path], mock_algorithm, options=PairFinderOptions(slow=True),
+            hash_store=hash_store
+        )
+        finder.get_equal_groups()
+
+    assert mock_algorithm.call_count > 0, \
+        'Hash should be recalculated when file is replaced (issue #19 fix)'

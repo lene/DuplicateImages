@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.11.11] - 2025-11-16
+
+### Fixed
+- Fixed issue #19: Hash cache corruption when files are replaced at the same path. The hash
+  database now uses composite keys (path, modification time, file size) to detect when a file
+  has been replaced or modified, forcing recalculation of the hash. This prevents dangerous
+  false positives that could lead to incorrect duplicate detection and accidental data loss
+  with delete actions. Old hash databases are automatically migrated to the new format.
+
 ## [0.11.10] - 2025-11-04
 
 ### Added
