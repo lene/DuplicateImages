@@ -12,7 +12,7 @@ from typing import Any, IO, Callable, Optional, Union, Dict, Tuple
 from imagehash import hex_to_hash
 
 from duplicate_images.common import log_execution_time
-from duplicate_images.function_types import Cache, Hash, is_hash
+from duplicate_images.function_types import Cache, CacheKey, Hash, is_hash
 
 
 class NullHashStore:
@@ -89,11 +89,21 @@ class FileHashStore:
         self.dump()
 
     def add(self, file: Path, image_hash: Hash) -> None:
-        self.values[file] = image_hash
+        stat = file.stat()
+        resolved_path = file.resolve()
+
+        # Remove any existing entries for this path to prevent cache bloat
+        self.values = {k: v for k, v in self.values.items() if k[0] != resolved_path}
+
+        # Add new entry with composite key (path, mtime, size)
+        new_key = (resolved_path, stat.st_mtime, stat.st_size)
+        self.values[new_key] = image_hash
         self.dirty = True
 
     def get(self, file: Path) -> Optional[Hash]:
-        return self.values.get(file)
+        stat = file.stat()
+        key = (file.resolve(), stat.st_mtime, stat.st_size)
+        return self.values.get(key)
 
     def metadata(self) -> Dict:
         return {'algorithm': self.algorithm, **self.hash_size_kwargs}
@@ -101,7 +111,10 @@ class FileHashStore:
     def values_with_metadata(self) -> Tuple[Dict, Dict]:
         return self.values, self.metadata()
 
-    def checked_load(self, file: IO, load: Callable[[IO], Tuple[Cache, Dict]]) -> None:
+    def checked_load(
+            self, file: IO,
+            load: Callable[[IO], Tuple[Dict[Union[Path, CacheKey], Hash], Dict]]
+    ) -> None:
         try:
             values, metadata = load(file)  # nosec
         except IndexError as error:
@@ -112,10 +125,34 @@ class FileHashStore:
             raise ValueError('Metadata empty')
         if not isinstance(metadata, dict):
             raise ValueError(f'Metadata not a dict: {metadata}')
-        bad_keys = [key for key in values.keys() if not isinstance(key, Path)]
+
+        # Detect and migrate old format: Dict[Path, Hash] -> Dict[(Path, mtime, size), Hash]
+        migrated_values: Cache = {}
+        if values and not isinstance(next(iter(values.keys())), tuple):
+            logging.info('Migrating old hash database format to new format with file metadata')
+            # Old format: keys are Path objects, convert to composite keys with dummy metadata
+            # Files with changed mtime/size will be recalculated on first access
+            for path, hash_val in values.items():
+                if isinstance(path, Path):
+                    migrated_values[(path, 0.0, 0)] = hash_val
+        else:
+            # New format or already migrated - just cast to the right type
+            for k, v in values.items():
+                if isinstance(k, tuple):
+                    migrated_values[k] = v
+
+        # Validate keys are tuples of (Path, float, int)
+        def is_valid_key(key):
+            return (isinstance(key, tuple) and len(key) == 3
+                    and isinstance(key[0], Path)
+                    and isinstance(key[1], (int, float))
+                    and isinstance(key[2], int))
+
+        bad_keys = [key for key in migrated_values.keys() if not is_valid_key(key)]
         if bad_keys:
-            raise ValueError(f'Not a Path: {bad_keys}')
-        bad_values = [value for value in values.values() if not is_hash(value)]
+            raise ValueError(f'Invalid cache key format: {bad_keys}')
+
+        bad_values = [value for value in migrated_values.values() if not is_hash(value)]
         if bad_values:
             raise ValueError(f'Not an image hash: {bad_values}')
         if metadata['algorithm'] != self.algorithm:
@@ -124,7 +161,7 @@ class FileHashStore:
             raise ValueError(f'Metadata mismatch: {metadata} != {self.metadata()}')
         if metadata != self.metadata():
             raise ValueError(f'Metadata mismatch: {metadata} != {self.metadata()}')
-        self.values = values
+        self.values = migrated_values
 
     def load(self) -> None:
         raise NotImplementedError()
@@ -150,7 +187,7 @@ class PickleHashStore(FileHashStore):
             pickle.dump(self.values_with_metadata(), file)  # nosec
 
 
-def load_values_and_metadata(file: IO) -> Tuple[Cache, Dict]:
+def load_values_and_metadata(file: IO) -> Tuple[Dict[Union[Path, CacheKey], Hash], Dict]:
     try:
         valds = json.load(file)
     except json.JSONDecodeError as error:
@@ -161,7 +198,22 @@ def load_values_and_metadata(file: IO) -> Tuple[Cache, Dict]:
         raise ValueError(f'Not a dict: {valds[0]}')
     if not isinstance(valds[1], dict):
         raise ValueError(f'Metadata not a dict: {valds[1]}')
-    return {Path(k).resolve(): hex_to_hash(str(v)) for k, v in valds[0].items()}, valds[1]
+
+    # Parse keys: can be either "path" (old format) or "path|mtime|size" (new format)
+    parsed_values: Dict[Union[Path, CacheKey], Hash] = {}
+    for k, v in valds[0].items():
+        if '|' in k:
+            # New format: "path|mtime|size"
+            parts = k.rsplit('|', 2)
+            path = Path(parts[0]).resolve()
+            mtime = float(parts[1])
+            size = int(parts[2])
+            parsed_values[(path, mtime, size)] = hex_to_hash(str(v))
+        else:
+            # Old format: just path (will be migrated in checked_load)
+            parsed_values[Path(k).resolve()] = hex_to_hash(str(v))
+
+    return parsed_values, valds[1]
 
 
 class JSONHashStore(FileHashStore):
@@ -169,15 +221,6 @@ class JSONHashStore(FileHashStore):
     Implementation of `FileHashStore` that reads and stores the calculated
     image hashes in JSON format
     """
-
-    def add(self, file: Path, image_hash: Hash) -> None:
-        # Resolve path to ensure consistent key format
-        self.values[file.resolve()] = image_hash
-        self.dirty = True
-
-    def get(self, file: Path) -> Optional[Hash]:
-        # Resolve path to match how paths are stored
-        return self.values.get(file.resolve())
 
     @log_execution_time()
     def load(self) -> None:
@@ -187,7 +230,11 @@ class JSONHashStore(FileHashStore):
     # see https://bugs.python.org/issue18820 for why this pain is necessary (Python does not allow
     # to automatically convert dict keys for JSON export
     def converted_values(self):
-        return {str(k.resolve()): str(v) for k, v in self.values.items()}
+        # Serialize composite keys as "path|mtime|size"
+        return {
+            f'{k[0].resolve()}|{k[1]}|{k[2]}': str(v)
+            for k, v in self.values.items()
+        }
 
     @log_execution_time()
     def dump(self) -> None:
