@@ -7,7 +7,14 @@
   database now uses composite keys (path, modification time, file size) to detect when a file
   has been replaced or modified, forcing recalculation of the hash. This prevents dangerous
   false positives that could lead to incorrect duplicate detection and accidental data loss
-  with delete actions. Old hash databases are automatically migrated to the new format.
+  with delete actions. Old hash databases are automatically migrated to the new format (the
+  migrated entries carry no file metadata, so those files are rehashed once).
+- Hash store `add()` is now thread-safe (mutates in place under a lock) and O(1) via a path index,
+  fixing lost cache entries with `--parallel` and quadratic cost on large first scans.
+
+### Changed
+- JSON hash stores now save values as a list of `[path, mtime, size, hash]`; the old
+  `{path: hash}` format is still read.
 
 ## [0.11.10] - 2025-11-04
 

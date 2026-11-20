@@ -70,7 +70,7 @@ def test_json_store_path_resolution_mismatch(test_setup: tuple[Path, Path]):
         # Check what was actually saved in JSON
         with open(cache_file, encoding='utf-8') as f:
             saved_data = json.load(f)
-            saved_keys = list(saved_data[0].keys())
+            saved_keys = [entry[0] for entry in saved_data[0]]
             print(f"Saved key: {saved_keys[0]}")
             print(f"Looking for: {str(relative_path)}")
             print(f"Resolved: {str(relative_path.resolve())}")
@@ -135,7 +135,7 @@ def test_json_saved_keys_are_resolved(tmp_path: Path):
     # Check the saved JSON
     with open(cache_file, encoding='utf-8') as f:
         data = json.load(f)
-        saved_keys = list(data[0].keys())
+        saved_keys = [entry[0] for entry in data[0]]
 
         # The saved key should be an absolute path (resolved)
         assert len(saved_keys) == 1

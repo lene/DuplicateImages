@@ -22,8 +22,11 @@ DEFAULT_HASH_SIZE = {'hash_size': 8}
 
 @pytest.fixture
 def sample_files(tmp_path: Path) -> List[Path]:
-    """Create some dummy file paths for testing."""
-    return [tmp_path / f'image{i}.jpg' for i in range(5)]
+    """Create some dummy files for testing (the store stats them, so they must exist)."""
+    files = [tmp_path / f'image{i}.jpg' for i in range(5)]
+    for file in files:
+        file.write_text(file.name)
+    return files
 
 
 @pytest.mark.parametrize('store_class,suffix', [

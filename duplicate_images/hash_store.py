@@ -6,8 +6,9 @@ __author__ = 'Lene Preuss <lene.preuss@gmail.com>'
 import json
 import logging
 import pickle  # nosec
+from threading import Lock
 from pathlib import Path
-from typing import Any, IO, Callable, Optional, Union, Dict, Tuple
+from typing import Any, IO, Callable, List, Optional, Union, Dict, Tuple
 
 from imagehash import hex_to_hash
 
@@ -41,6 +42,35 @@ class NullHashStore:
 HashStore = Union[NullHashStore, 'FileHashStore', 'PickleHashStore', 'JSONHashStore']
 
 
+def is_valid_key(key: Any) -> bool:
+    """Is `key` a tuple of (Path, mtime, size)?"""
+    return (isinstance(key, tuple) and len(key) == 3
+            and isinstance(key[0], Path)
+            and isinstance(key[1], (int, float))
+            and isinstance(key[2], int))
+
+
+def migrate_keys(values: Dict[Union[Path, CacheKey], Hash]) -> Cache:
+    """
+    Old format: keys are plain Paths, with no file metadata. They are migrated to composite keys
+    with dummy metadata (0.0, 0), which never matches a real file, so these files are rehashed on
+    first access. Raises `ValueError` if any key is not a `Path` or a valid composite key.
+    """
+    migrated_values: Cache = {}
+    migrated = False
+    for key, hash_val in values.items():
+        if isinstance(key, Path):
+            migrated_values[(key, 0.0, 0)] = hash_val
+            migrated = True
+        elif is_valid_key(key):
+            migrated_values[key] = hash_val
+        else:
+            raise ValueError(f'Invalid cache key format: {key}')
+    if migrated:
+        logging.info('Migrated old hash database format to new format with file metadata')
+    return migrated_values
+
+
 class FileHashStore:
     """
     Base class for persistent storage of calculated image hashes, providing all
@@ -61,7 +91,8 @@ class FileHashStore:
         self.store_path = store_path
         self.algorithm = algorithm
         self.hash_size_kwargs = hash_size_kwargs
-        self.values: Cache = {}
+        self._lock = Lock()
+        self._set_values({})
         self.dirty: bool = False
         try:
             self.load()
@@ -88,17 +119,28 @@ class FileHashStore:
             self.store_path.rename(self.store_path.with_suffix('.bak'))
         self.dump()
 
+    def _set_values(self, values: Cache) -> None:
+        """Replace all cached values and rebuild the path index (path -> cache key)"""
+        self.values: Cache = {}
+        self._index: Dict[Path, CacheKey] = {}
+        for key, image_hash in values.items():
+            self._insert(key, image_hash)
+
+    def _insert(self, key: CacheKey, image_hash: Hash) -> None:
+        """Insert in place, dropping any older entry for the same path. Callers need the lock."""
+        old_key = self._index.get(key[0])
+        if old_key is not None and old_key != key:
+            del self.values[old_key]
+        self.values[key] = image_hash
+        self._index[key[0]] = key
+
     def add(self, file: Path, image_hash: Hash) -> None:
         stat = file.stat()
-        resolved_path = file.resolve()
-
-        # Remove any existing entries for this path to prevent cache bloat
-        self.values = {k: v for k, v in self.values.items() if k[0] != resolved_path}
-
-        # Add new entry with composite key (path, mtime, size)
-        new_key = (resolved_path, stat.st_mtime, stat.st_size)
-        self.values[new_key] = image_hash
-        self.dirty = True
+        # may be called from several threads (ParallelImageHashScanner): mutate in place
+        # under a lock, and use the index to drop a stale entry for this path in O(1)
+        with self._lock:
+            self._insert((file.resolve(), stat.st_mtime, stat.st_size), image_hash)
+            self.dirty = True
 
     def get(self, file: Path) -> Optional[Hash]:
         stat = file.stat()
@@ -126,42 +168,16 @@ class FileHashStore:
         if not isinstance(metadata, dict):
             raise ValueError(f'Metadata not a dict: {metadata}')
 
-        # Detect and migrate old format: Dict[Path, Hash] -> Dict[(Path, mtime, size), Hash]
-        migrated_values: Cache = {}
-        if values and not isinstance(next(iter(values.keys())), tuple):
-            logging.info('Migrating old hash database format to new format with file metadata')
-            # Old format: keys are Path objects, convert to composite keys with dummy metadata
-            # Files with changed mtime/size will be recalculated on first access
-            for path, hash_val in values.items():
-                if isinstance(path, Path):
-                    migrated_values[(path, 0.0, 0)] = hash_val
-        else:
-            # New format or already migrated - just cast to the right type
-            for k, v in values.items():
-                if isinstance(k, tuple):
-                    migrated_values[k] = v
-
-        # Validate keys are tuples of (Path, float, int)
-        def is_valid_key(key):
-            return (isinstance(key, tuple) and len(key) == 3
-                    and isinstance(key[0], Path)
-                    and isinstance(key[1], (int, float))
-                    and isinstance(key[2], int))
-
-        bad_keys = [key for key in migrated_values.keys() if not is_valid_key(key)]
-        if bad_keys:
-            raise ValueError(f'Invalid cache key format: {bad_keys}')
+        migrated_values = migrate_keys(values)
 
         bad_values = [value for value in migrated_values.values() if not is_hash(value)]
         if bad_values:
             raise ValueError(f'Not an image hash: {bad_values}')
         if metadata['algorithm'] != self.algorithm:
             raise ValueError(f'Algorithm mismatch: {metadata['algorithm']} != {self.algorithm}')
-        if metadata.keys() != self.metadata().keys():
-            raise ValueError(f'Metadata mismatch: {metadata} != {self.metadata()}')
         if metadata != self.metadata():
             raise ValueError(f'Metadata mismatch: {metadata} != {self.metadata()}')
-        self.values = migrated_values
+        self._set_values(migrated_values)
 
     def load(self) -> None:
         raise NotImplementedError()
@@ -188,32 +204,37 @@ class PickleHashStore(FileHashStore):
 
 
 def load_values_and_metadata(file: IO) -> Tuple[Dict[Union[Path, CacheKey], Hash], Dict]:
+    """
+    Two JSON formats are understood, both as `[values, metadata]`:
+    - old: `values` is a dict `{path: hash}`
+    - current: `values` is a list of `[path, mtime, size, hash]`
+    """
     try:
         valds = json.load(file)
     except json.JSONDecodeError as error:
         raise ValueError('Save file not in JSON format') from error
-    if not isinstance(valds, list):
+    if not isinstance(valds, list) or len(valds) != 2:
         raise ValueError('Save file not in format: [values, metadata]')
-    if not isinstance(valds[0], dict):
-        raise ValueError(f'Not a dict: {valds[0]}')
-    if not isinstance(valds[1], dict):
-        raise ValueError(f'Metadata not a dict: {valds[1]}')
+    values, metadata = valds
+    if not isinstance(metadata, dict):
+        raise ValueError(f'Metadata not a dict: {metadata}')
 
-    # Parse keys: can be either "path" (old format) or "path|mtime|size" (new format)
     parsed_values: Dict[Union[Path, CacheKey], Hash] = {}
-    for k, v in valds[0].items():
-        if '|' in k:
-            # New format: "path|mtime|size"
-            parts = k.rsplit('|', 2)
-            path = Path(parts[0]).resolve()
-            mtime = float(parts[1])
-            size = int(parts[2])
-            parsed_values[(path, mtime, size)] = hex_to_hash(str(v))
-        else:
-            # Old format: just path (will be migrated in checked_load)
-            parsed_values[Path(k).resolve()] = hex_to_hash(str(v))
+    if isinstance(values, dict):
+        for path, hash_string in values.items():
+            parsed_values[Path(path).resolve()] = hex_to_hash(str(hash_string))
+    elif isinstance(values, list):
+        for entry in values:
+            try:
+                path, mtime, size, hash_string = entry
+                key = (Path(path), float(mtime), int(size))
+            except (TypeError, ValueError) as error:
+                raise ValueError(f'Invalid cache entry: {entry}') from error
+            parsed_values[key] = hex_to_hash(str(hash_string))
+    else:
+        raise ValueError(f'Not a dict or list: {values}')
 
-    return parsed_values, valds[1]
+    return parsed_values, metadata
 
 
 class JSONHashStore(FileHashStore):
@@ -229,12 +250,13 @@ class JSONHashStore(FileHashStore):
 
     # see https://bugs.python.org/issue18820 for why this pain is necessary (Python does not allow
     # to automatically convert dict keys for JSON export
-    def converted_values(self):
-        # Serialize composite keys as "path|mtime|size"
-        return {
-            f'{k[0].resolve()}|{k[1]}|{k[2]}': str(v)
-            for k, v in self.values.items()
-        }
+    def converted_values(self) -> List[List[Any]]:
+        # a list of [path, mtime, size, hash] avoids having to encode the key in a string
+        with self._lock:
+            return [
+                [str(path), mtime, size, str(image_hash)]
+                for (path, mtime, size), image_hash in self.values.items()
+            ]
 
     @log_execution_time()
     def dump(self) -> None:

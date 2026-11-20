@@ -79,7 +79,7 @@ def test_open_correct_file_format_but_keys_not_paths(
         garbage_data=(
             {str(path): 0 for path in folder.glob('**')}, {'algorithm': 'phash', 'hash_size': 8}
         ),
-        message='Not a Path'
+        message='Invalid cache key format'
     )
 
 
