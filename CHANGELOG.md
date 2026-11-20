@@ -1,6 +1,6 @@
 # Changelog
 
-## [0.11.11] - 2025-11-16
+## [0.11.11] - 2026-11-20
 
 ### Fixed
 - Fixed issue #19: Hash cache corruption when files are replaced at the same path. The hash
