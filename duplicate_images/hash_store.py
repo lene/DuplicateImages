@@ -50,7 +50,7 @@ def is_valid_key(key: Any) -> bool:
             and isinstance(key[2], int))
 
 
-def migrate_keys(values: Dict[Union[Path, CacheKey], Hash]) -> Cache:
+def migrate_keys(values: Dict[Path | CacheKey, Hash]) -> Cache:
     """
     Old format: keys are plain Paths, with no file metadata. They are migrated to composite keys
     with dummy metadata (0.0, 0), which never matches a real file, so these files are rehashed on
@@ -80,7 +80,7 @@ class FileHashStore:
     @staticmethod
     def create(
             store_path: Optional[Path], algorithm: str, hash_size_kwargs: Dict
-    ) -> Union['FileHashStore', NullHashStore]:
+    ) -> 'FileHashStore | NullHashStore':
         if store_path is None:
             return NullHashStore()
         if store_path.suffix == '.pickle':
@@ -155,7 +155,7 @@ class FileHashStore:
 
     def checked_load(
             self, file: IO,
-            load: Callable[[IO], Tuple[Dict[Union[Path, CacheKey], Hash], Dict]]
+            load: Callable[[IO], Tuple[Dict[Path | CacheKey, Hash], Dict]]
     ) -> None:
         try:
             values, metadata = load(file)  # nosec
@@ -203,7 +203,7 @@ class PickleHashStore(FileHashStore):
             pickle.dump(self.values_with_metadata(), file)  # nosec
 
 
-def load_values_and_metadata(file: IO) -> Tuple[Dict[Union[Path, CacheKey], Hash], Dict]:
+def load_values_and_metadata(file: IO) -> Tuple[Dict[Path | CacheKey, Hash], Dict]:
     """
     Two JSON formats are understood, both as `[values, metadata]`:
     - old: `values` is a dict `{path: hash}`
@@ -219,7 +219,7 @@ def load_values_and_metadata(file: IO) -> Tuple[Dict[Union[Path, CacheKey], Hash
     if not isinstance(metadata, dict):
         raise ValueError(f'Metadata not a dict: {metadata}')
 
-    parsed_values: Dict[Union[Path, CacheKey], Hash] = {}
+    parsed_values: Dict[Path | CacheKey, Hash] = {}
     if isinstance(values, dict):
         for path, hash_string in values.items():
             parsed_values[Path(path).resolve()] = hex_to_hash(str(hash_string))

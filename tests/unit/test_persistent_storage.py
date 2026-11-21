@@ -220,7 +220,8 @@ def check_correct_results(finder: ImagePairFinder, images: List[Path]) -> None:
 @pytest.mark.parametrize('file_type', ['pickle', 'json'])
 def test_file_replacement_recalculates_hash(
         top_directory: TemporaryDirectory, hash_store_path: Path,
-        reset_call_count  # pylint: disable=unused-argument
+        reset_call_count,  # pylint: disable=unused-argument
+        monkeypatch: pytest.MonkeyPatch
 ) -> None:
     """Test that replacing a file at the same path forces hash recalculation (issue #19)"""
     # Create initial file and populate cache
@@ -248,7 +249,7 @@ def test_file_replacement_recalculates_hash(
     assert new_mtime != initial_mtime, 'File replacement should change mtime'
 
     # Scan again with same cache - should recalculate because file changed
-    mock_algorithm.call_count = 0
+    monkeypatch.setattr(mock_algorithm, 'call_count', 0)
     with FileHashStore.create(hash_store_path, DEFAULT_ALGORITHM, DEFAULT_HASH_SIZE) as hash_store:
         finder = ImagePairFinder.create(
             [file_path], mock_algorithm, options=PairFinderOptions(slow=True),
